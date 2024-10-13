@@ -1,13 +1,13 @@
-"use client"
+'use client';
 
-import { useState } from "react"
-import { useRouter } from "next/navigation"
-import Link from "next/link"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { useForm } from "react-hook-form"
-import * as z from "zod"
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from 'react-hook-form';
+import * as z from 'zod';
 
-import { Button } from "@/components/ui/button"
+import { Button } from '@/components/ui/button';
 import {
   Form,
   FormControl,
@@ -15,57 +15,57 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form"
-import { Input } from "@/components/ui/input"
-import { useToast } from "@/hooks/use-toast"
+} from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { useToast } from '@/hooks/use-toast';
 
 const formSchema = z.object({
   email: z.string().email({
-    message: "Please enter a valid email address.",
+    message: 'Please enter a valid email address.',
   }),
   password: z.string().min(8, {
-    message: "Password must be at least 8 characters long.",
+    message: 'Password must be at least 8 characters long.',
   }),
-})
+});
 
 export default function LoginPage() {
-  const router = useRouter()
-  const { toast } = useToast()
-  const [isLoading, setIsLoading] = useState(false)
+  const router = useRouter();
+  const { toast } = useToast();
+  const [isLoading, setIsLoading] = useState(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      email: "",
-      password: "",
+      email: '',
+      password: '',
     },
-  })
+  });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    setIsLoading(true)
+    setIsLoading(true);
 
     try {
       // TODO: Implement your login logic here
-      console.log(values)
+      console.log(values);
 
       // Simulate a successful login
-      await new Promise((resolve) => setTimeout(resolve, 1000))
+      await new Promise((resolve) => setTimeout(resolve, 1000));
 
       toast({
-        title: "Login Successful",
-        description: "You have been logged in successfully.",
-      })
+        title: 'Login Successful',
+        description: 'You have been logged in successfully.',
+      });
 
-      router.push("/dashboard") // Redirect to dashboard or home page
+      router.push('/dashboard'); // Redirect to dashboard or home page
     } catch (error) {
-      console.error(error)
+      console.error(error);
       toast({
-        title: "Login Failed",
-        description: "There was an error logging in. Please try again.",
-        variant: "destructive",
-      })
+        title: 'Login Failed',
+        description: 'There was an error logging in. Please try again.',
+        variant: 'destructive',
+      });
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
   }
 
@@ -107,7 +107,7 @@ export default function LoginPage() {
             )}
           />
           <Button type="submit" className="w-full" disabled={isLoading}>
-            {isLoading ? "Logging in..." : "Login"}
+            {isLoading ? 'Logging in...' : 'Login'}
           </Button>
         </form>
       </Form>
@@ -119,12 +119,11 @@ export default function LoginPage() {
       </div>
 
       <div className="text-center text-sm">
-        Don't have an account?{" "}
+        Don&apos;t have an account?{' '}
         <Link href="/signup" className="text-blue-500 hover:underline">
           Sign up
         </Link>
       </div>
     </div>
-  )
+  );
 }
-

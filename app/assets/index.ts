@@ -1,1 +1,1 @@
-export * as assets from "./images";
+export * as assets from './images';

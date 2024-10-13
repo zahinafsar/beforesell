@@ -1,5 +1,5 @@
-import { Button } from '@/components/ui/button'
-import Link from 'next/link'
+import { Button } from '@/components/ui/button';
+import Link from 'next/link';
 
 export const Hero = () => {
   return (
@@ -10,7 +10,8 @@ export const Hero = () => {
             Your Catchy Headline Here
           </h1>
           <p className="mt-6 text-lg leading-8 text-muted-foreground">
-            A brief description of your product or service that highlights its main benefits and value proposition.
+            A brief description of your product or service that highlights its main
+            benefits and value proposition.
           </p>
           <div className="mt-10 flex items-center justify-center gap-x-6">
             <Link href="/signup">
@@ -23,5 +24,5 @@ export const Hero = () => {
         </div>
       </div>
     </div>
-  )
-}
+  );
+};

@@ -1,8 +1,8 @@
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import Image from "next/image";
-import { assets } from "@/app/assets";
-import { ModeToggle } from "./theme-toggle";
+import Link from 'next/link';
+import { Button } from '@/components/ui/button';
+import Image from 'next/image';
+import { assets } from '@/app/assets';
+import { ModeToggle } from './theme-toggle';
 
 export const Navbar = () => {
   return (

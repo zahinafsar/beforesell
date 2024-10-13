@@ -1,5 +1,5 @@
-import { Button } from '@/components/ui/button'
-import Link from 'next/link'
+import { Button } from '@/components/ui/button';
+import Link from 'next/link';
 
 export const CTA = () => {
   return (
@@ -12,5 +12,5 @@ export const CTA = () => {
         </Link>
       </div>
     </div>
-  )
-}
+  );
+};

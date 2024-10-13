@@ -6,5 +6,5 @@ export const Features = () => {
         {/* Add your features content here */}
       </div>
     </div>
-  )
-}
+  );
+};
