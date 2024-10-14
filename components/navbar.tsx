@@ -4,9 +4,11 @@ import Image from 'next/image';
 import { assets } from '@/app/assets';
 import { ModeToggle } from './theme-toggle';
 
-export const Navbar = () => {
+export const Navbar = ({ isScrolled }: { isScrolled: boolean }) => {
   return (
-    <nav className="border-b">
+    <nav
+      className={`border-b fixed right-0 left-0  top-0 ${isScrolled ? 'dark:bg-slate-950 bg-slate-100' : ''}`}
+    >
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           <div className="flex items-center">
