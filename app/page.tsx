@@ -11,7 +11,7 @@ export default function Home() {
 
   return (
     <div className="flex flex-col min-h-screen">
-      <div ref={navbarRef} className="relative">
+      <div ref={navbarRef} className="relative z-50">
         <Navbar isScrolled={isScrolled} />
       </div>
       <Hero />
