@@ -18,6 +18,7 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
+import { login } from './actions';
 
 const formSchema = z.object({
   email: z.string().email({
@@ -46,7 +47,9 @@ export default function LoginPage() {
 
     try {
       // TODO: Implement your login logic here
-      console.log(values);
+      // console.log(values);
+
+      login(values);
 
       // Simulate a successful login
       await new Promise((resolve) => setTimeout(resolve, 1000));
@@ -55,8 +58,7 @@ export default function LoginPage() {
         title: 'Login Successful',
         description: 'You have been logged in successfully.',
       });
-
-      router.push('/dashboard'); // Redirect to dashboard or home page
+      // Redirect to dashboard or home page
     } catch (error) {
       console.error(error);
       toast({

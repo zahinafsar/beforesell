@@ -18,6 +18,7 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
+import { signup } from './action';
 
 const formSchema = z
   .object({
@@ -52,20 +53,21 @@ export default function SignUpPage() {
     },
   });
 
-  async function onSubmit() {
+  async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsLoading(true);
 
     try {
       // Here you would typically send the form data to your backend
       // For now, we'll just simulate a delay and show a success message
       await new Promise((resolve) => setTimeout(resolve, 1000));
+      console.log(values);
+
+      signup({ email: values.email, password: values.password });
 
       toast({
         title: 'Account created successfully!',
         description: 'You can now log in with your new account.',
       });
-
-      router.push('/login');
     } catch (error: unknown) {
       toast({
         title: 'Error',
