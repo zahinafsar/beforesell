@@ -5,8 +5,11 @@ import { assets } from '@/app/assets';
 import { ModeToggle } from './theme-toggle';
 import { ROUTES } from '@/routes';
 import { navMenuData } from '@/public/navbarData';
+import UserMenu from '@/app/(auth)/logout/UserMenu';
+import { useAuth } from '@/hooks/AuthContext';
 
 export const Navbar = ({ isScrolled }: { isScrolled: boolean }) => {
+  const { user, loading } = useAuth();
   return (
     <nav
       className={`border-b fixed right-0 left-0  top-0 ${isScrolled ? 'dark:bg-slate-950 shadow-xl bg-slate-100' : ''}`}
@@ -33,12 +36,19 @@ export const Navbar = ({ isScrolled }: { isScrolled: boolean }) => {
             </div>
             {/* <ModeToggle /> */}
             <div className="flex items-center gap-3">
-              <Link href="/login">
-                <Button variant="secondary">Log in</Button>
-              </Link>
-              <Link href="/signup">
-                <Button>Sign up</Button>
-              </Link>
+              {!user ? (
+                <>
+                  <Link href="/login">
+                    <Button variant="secondary">Log in</Button>
+                  </Link>
+                  <Link href="/signup">
+                    <Button>Sign up</Button>
+                  </Link>
+                </>
+              ) : (
+                <UserMenu />
+              )}
+
               <ModeToggle />
             </div>
           </div>

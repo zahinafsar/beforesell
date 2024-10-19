@@ -4,6 +4,7 @@ import './globals.css';
 import { ThemeProvider } from '@/components/theme-provider';
 import { Navbar } from '@/components/navbar';
 import { Footer } from '@/components/footer';
+import { AuthProvider } from '@/hooks/AuthContext';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -39,7 +40,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         >
           <div className="flex flex-col min-h-screen">
             {/* <Navbar /> */}
-            <main className="flex-grow">{children}</main>
+            <main className="flex-grow">
+              <AuthProvider>{children}</AuthProvider>
+            </main>
             <Footer />
           </div>
         </ThemeProvider>

@@ -1,29 +1,18 @@
 /* eslint-disable prettier/prettier */
 'use server';
 
-import { revalidatePath } from 'next/cache';
-import { redirect } from 'next/navigation';
-
 import { createClient } from '@/utils/supabase/server';
 
-export async function login({ email, password }: { email: string, password: string }) {
+export async function login({ email, password }: { email: string; password: string }) {
     const supabase = createClient();
 
-    // type-casting here for convenience
-    // in practice, you should validate your inputs
-    const data = {
-        email: email,
-        password: password,
-    };
-
-    const { error } = await supabase.auth.signInWithPassword(data);
+    const { error, data: { user, session } } = await supabase.auth.signInWithPassword({ email, password });
 
     if (error) {
-        redirect('/error');
+        return { success: false, error: error.message };
     }
 
-    revalidatePath('/', 'layout');
-    redirect('/');
+    if (session) {
+        return { success: true, user };
+    }
 }
-
-

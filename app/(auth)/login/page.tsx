@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -42,23 +42,36 @@ export default function LoginPage() {
     },
   });
 
+  useEffect(() => {
+    const storedUser = localStorage.getItem('currentUser');
+    if (storedUser) {
+      router.push('/');
+    }
+  }, [router]);
+
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsLoading(true);
 
     try {
-      // TODO: Implement your login logic here
-      // console.log(values);
+      const response = await login(values);
+      console.log(response);
 
-      login(values);
+      if (response?.success) {
+        localStorage.setItem('currentUser', JSON.stringify(response.user));
 
-      // Simulate a successful login
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+        toast({
+          title: 'Login Successful',
+          description: 'You have been logged in successfully.',
+        });
 
-      toast({
-        title: 'Login Successful',
-        description: 'You have been logged in successfully.',
-      });
-      // Redirect to dashboard or home page
+        router.push('/');
+      } else {
+        toast({
+          title: 'Login Failed',
+          description: 'There was an error logging in. Please try again.',
+          variant: 'destructive',
+        });
+      }
     } catch (error) {
       console.error(error);
       toast({

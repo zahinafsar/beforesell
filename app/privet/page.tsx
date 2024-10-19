@@ -1,14 +1,14 @@
 import { redirect } from 'next/navigation';
-
 import { createClient } from '@/utils/supabase/server';
+import { ReactNode } from 'react';
 
-export default async function PrivatePage() {
+export default async function PrivatePage({ children }: { children: ReactNode }) {
   const supabase = createClient();
 
-  const { data, error } = await supabase.auth.getUser();
-  if (error || !data?.user) {
+  const { data: { user } = {}, error } = await supabase.auth.getUser();
+
+  if (!user || error) {
     redirect('/login');
   }
-
-  return <p>Hello {data.user.email}</p>;
+  return <main className="flex-grow">{children}</main>;
 }

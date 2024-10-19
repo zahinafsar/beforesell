@@ -62,7 +62,11 @@ export default function SignUpPage() {
       await new Promise((resolve) => setTimeout(resolve, 1000));
       console.log(values);
 
-      signup({ email: values.email, password: values.password });
+      signup({
+        email: values.email,
+        password: values.password,
+        username: values.username,
+      });
 
       toast({
         title: 'Account created successfully!',
