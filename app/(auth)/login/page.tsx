@@ -19,6 +19,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { login } from './actions';
+import { useAuth } from '@/hooks/AuthContext';
 
 const formSchema = z.object({
   email: z.string().email({
@@ -31,6 +32,7 @@ const formSchema = z.object({
 
 export default function LoginPage() {
   const router = useRouter();
+  const { setRender } = useAuth();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
 
@@ -51,10 +53,11 @@ export default function LoginPage() {
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsLoading(true);
+    setRender(true);
 
     try {
       const response = await login(values);
-      console.log(response);
+      // console.log(response);
 
       if (response?.success) {
         localStorage.setItem('currentUser', JSON.stringify(response.user));

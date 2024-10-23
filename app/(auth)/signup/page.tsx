@@ -60,7 +60,7 @@ export default function SignUpPage() {
       // Here you would typically send the form data to your backend
       // For now, we'll just simulate a delay and show a success message
       await new Promise((resolve) => setTimeout(resolve, 1000));
-      console.log(values);
+      // console.log(values);
 
       signup({
         email: values.email,

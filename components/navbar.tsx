@@ -9,7 +9,9 @@ import UserMenu from '@/app/(auth)/logout/UserMenu';
 import { useAuth } from '@/hooks/AuthContext';
 
 export const Navbar = ({ isScrolled }: { isScrolled: boolean }) => {
-  const { user, loading } = useAuth();
+  const { user, loading, render } = useAuth();
+  // console.log(user);
+  if (render) return;
   return (
     <nav
       className={`border-b fixed right-0 left-0  top-0 ${isScrolled ? 'dark:bg-slate-950 shadow-xl bg-slate-100' : ''}`}
