@@ -5,14 +5,9 @@ import { useRouter } from "next/navigation";
 import { Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { api } from "@/lib/api";
 
-interface FavoriteButtonProps {
-  listingId: string;
-  isFavorited: boolean;
-  isLoggedIn: boolean;
-}
-
-export function FavoriteButton({ listingId, isFavorited, isLoggedIn }: FavoriteButtonProps) {
+export function FavoriteButton({ listingId, isFavorited, isLoggedIn }: { listingId: string; isFavorited: boolean; isLoggedIn: boolean }) {
   const router = useRouter();
   const [favorited, setFavorited] = useState(isFavorited);
   const [isLoading, setIsLoading] = useState(false);
@@ -25,8 +20,9 @@ export function FavoriteButton({ listingId, isFavorited, isLoggedIn }: FavoriteB
 
     setIsLoading(true);
     try {
-      const res = await fetch(`/api/listings/${listingId}/favorite`, {
+      const res = await api("listings/[id]/favorite", {
         method: "POST",
+        params: { id: listingId },
       });
 
       if (res.ok) {

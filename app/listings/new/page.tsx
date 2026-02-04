@@ -17,21 +17,24 @@ export default async function NewListingPage({ searchParams }: NewListingPagePro
   const params = await searchParams;
   const listingId = params.id;
 
-  const [categories, divisions, listing] = await Promise.all([
+  const [categories, locations, listing] = await Promise.all([
     prisma.category.findMany({
       include: { children: true },
       orderBy: { name: "asc" },
     }),
-    prisma.division.findMany({
-      include: { districts: { orderBy: { name: "asc" } } },
-      orderBy: { name: "asc" },
+    prisma.location.findMany({
+      orderBy: { address: "asc" },
     }),
     listingId
       ? prisma.listing.findUnique({
           where: { id: listingId, userId: user.id },
           include: {
             images: { orderBy: { order: "asc" } },
-            district: true,
+            attributeValues: {
+              include: {
+                attribute: { select: { slug: true } },
+              },
+            },
           },
         })
       : null,
@@ -44,7 +47,7 @@ export default async function NewListingPage({ searchParams }: NewListingPagePro
       </h1>
       <ListingForm
         categories={categories}
-        divisions={divisions}
+        locations={locations}
         listing={listing || undefined}
       />
     </div>

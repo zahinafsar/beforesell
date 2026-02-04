@@ -1,14 +1,13 @@
 import { cookies } from "next/headers";
-import { SignJWT, jwtVerify } from "jose";
+import { SignJWT, jwtVerify, type JWTPayload as JoseJWTPayload } from "jose";
 import bcrypt from "bcryptjs";
 import { prisma } from "./prisma";
 
 const JWT_SECRET = new TextEncoder().encode(process.env.JWT_SECRET || "secret");
 
-export interface JWTPayload {
+export interface JWTPayload extends JoseJWTPayload {
   userId: string;
   email: string;
-  [key: string]: unknown;
 }
 
 export async function hashPassword(password: string): Promise<string> {
@@ -31,8 +30,8 @@ export async function createToken(payload: JWTPayload): Promise<string> {
 
 export async function verifyToken(token: string): Promise<JWTPayload | null> {
   try {
-    const { payload } = await jwtVerify(token, JWT_SECRET);
-    return payload as unknown as JWTPayload;
+    const { payload } = await jwtVerify<JWTPayload>(token, JWT_SECRET);
+    return payload;
   } catch {
     return null;
   }

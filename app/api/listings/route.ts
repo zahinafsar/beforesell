@@ -1,4 +1,5 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
+import { NextApiRequest } from "next-ts-api";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth";
 import { createListingSchema } from "@/lib/validations";
@@ -11,7 +12,17 @@ function generateSlug(title: string): string {
     + "-" + Date.now().toString(36);
 }
 
-export async function POST(request: NextRequest) {
+interface ListingBody {
+  title: string;
+  description: string;
+  price: number;
+  negotiable: boolean;
+  categoryId: string;
+  locationId: string;
+  attributes?: Record<string, string | string[]>;
+}
+
+export async function POST(request: NextApiRequest<ListingBody>) {
   try {
     const user = await getCurrentUser();
     if (!user) {
@@ -28,7 +39,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { title, description, price, negotiable, condition, categoryId, districtId } = validation.data;
+    const { title, description, price, negotiable, categoryId, locationId } = validation.data;
+    const attributes = body.attributes as Record<string, string | string[]> | undefined;
 
     const listing = await prisma.listing.create({
       data: {
@@ -37,19 +49,45 @@ export async function POST(request: NextRequest) {
         description,
         price,
         negotiable,
-        condition,
         categoryId,
-        districtId,
+        locationId,
         userId: user.id,
         status: "ACTIVE",
         expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days
       },
       include: {
         category: true,
-        district: { include: { division: true } },
+        location: true,
         images: { orderBy: { order: "asc" } },
       },
     });
+
+    // Save attribute values if provided
+    if (attributes && Object.keys(attributes).length > 0) {
+      const categoryAttributes = await prisma.categoryAttribute.findMany({
+        where: { categoryId },
+        select: { id: true, slug: true },
+      });
+
+      const slugToId = new Map(categoryAttributes.map((a) => [a.slug, a.id]));
+      const attributeData: { listingId: string; attributeId: string; value: string }[] = [];
+
+      for (const [slug, value] of Object.entries(attributes)) {
+        const attributeId = slugToId.get(slug);
+        if (attributeId && value !== undefined && value !== null && value !== "") {
+          const stringValue = Array.isArray(value) ? value.join(",") : String(value);
+          attributeData.push({
+            listingId: listing.id,
+            attributeId,
+            value: stringValue,
+          });
+        }
+      }
+
+      if (attributeData.length > 0) {
+        await prisma.listingAttributeValue.createMany({ data: attributeData });
+      }
+    }
 
     return NextResponse.json({ listing }, { status: 201 });
   } catch (error) {
@@ -61,22 +99,34 @@ export async function POST(request: NextRequest) {
   }
 }
 
-export async function GET(request: NextRequest) {
+interface ListingsQuery {
+  page?: string;
+  limit?: string;
+  userId?: string;
+  categoryId?: string;
+  locationId?: string;
+  status?: string;
+  search?: string;
+  minPrice?: string;
+  maxPrice?: string;
+  sort?: string;
+  featured?: string;
+}
+
+export async function GET(request: NextApiRequest<unknown, ListingsQuery>) {
   try {
-    const { searchParams } = new URL(request.url);
-    const page = parseInt(searchParams.get("page") || "1");
-    const limit = parseInt(searchParams.get("limit") || "20");
-    const userId = searchParams.get("userId");
-    const categoryId = searchParams.get("categoryId");
-    const districtId = searchParams.get("districtId");
-    const divisionId = searchParams.get("divisionId");
-    const status = searchParams.get("status");
-    const search = searchParams.get("search");
-    const minPrice = searchParams.get("minPrice");
-    const maxPrice = searchParams.get("maxPrice");
-    const condition = searchParams.get("condition");
-    const sort = searchParams.get("sort") || "newest";
-    const featured = searchParams.get("featured");
+    const searchParams = request.nextUrl.searchParams;
+    const page = parseInt(searchParams.get("page") ?? "1");
+    const limit = parseInt(searchParams.get("limit") ?? "20");
+    const userId = searchParams.get("userId") ?? undefined;
+    const categoryId = searchParams.get("categoryId") ?? undefined;
+    const locationId = searchParams.get("locationId") ?? undefined;
+    const status = searchParams.get("status") ?? undefined;
+    const search = searchParams.get("search") ?? undefined;
+    const minPrice = searchParams.get("minPrice") ?? undefined;
+    const maxPrice = searchParams.get("maxPrice") ?? undefined;
+    const sort = searchParams.get("sort") ?? "newest";
+    const featured = searchParams.get("featured") ?? undefined;
 
     const where: Record<string, unknown> = {};
     const andConditions: Record<string, unknown>[] = [];
@@ -93,8 +143,7 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    if (districtId) where.districtId = districtId;
-    if (divisionId) where.district = { divisionId };
+    if (locationId) where.locationId = locationId;
     if (status) where.status = status;
     else where.status = "ACTIVE";
 
@@ -107,23 +156,86 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    if (andConditions.length > 0) {
-      where.AND = andConditions;
-    }
-
     if (minPrice || maxPrice) {
       where.price = {};
       if (minPrice) (where.price as Record<string, number>).gte = parseFloat(minPrice);
       if (maxPrice) (where.price as Record<string, number>).lte = parseFloat(maxPrice);
     }
 
-    if (condition) {
-      const conditions = condition.split(",");
-      if (conditions.length === 1) {
-        where.condition = condition;
-      } else {
-        where.condition = { in: conditions };
+    // Handle attribute filters (prefixed with "attr_")
+    const attrFilters: { slug: string; value?: string; min?: number; max?: number }[] = [];
+    searchParams.forEach((value, key) => {
+      if (key.startsWith("attr_") && value) {
+        const attrSlug = key.slice(5); // Remove "attr_" prefix
+        if (attrSlug.endsWith("_min")) {
+          const baseSlug = attrSlug.slice(0, -4);
+          const existingFilter = attrFilters.find((f) => f.slug === baseSlug);
+          if (existingFilter) {
+            existingFilter.min = parseFloat(value);
+          } else {
+            attrFilters.push({ slug: baseSlug, min: parseFloat(value) });
+          }
+        } else if (attrSlug.endsWith("_max")) {
+          const baseSlug = attrSlug.slice(0, -4);
+          const existingFilter = attrFilters.find((f) => f.slug === baseSlug);
+          if (existingFilter) {
+            existingFilter.max = parseFloat(value);
+          } else {
+            attrFilters.push({ slug: baseSlug, max: parseFloat(value) });
+          }
+        } else {
+          attrFilters.push({ slug: attrSlug, value });
+        }
       }
+    });
+
+    // Build attribute filter conditions
+    if (attrFilters.length > 0) {
+      const attrConditions = attrFilters.map((filter) => {
+        if (filter.value !== undefined) {
+          // Exact match (for SELECT types)
+          return {
+            attributeValues: {
+              some: {
+                attribute: { slug: filter.slug },
+                value: filter.value,
+              },
+            },
+          };
+        } else {
+          // Range filter (for NUMBER types)
+          const valueConditions: Record<string, unknown>[] = [];
+          if (filter.min !== undefined) {
+            valueConditions.push({
+              attributeValues: {
+                some: {
+                  attribute: { slug: filter.slug },
+                  value: { gte: String(filter.min) },
+                },
+              },
+            });
+          }
+          if (filter.max !== undefined) {
+            valueConditions.push({
+              attributeValues: {
+                some: {
+                  attribute: { slug: filter.slug },
+                  value: { lte: String(filter.max) },
+                },
+              },
+            });
+          }
+          return valueConditions.length > 0 ? { AND: valueConditions } : null;
+        }
+      }).filter(Boolean);
+
+      if (attrConditions.length > 0) {
+        andConditions.push(...(attrConditions as Record<string, unknown>[]));
+      }
+    }
+
+    if (andConditions.length > 0) {
+      where.AND = andConditions;
     }
 
     let orderBy: Record<string, string> = { createdAt: "desc" };
@@ -147,7 +259,7 @@ export async function GET(request: NextRequest) {
         where,
         include: {
           category: true,
-          district: { include: { division: true } },
+          location: true,
           images: { orderBy: { order: "asc" }, take: 1 },
           user: { select: { id: true, name: true, avatar: true } },
         },

@@ -11,48 +11,19 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useAuth } from "@/providers/auth-provider";
+import { conversationsQuery } from "@/lib/queries";
+import { api } from "@/lib/api";
 
-interface Message {
-  id: string;
-  content: string;
-  senderId: string;
-  createdAt: string;
-  sender: {
-    id: string;
-    name: string;
-    avatar: string | null;
-  };
-}
-
-interface ConversationData {
-  conversation: {
-    id: string;
-    listing: {
-      id: string;
-      title: string;
-      price: number;
-      images: { url: string }[];
-    };
-    otherUser: {
-      id: string;
-      name: string;
-      avatar: string | null;
-      lastSeen: string;
-    };
-  };
-  messages: Message[];
-}
-
-function isOnline(lastSeen: string): boolean {
+function isOnline(lastSeen: string | Date) {
   return new Date(lastSeen).getTime() > Date.now() - 5 * 60 * 1000;
 }
 
-function formatMessageTime(date: string): string {
+function formatMessageTime(date: string | Date) {
   const d = new Date(date);
   return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 }
 
-function formatMessageDate(date: string): string {
+function formatMessageDate(date: string | Date) {
   const d = new Date(date);
   const today = new Date();
   const yesterday = new Date(today);
@@ -70,31 +41,16 @@ export default function ConversationPage({ params }: { params: Promise<{ id: str
   const { user, isLoading: authLoading } = useAuth();
   const [newMessage, setNewMessage] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const lastMessageTime = useRef<string | null>(null);
+  const authKey = user?.id;
 
-  const { data, isLoading, refetch } = useQuery<ConversationData>({
-    queryKey: ["conversation", id],
-    queryFn: async () => {
-      const url = lastMessageTime.current
-        ? `/api/conversations/${id}?after=${encodeURIComponent(lastMessageTime.current)}`
-        : `/api/conversations/${id}`;
-      const res = await fetch(url);
-      if (!res.ok) {
-        if (res.status === 404) throw new Error("Conversation not found");
-        throw new Error("Failed to fetch");
-      }
-      return res.json();
-    },
-    enabled: !!user,
-    refetchInterval: 2000,
-  });
+  const { data, isLoading, refetch } = useQuery(conversationsQuery(authKey).byId({ id }));
 
   const sendMessage = useMutation({
     mutationFn: async (content: string) => {
-      const res = await fetch(`/api/conversations/${id}/messages`, {
+      const res = await api("conversations/[id]/messages", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ content }),
+        params: { id },
+        body: { content },
       });
       if (!res.ok) throw new Error("Failed to send");
       return res.json();
@@ -105,13 +61,6 @@ export default function ConversationPage({ params }: { params: Promise<{ id: str
       queryClient.invalidateQueries({ queryKey: ["conversations"] });
     },
   });
-
-  useEffect(() => {
-    if (data?.messages?.length) {
-      const lastMsg = data.messages[data.messages.length - 1];
-      lastMessageTime.current = lastMsg.createdAt;
-    }
-  }, [data?.messages]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -151,7 +100,7 @@ export default function ConversationPage({ params }: { params: Promise<{ id: str
   const online = conversation.otherUser && isOnline(conversation.otherUser.lastSeen);
 
   // Group messages by date
-  const messagesByDate: Record<string, Message[]> = {};
+  const messagesByDate: Record<string, typeof messages> = {};
   messages.forEach((msg) => {
     const dateKey = new Date(msg.createdAt).toDateString();
     if (!messagesByDate[dateKey]) messagesByDate[dateKey] = [];

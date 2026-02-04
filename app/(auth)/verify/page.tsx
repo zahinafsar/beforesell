@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { api } from "@/lib/api";
 
 function VerifyEmailContent() {
   const searchParams = useSearchParams();
@@ -20,13 +21,12 @@ function VerifyEmailContent() {
 
     async function verifyEmail() {
       try {
-        const res = await fetch("/api/auth/verify-email", {
+        const res = await api("auth/verify-email", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ token }),
+          body: { token: token! },
         });
 
-        const data = await res.json();
+        const data = await res.json() as { message?: string; error?: string };
 
         if (!res.ok) {
           setStatus("error");
@@ -35,7 +35,7 @@ function VerifyEmailContent() {
         }
 
         setStatus("success");
-        setMessage(data.message);
+        setMessage(data.message || "Email verified");
       } catch {
         setStatus("error");
         setMessage("Something went wrong");

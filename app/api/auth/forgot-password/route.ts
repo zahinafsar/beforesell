@@ -1,10 +1,15 @@
 import { NextResponse } from "next/server";
+import { NextApiRequest } from "next-ts-api";
 import { prisma } from "@/lib/prisma";
 import { generateToken } from "@/lib/auth";
 import { sendPasswordResetEmail } from "@/lib/email";
 import { forgotPasswordSchema } from "@/lib/validations";
 
-export async function POST(request: Request) {
+interface ForgotPasswordBody {
+  email: string;
+}
+
+export async function POST(request: NextApiRequest<ForgotPasswordBody>) {
   try {
     const body = await request.json();
     const result = forgotPasswordSchema.safeParse(body);

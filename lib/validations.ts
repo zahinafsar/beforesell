@@ -25,9 +25,8 @@ export const createListingSchema = z.object({
   description: z.string().min(20, "Description must be at least 20 characters").max(5000, "Description too long"),
   price: z.number().min(0, "Price must be positive"),
   negotiable: z.boolean().default(true),
-  condition: z.enum(["NEW", "LIKE_NEW", "GOOD", "FAIR", "POOR"]),
   categoryId: z.string().min(1, "Category is required"),
-  districtId: z.string().min(1, "Location is required"),
+  locationId: z.string().min(1, "Location is required"),
 });
 
 export const updateListingSchema = createListingSchema.partial().extend({

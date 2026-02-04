@@ -10,15 +10,6 @@ export const metadata: Metadata = generatePageMetadata({
   path: "/categories",
 });
 
-interface Category {
-  id: string;
-  name: string;
-  slug: string;
-  icon: string | null;
-  children: { id: string; name: string; slug: string }[];
-  _count: { listings: number };
-}
-
 export default async function CategoriesPage() {
   const categories = await prisma.category.findMany({
     where: { parentId: null },
@@ -33,13 +24,13 @@ export default async function CategoriesPage() {
     <div className="container py-8">
       <h1 className="text-3xl font-bold mb-8">All Categories</h1>
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        {(categories as Category[]).map((category) => (
+        {categories.map((category) => (
           <div
             key={category.id}
             className="border rounded-lg p-6 bg-card"
           >
             <Link
-              href={`/categories/${category.slug}`}
+              href={`/search?categoryId=${category.id}`}
               className="flex items-center gap-3 hover:text-primary transition-colors"
             >
               <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
@@ -57,7 +48,7 @@ export default async function CategoriesPage() {
                 {category.children.map((sub) => (
                   <Link
                     key={sub.id}
-                    href={`/categories/${sub.slug}`}
+                    href={`/search?categoryId=${sub.id}`}
                     className="block text-sm text-muted-foreground hover:text-primary transition-colors py-1"
                   >
                     {sub.name}

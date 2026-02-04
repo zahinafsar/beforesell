@@ -6,14 +6,6 @@ import { prisma } from "@/lib/prisma";
 import { ListingCard } from "@/components/listing-card";
 import { CategoryIcon } from "@/components/category-icon";
 
-interface Category {
-  id: string;
-  name: string;
-  slug: string;
-  icon: string | null;
-  _count: { listings: number };
-}
-
 export default async function HomePage() {
   const [categories, featuredListings, recentListings] = await Promise.all([
     prisma.category.findMany({
@@ -27,7 +19,7 @@ export default async function HomePage() {
       where: { status: "ACTIVE", featured: true },
       include: {
         images: { orderBy: { order: "asc" }, take: 1 },
-        district: { include: { division: true } },
+        location: true,
       },
       orderBy: { createdAt: "desc" },
       take: 8,
@@ -36,7 +28,7 @@ export default async function HomePage() {
       where: { status: "ACTIVE" },
       include: {
         images: { orderBy: { order: "asc" }, take: 1 },
-        district: { include: { division: true } },
+        location: true,
       },
       orderBy: { createdAt: "desc" },
       take: 8,
@@ -85,10 +77,10 @@ export default async function HomePage() {
             </Button>
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
-            {(categories as Category[]).map((category) => (
+            {categories.map((category) => (
               <Link
                 key={category.id}
-                href={`/categories/${category.slug}`}
+                href={`/search?categoryId=${category.id}`}
                 className="flex flex-col items-center gap-3 p-4 rounded-lg border bg-card hover:bg-accent hover:border-primary transition-colors"
               >
                 <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">

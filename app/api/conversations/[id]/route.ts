@@ -1,12 +1,16 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
+import { NextApiRequest } from "next-ts-api";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth";
 
-interface RouteParams {
-  params: Promise<{ id: string }>;
+interface ConversationQuery {
+  after?: string;
 }
 
-export async function GET(request: NextRequest, { params }: RouteParams) {
+export async function GET(
+  request: NextApiRequest<unknown, ConversationQuery>,
+  { params }: { params: Promise<{ id: string }> }
+) {
   try {
     const user = await getCurrentUser();
     if (!user) {
@@ -14,8 +18,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     }
 
     const { id } = await params;
-    const { searchParams } = new URL(request.url);
-    const after = searchParams.get("after");
+    const after = request.nextUrl.searchParams.get("after") ?? undefined;
 
     const conversation = await prisma.conversation.findFirst({
       where: {

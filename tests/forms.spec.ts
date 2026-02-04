@@ -34,21 +34,21 @@ test.describe("Login Form", () => {
 });
 
 test.describe("Register Form", () => {
-  test("validates password confirmation", async ({ page }) => {
+  test("validates password minimum length", async ({ page }) => {
     await page.goto("/register");
     await page.fill('input[name="name"]', "Test User");
     await page.fill('input[type="email"]', "test@example.com");
-    await page.fill('input[name="password"]', "password123");
-    await page.fill('input[name="confirmPassword"]', "differentpassword");
-    await page.click('button:has-text("Create")');
-    await page.waitForTimeout(500);
+    await page.fill('input[name="password"]', "short");
+    await page.click('button:has-text("Create account")');
+    const passwordInput = page.locator('input[name="password"]');
+    await expect(passwordInput).toHaveAttribute("minLength", "6");
   });
 
   test("validates email format", async ({ page }) => {
     await page.goto("/register");
     const emailInput = page.locator('input[type="email"]');
     await emailInput.fill("notanemail");
-    await page.click('button:has-text("Create")');
+    await page.click('button:has-text("Create account")');
     await expect(emailInput).toHaveAttribute("type", "email");
   });
 
@@ -92,7 +92,7 @@ test.describe("Search Form", () => {
 
   test("clear filters button works", async ({ page }) => {
     await page.goto("/search?minPrice=100&maxPrice=1000");
-    const clearButton = page.locator('button:has-text("Clear")');
+    const clearButton = page.getByRole("button", { name: /Clear Filters/ }).first();
     if (await clearButton.isVisible()) {
       await clearButton.click();
       await expect(page).not.toHaveURL(/minPrice/);

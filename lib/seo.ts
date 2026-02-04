@@ -56,7 +56,6 @@ interface ListingMetadataOptions {
   title: string;
   description: string;
   price: number;
-  condition: string;
   image?: string;
   location: string;
   listingId: string;
@@ -67,7 +66,6 @@ export function generateListingMetadata({
   title,
   description,
   price,
-  condition,
   image,
   location,
   listingId,
@@ -75,7 +73,7 @@ export function generateListingMetadata({
 }: ListingMetadataOptions): Metadata {
   const url = `${SITE_URL}/listings/${listingId}`;
   const fullTitle = `${title} - ৳${price.toLocaleString()} | ${SITE_NAME}`;
-  const metaDescription = `${description.slice(0, 150)}... ${condition} condition. Located in ${location}. Seller: ${sellerName}`;
+  const metaDescription = `${description.slice(0, 150)}... Located in ${location}. Seller: ${sellerName}`;
 
   return {
     title: fullTitle,
@@ -182,19 +180,10 @@ export function generateUserMetadata({
   };
 }
 
-const CONDITIONS_READABLE: Record<string, string> = {
-  NEW: "Brand New",
-  LIKE_NEW: "Like New",
-  GOOD: "Good",
-  FAIR: "Fair",
-  POOR: "Poor",
-};
-
 interface ListingJsonLdOptions {
   title: string;
   description: string;
   price: number;
-  condition: string;
   image?: string;
   location: string;
   listingId: string;
@@ -207,7 +196,6 @@ export function generateListingJsonLd({
   title,
   description,
   price,
-  condition,
   image,
   location,
   listingId,
@@ -215,14 +203,6 @@ export function generateListingJsonLd({
   createdAt,
   negotiable,
 }: ListingJsonLdOptions) {
-  const conditionMap: Record<string, string> = {
-    NEW: "https://schema.org/NewCondition",
-    LIKE_NEW: "https://schema.org/UsedCondition",
-    GOOD: "https://schema.org/UsedCondition",
-    FAIR: "https://schema.org/UsedCondition",
-    POOR: "https://schema.org/UsedCondition",
-  };
-
   return {
     "@context": "https://schema.org",
     "@type": "Product",
@@ -234,7 +214,6 @@ export function generateListingJsonLd({
       price: price,
       priceCurrency: "BDT",
       availability: "https://schema.org/InStock",
-      itemCondition: conditionMap[condition] || "https://schema.org/UsedCondition",
       priceValidUntil: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split("T")[0],
       seller: {
         "@type": "Person",
@@ -250,11 +229,6 @@ export function generateListingJsonLd({
     aggregateRating: undefined,
     review: undefined,
     additionalProperty: [
-      {
-        "@type": "PropertyValue",
-        name: "Condition",
-        value: CONDITIONS_READABLE[condition] || condition,
-      },
       {
         "@type": "PropertyValue",
         name: "Location",

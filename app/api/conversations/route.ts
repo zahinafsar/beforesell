@@ -1,9 +1,10 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
+import { NextApiRequest } from "next-ts-api";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth";
 import { createConversationSchema } from "@/lib/validations";
 
-export async function GET() {
+export async function GET(request: NextApiRequest<unknown>) {
   try {
     const user = await getCurrentUser();
     if (!user) {
@@ -74,7 +75,12 @@ export async function GET() {
   }
 }
 
-export async function POST(request: NextRequest) {
+interface CreateConversationBody {
+  listingId: string;
+  content: string;
+}
+
+export async function POST(request: NextApiRequest<CreateConversationBody>) {
   try {
     const user = await getCurrentUser();
     if (!user) {

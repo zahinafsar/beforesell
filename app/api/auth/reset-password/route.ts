@@ -1,9 +1,15 @@
 import { NextResponse } from "next/server";
+import { NextApiRequest } from "next-ts-api";
 import { prisma } from "@/lib/prisma";
 import { hashPassword } from "@/lib/auth";
 import { resetPasswordSchema } from "@/lib/validations";
 
-export async function POST(request: Request) {
+interface ResetPasswordBody {
+  token: string;
+  password: string;
+}
+
+export async function POST(request: NextApiRequest<ResetPasswordBody>) {
   try {
     const body = await request.json();
     const result = resetPasswordSchema.safeParse(body);

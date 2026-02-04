@@ -1,10 +1,17 @@
 import { NextResponse } from "next/server";
+import { NextApiRequest } from "next-ts-api";
 import { prisma } from "@/lib/prisma";
 import { hashPassword, generateToken } from "@/lib/auth";
 import { sendVerificationEmail } from "@/lib/email";
 import { registerSchema } from "@/lib/validations";
 
-export async function POST(request: Request) {
+interface RegisterBody {
+  name: string;
+  email: string;
+  password: string;
+}
+
+export async function POST(request: NextApiRequest<RegisterBody>) {
   try {
     const body = await request.json();
     const result = registerSchema.safeParse(body);

@@ -1,9 +1,15 @@
 import { NextResponse } from "next/server";
+import { NextApiRequest } from "next-ts-api";
 import { prisma } from "@/lib/prisma";
 import { verifyPassword, createToken, setAuthCookie } from "@/lib/auth";
 import { loginSchema } from "@/lib/validations";
 
-export async function POST(request: Request) {
+interface LoginBody {
+  email: string;
+  password: string;
+}
+
+export async function POST(request: NextApiRequest<LoginBody>) {
   try {
     const body = await request.json();
     const result = loginSchema.safeParse(body);

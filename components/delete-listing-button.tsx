@@ -5,12 +5,9 @@ import { useRouter } from "next/navigation";
 import { Trash2, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { api } from "@/lib/api";
 
-interface DeleteListingButtonProps {
-  listingId: string;
-}
-
-export function DeleteListingButton({ listingId }: DeleteListingButtonProps) {
+export function DeleteListingButton({ listingId }: { listingId: string }) {
   const router = useRouter();
   const [isDeleting, setIsDeleting] = useState(false);
 
@@ -21,8 +18,9 @@ export function DeleteListingButton({ listingId }: DeleteListingButtonProps) {
 
     setIsDeleting(true);
     try {
-      const res = await fetch(`/api/listings/${listingId}`, {
+      const res = await api("listings/[id]", {
         method: "DELETE",
+        params: { id: listingId },
       });
 
       if (res.ok) {

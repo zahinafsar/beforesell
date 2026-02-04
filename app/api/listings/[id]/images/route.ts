@@ -1,4 +1,5 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
+import { NextApiRequest } from "next-ts-api";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth";
 import { uploadImage, deleteImage } from "@/lib/cloudinary";
@@ -6,7 +7,7 @@ import { uploadImage, deleteImage } from "@/lib/cloudinary";
 const MAX_IMAGES = 20;
 
 export async function POST(
-  request: NextRequest,
+  request: NextApiRequest<unknown>,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
@@ -74,8 +75,12 @@ export async function POST(
   }
 }
 
+interface ReorderImagesBody {
+  imageIds: string[];
+}
+
 export async function PUT(
-  request: NextRequest,
+  request: NextApiRequest<ReorderImagesBody>,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
@@ -98,8 +103,7 @@ export async function PUT(
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
-    const body = await request.json();
-    const { imageIds } = body as { imageIds: string[] };
+    const { imageIds } = await request.json();
 
     if (!Array.isArray(imageIds)) {
       return NextResponse.json({ error: "Invalid image order" }, { status: 400 });
@@ -130,8 +134,12 @@ export async function PUT(
   }
 }
 
+interface DeleteImageQuery {
+  imageId?: string;
+}
+
 export async function DELETE(
-  request: NextRequest,
+  request: NextApiRequest<unknown, DeleteImageQuery>,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
@@ -154,8 +162,7 @@ export async function DELETE(
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
-    const { searchParams } = new URL(request.url);
-    const imageId = searchParams.get("imageId");
+    const imageId = request.nextUrl.searchParams.get("imageId");
 
     if (!imageId) {
       return NextResponse.json({ error: "Image ID required" }, { status: 400 });

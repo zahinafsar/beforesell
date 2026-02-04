@@ -17,21 +17,13 @@ interface ListingPageProps {
   params: Promise<{ id: string }>;
 }
 
-const CONDITIONS: Record<string, string> = {
-  NEW: "Brand New",
-  LIKE_NEW: "Like New",
-  GOOD: "Good",
-  FAIR: "Fair",
-  POOR: "Poor",
-};
-
 export async function generateMetadata({ params }: ListingPageProps): Promise<Metadata> {
   const { id } = await params;
   const listing = await prisma.listing.findUnique({
     where: { id },
     include: {
       images: { orderBy: { order: "asc" }, take: 1 },
-      district: { include: { division: true } },
+      location: true,
       user: { select: { name: true } },
     },
   });
@@ -44,9 +36,8 @@ export async function generateMetadata({ params }: ListingPageProps): Promise<Me
     title: listing.title,
     description: listing.description,
     price: listing.price,
-    condition: CONDITIONS[listing.condition] || listing.condition,
     image: listing.images[0]?.url,
-    location: `${listing.district.name}, ${listing.district.division.name}`,
+    location: listing.location.address,
     listingId: listing.id,
     sellerName: listing.user.name,
   });
@@ -60,7 +51,7 @@ export default async function ListingPage({ params }: ListingPageProps) {
     where: { id },
     include: {
       category: { include: { parent: true } },
-      district: { include: { division: true } },
+      location: true,
       images: { orderBy: { order: "asc" } },
       user: {
         select: {
@@ -73,6 +64,13 @@ export default async function ListingPage({ params }: ListingPageProps) {
         },
       },
       _count: { select: { favorites: true } },
+      attributeValues: {
+        include: {
+          attribute: {
+            select: { name: true, slug: true, type: true, unit: true, order: true },
+          },
+        },
+      },
     },
   });
 
@@ -97,14 +95,13 @@ export default async function ListingPage({ params }: ListingPageProps) {
     ? `${listing.category.parent.name} > ${listing.category.name}`
     : listing.category.name;
 
-  const location = `${listing.district.name}, ${listing.district.division.name}`;
+  const location = listing.location.address;
   const baseUrl = getBaseUrl();
 
   const listingJsonLd = generateListingJsonLd({
     title: listing.title,
     description: listing.description,
     price: listing.price,
-    condition: listing.condition,
     image: listing.images[0]?.url,
     location,
     listingId: listing.id,
@@ -144,7 +141,6 @@ export default async function ListingPage({ params }: ListingPageProps) {
             <CardContent className="pt-6">
               <div className="flex flex-wrap gap-2 mb-4">
                 <Badge variant="secondary">{categoryPath}</Badge>
-                <Badge variant="outline">{CONDITIONS[listing.condition]}</Badge>
                 {listing.status === "SOLD" && (
                   <Badge variant="destructive">Sold</Badge>
                 )}
@@ -164,7 +160,7 @@ export default async function ListingPage({ params }: ListingPageProps) {
               <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground mb-6">
                 <span className="flex items-center gap-1">
                   <MapPin className="h-4 w-4" />
-                  {listing.district.name}, {listing.district.division.name}
+                  {listing.location.address}
                 </span>
                 <span className="flex items-center gap-1">
                   <Eye className="h-4 w-4" />
@@ -175,6 +171,34 @@ export default async function ListingPage({ params }: ListingPageProps) {
                   {new Date(listing.createdAt).toLocaleDateString()}
                 </span>
               </div>
+
+              {listing.attributeValues.length > 0 && (
+                <>
+                  <Separator className="my-6" />
+                  <h2 className="text-lg font-semibold mb-3">Specifications</h2>
+                  <div className="grid grid-cols-2 gap-x-8 gap-y-3">
+                    {listing.attributeValues
+                      .sort((a, b) => a.attribute.order - b.attribute.order)
+                      .map((av) => (
+                        <div key={av.attribute.slug} className="flex justify-between">
+                          <span className="text-muted-foreground">{av.attribute.name}</span>
+                          <span className="font-medium">
+                            {av.attribute.type === "BOOLEAN"
+                              ? av.value === "true"
+                                ? "Yes"
+                                : "No"
+                              : av.value}
+                            {av.attribute.unit && av.attribute.type === "NUMBER" && (
+                              <span className="text-muted-foreground ml-1">
+                                {av.attribute.unit}
+                              </span>
+                            )}
+                          </span>
+                        </div>
+                      ))}
+                  </div>
+                </>
+              )}
 
               <Separator className="my-6" />
 

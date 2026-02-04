@@ -1,14 +1,18 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
+import { NextApiRequest } from "next-ts-api";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth";
 import { sendMessageSchema } from "@/lib/validations";
 import { sendNewMessageEmail } from "@/lib/email";
 
-interface RouteParams {
-  params: Promise<{ id: string }>;
+interface SendMessageBody {
+  content: string;
 }
 
-export async function POST(request: NextRequest, { params }: RouteParams) {
+export async function POST(
+  request: NextApiRequest<SendMessageBody>,
+  { params }: { params: Promise<{ id: string }> }
+) {
   try {
     const user = await getCurrentUser();
     if (!user) {

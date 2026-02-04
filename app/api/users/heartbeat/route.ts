@@ -1,8 +1,9 @@
 import { NextResponse } from "next/server";
+import { NextApiRequest } from "next-ts-api";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth";
 
-export async function POST() {
+export async function POST(request: NextApiRequest<unknown>) {
   try {
     const user = await getCurrentUser();
     if (!user) {

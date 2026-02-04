@@ -23,7 +23,7 @@ export default async function MyListingsPage() {
     },
     include: {
       images: { orderBy: { order: "asc" }, take: 1 },
-      district: { include: { division: true } },
+      location: true,
     },
     orderBy: { createdAt: "desc" },
   });
@@ -155,7 +155,7 @@ export default async function MyListingsPage() {
                       {listing.views} views
                     </span>
                     <span>
-                      {listing.district.name}, {listing.district.division.name}
+                      {listing.location.address}
                     </span>
                   </div>
                 </div>

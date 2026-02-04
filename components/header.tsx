@@ -22,32 +22,26 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useAuth } from "@/providers/auth-provider";
+import { conversationsQuery } from "@/lib/queries";
+import { api } from "@/lib/api";
 
 export function Header() {
   const { user, isLoading, logout } = useAuth();
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
+  const authKey = user?.id;
 
   // Heartbeat to track online status
   useEffect(() => {
     if (!user) return;
-    const heartbeat = () => fetch("/api/users/heartbeat", { method: "POST" }).catch(() => {});
+    const heartbeat = () => api("users/heartbeat", { method: "POST" }).catch(() => {});
     heartbeat();
     const interval = setInterval(heartbeat, 30000);
     return () => clearInterval(interval);
   }, [user]);
 
   // Unread message count
-  const { data: unreadData } = useQuery({
-    queryKey: ["unreadCount"],
-    queryFn: async () => {
-      const res = await fetch("/api/conversations/unread");
-      if (!res.ok) return { unreadCount: 0 };
-      return res.json();
-    },
-    enabled: !!user,
-    refetchInterval: 10000,
-  });
+  const { data: unreadData } = useQuery(conversationsQuery(authKey).unreadCount());
 
   const unreadCount = unreadData?.unreadCount || 0;
 

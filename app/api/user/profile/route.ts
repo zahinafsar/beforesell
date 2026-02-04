@@ -1,4 +1,5 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
+import { NextApiRequest } from "next-ts-api";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth";
@@ -9,7 +10,7 @@ const updateProfileSchema = z.object({
   phone: z.string().optional().nullable(),
 });
 
-export async function GET() {
+export async function GET(request: NextApiRequest<unknown>) {
   try {
     const user = await getCurrentUser();
     if (!user) {
@@ -45,7 +46,12 @@ export async function GET() {
   }
 }
 
-export async function PUT(request: NextRequest) {
+interface UpdateProfileBody {
+  name?: string;
+  phone?: string | null;
+}
+
+export async function PUT(request: NextApiRequest<UpdateProfileBody>) {
   try {
     const user = await getCurrentUser();
     if (!user) {

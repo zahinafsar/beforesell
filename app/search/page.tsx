@@ -1,27 +1,35 @@
 import { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
 import { generatePageMetadata } from "@/lib/seo";
-import { SearchClient } from "@/components/search-client";
-
-interface SearchParams {
-  search?: string;
-  categoryId?: string;
-  divisionId?: string;
-  districtId?: string;
-  minPrice?: string;
-  maxPrice?: string;
-  condition?: string;
-  sort?: string;
-  page?: string;
-}
+import { ListingsBrowser } from "@/components/listings-browser";
 
 interface Props {
-  searchParams: Promise<SearchParams>;
+  searchParams: Promise<Record<string, string | undefined>>;
 }
 
 export async function generateMetadata({ searchParams }: Props): Promise<Metadata> {
   const params = await searchParams;
   const searchTerm = params.search;
+  const categoryId = params.categoryId;
+
+  if (categoryId) {
+    const category = await prisma.category.findUnique({
+      where: { id: categoryId },
+      include: { parent: true },
+    });
+
+    if (category) {
+      const categoryName = category.parent
+        ? `${category.name} in ${category.parent.name}`
+        : category.name;
+
+      return generatePageMetadata({
+        title: categoryName,
+        description: `Browse ${category.name} listings on BeforeSell. Find the best deals in Bangladesh.`,
+        path: `/search?categoryId=${categoryId}`,
+      });
+    }
+  }
 
   if (searchTerm) {
     return generatePageMetadata({
@@ -41,23 +49,22 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
 export default async function SearchPage({ searchParams }: Props) {
   const params = await searchParams;
 
-  const [categories, divisions] = await Promise.all([
+  const [categories, locations] = await Promise.all([
     prisma.category.findMany({
       where: { parentId: null },
       include: { children: true },
       orderBy: { name: "asc" },
     }),
-    prisma.division.findMany({
-      include: { districts: { orderBy: { name: "asc" } } },
-      orderBy: { name: "asc" },
+    prisma.location.findMany({
+      orderBy: { address: "asc" },
     }),
   ]);
 
   return (
     <div className="container py-6">
-      <SearchClient
+      <ListingsBrowser
         categories={categories}
-        divisions={divisions}
+        locations={locations}
         initialParams={params}
       />
     </div>

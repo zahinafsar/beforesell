@@ -16,20 +16,23 @@ export default async function EditListingPage({ params }: EditListingPageProps) 
 
   const { id } = await params;
 
-  const [categories, divisions, listing] = await Promise.all([
+  const [categories, locations, listing] = await Promise.all([
     prisma.category.findMany({
       include: { children: true },
       orderBy: { name: "asc" },
     }),
-    prisma.division.findMany({
-      include: { districts: { orderBy: { name: "asc" } } },
-      orderBy: { name: "asc" },
+    prisma.location.findMany({
+      orderBy: { address: "asc" },
     }),
     prisma.listing.findUnique({
       where: { id },
       include: {
         images: { orderBy: { order: "asc" } },
-        district: true,
+        attributeValues: {
+          include: {
+            attribute: { select: { slug: true } },
+          },
+        },
       },
     }),
   ]);
@@ -43,7 +46,7 @@ export default async function EditListingPage({ params }: EditListingPageProps) 
       <h1 className="text-3xl font-bold mb-6">Edit Listing</h1>
       <ListingForm
         categories={categories}
-        divisions={divisions}
+        locations={locations}
         listing={listing}
       />
     </div>

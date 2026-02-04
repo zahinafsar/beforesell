@@ -21,7 +21,7 @@ export default async function FavoritesPage() {
       listing: {
         include: {
           images: { orderBy: { order: "asc" }, take: 1 },
-          district: { include: { division: true } },
+          location: true,
         },
       },
     },
@@ -102,7 +102,7 @@ export default async function FavoritesPage() {
                     <div className="flex items-center gap-3 text-xs text-muted-foreground">
                       <span className="flex items-center gap-1">
                         <MapPin className="h-3 w-3" />
-                        {fav.listing.district.name}
+                        {fav.listing.location.address}
                       </span>
                       <span className="flex items-center gap-1">
                         <Calendar className="h-3 w-3" />

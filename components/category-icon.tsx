@@ -1,6 +1,6 @@
 "use client";
 
-import { type LucideIcon } from "lucide-react";
+import { type LucideIcon, Package } from "lucide-react";
 import * as LucideIcons from "lucide-react";
 
 interface CategoryIconProps {
@@ -8,13 +8,17 @@ interface CategoryIconProps {
   className?: string;
 }
 
+function getIcon(name: string): LucideIcon | undefined {
+  return (LucideIcons as unknown as Record<string, LucideIcon>)[name];
+}
+
 export function CategoryIcon({ iconName, className }: CategoryIconProps) {
   if (!iconName) {
-    return <LucideIcons.Package className={className} />;
+    return <Package className={className} />;
   }
-  const Icon = (LucideIcons as unknown as Record<string, LucideIcon>)[iconName];
+  const Icon = getIcon(iconName);
   if (!Icon) {
-    return <LucideIcons.Package className={className} />;
+    return <Package className={className} />;
   }
   return <Icon className={className} />;
 }

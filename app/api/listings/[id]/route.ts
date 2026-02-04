@@ -1,11 +1,12 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
+import { NextApiRequest } from "next-ts-api";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth";
 import { updateListingSchema } from "@/lib/validations";
 import { deleteImages } from "@/lib/cloudinary";
 
 export async function GET(
-  request: NextRequest,
+  request: NextApiRequest<unknown>,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
@@ -14,10 +15,18 @@ export async function GET(
       where: { id },
       include: {
         category: { include: { parent: true } },
-        district: { include: { division: true } },
+        location: true,
         images: { orderBy: { order: "asc" } },
         user: { select: { id: true, name: true, avatar: true, phone: true, createdAt: true } },
         _count: { select: { favorites: true } },
+        attributeValues: {
+          include: {
+            attribute: {
+              select: { name: true, slug: true, type: true, unit: true },
+            },
+          },
+          orderBy: { attribute: { order: "asc" } },
+        },
       },
     });
 
@@ -41,8 +50,18 @@ export async function GET(
   }
 }
 
+interface UpdateListingBody {
+  title?: string;
+  description?: string;
+  price?: number;
+  negotiable?: boolean;
+  categoryId?: string;
+  locationId?: string;
+  attributes?: Record<string, string | string[]>;
+}
+
 export async function PUT(
-  request: NextRequest,
+  request: NextApiRequest<UpdateListingBody>,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
@@ -75,15 +94,59 @@ export async function PUT(
       );
     }
 
+    const attributes = body.attributes as Record<string, string | string[]> | undefined;
+
     const listing = await prisma.listing.update({
       where: { id },
       data: validation.data,
       include: {
         category: true,
-        district: { include: { division: true } },
+        location: true,
         images: { orderBy: { order: "asc" } },
       },
     });
+
+    // Update attribute values if provided
+    if (attributes !== undefined) {
+      const finalCategoryId = (await prisma.listing.findUnique({
+        where: { id },
+        select: { categoryId: true },
+      }))?.categoryId;
+
+      if (finalCategoryId) {
+        // Delete existing attribute values
+        await prisma.listingAttributeValue.deleteMany({
+          where: { listingId: id },
+        });
+
+        // Create new attribute values
+        if (Object.keys(attributes).length > 0) {
+          const categoryAttributes = await prisma.categoryAttribute.findMany({
+            where: { categoryId: finalCategoryId },
+            select: { id: true, slug: true },
+          });
+
+          const slugToId = new Map(categoryAttributes.map((a) => [a.slug, a.id]));
+          const attributeData: { listingId: string; attributeId: string; value: string }[] = [];
+
+          for (const [slug, value] of Object.entries(attributes)) {
+            const attributeId = slugToId.get(slug);
+            if (attributeId && value !== undefined && value !== null && value !== "") {
+              const stringValue = Array.isArray(value) ? value.join(",") : String(value);
+              attributeData.push({
+                listingId: id,
+                attributeId,
+                value: stringValue,
+              });
+            }
+          }
+
+          if (attributeData.length > 0) {
+            await prisma.listingAttributeValue.createMany({ data: attributeData });
+          }
+        }
+      }
+    }
 
     return NextResponse.json({ listing });
   } catch (error) {
@@ -96,7 +159,7 @@ export async function PUT(
 }
 
 export async function DELETE(
-  request: NextRequest,
+  request: NextApiRequest<unknown>,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {

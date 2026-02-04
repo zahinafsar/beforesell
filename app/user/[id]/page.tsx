@@ -54,7 +54,7 @@ export default async function UserProfilePage({ params }: UserProfilePageProps) 
         where: { status: "ACTIVE" },
         include: {
           images: { orderBy: { order: "asc" }, take: 1 },
-          district: { include: { division: true } },
+          location: true,
         },
         orderBy: { createdAt: "desc" },
       },
@@ -150,16 +150,13 @@ export default async function UserProfilePage({ params }: UserProfilePageProps) 
                       <div className="flex items-center justify-between text-xs text-muted-foreground">
                         <span className="flex items-center gap-1">
                           <MapPin className="h-3 w-3" />
-                          {listing.district.name}
+                          {listing.location.address}
                         </span>
                         <span className="flex items-center gap-1">
                           <Eye className="h-3 w-3" />
                           {listing.views}
                         </span>
                       </div>
-                      <Badge variant="outline" className="mt-2">
-                        {listing.condition.replace("_", " ")}
-                      </Badge>
                     </CardContent>
                   </Card>
                 </Link>

@@ -9,34 +9,14 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/providers/auth-provider";
+import { conversationsQuery } from "@/lib/queries";
+import { api } from "@/lib/api";
 
-interface Conversation {
-  id: string;
-  listing: {
-    id: string;
-    title: string;
-    images: { url: string }[];
-  };
-  otherUser: {
-    id: string;
-    name: string;
-    avatar: string | null;
-    lastSeen: string;
-  };
-  lastMessage: {
-    content: string;
-    createdAt: string;
-    senderId: string;
-  } | null;
-  unreadCount: number;
-  updatedAt: string;
-}
-
-function isOnline(lastSeen: string): boolean {
+function isOnline(lastSeen: string | Date) {
   return new Date(lastSeen).getTime() > Date.now() - 5 * 60 * 1000;
 }
 
-function formatTime(date: string): string {
+function formatTime(date: string | Date) {
   const d = new Date(date);
   const now = new Date();
   const diff = now.getTime() - d.getTime();
@@ -53,30 +33,21 @@ export function MessagesList() {
   const searchParams = useSearchParams();
   const listingId = searchParams.get("listing");
   const { user, isLoading: authLoading } = useAuth();
+  const authKey = user?.id;
 
-  const { data, isLoading } = useQuery({
-    queryKey: ["conversations"],
-    queryFn: async () => {
-      const res = await fetch("/api/conversations");
-      if (!res.ok) throw new Error("Failed to fetch");
-      return res.json();
-    },
-    enabled: !!user,
-    refetchInterval: 5000,
-  });
+  const { data, isLoading } = useQuery(conversationsQuery(authKey).list());
 
   const createConversation = useMutation({
     mutationFn: async (listingId: string) => {
-      const res = await fetch("/api/conversations", {
+      const res = await api("conversations", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ listingId, content: "Hi, I'm interested in this item." }),
+        body: { listingId, content: "Hi, I'm interested in this item." },
       });
       if (!res.ok) {
-        const error = await res.json();
+        const error = await res.json() as { error?: string };
         throw new Error(error.error || "Failed to create conversation");
       }
-      return res.json();
+      return res.json() as Promise<{ conversationId: string }>;
     },
     onSuccess: (data) => {
       router.push(`/messages/${data.conversationId}`);
@@ -88,7 +59,7 @@ export function MessagesList() {
   useEffect(() => {
     if (listingId && user && !authLoading && !isLoading && !hasTriggeredRef.current) {
       const existingConv = data?.conversations?.find(
-        (c: Conversation) => c.listing.id === listingId
+        (c) => c.listing.id === listingId
       );
       if (existingConv) {
         hasTriggeredRef.current = true;
@@ -132,7 +103,7 @@ export function MessagesList() {
     );
   }
 
-  const conversations: Conversation[] = data?.conversations || [];
+  const conversations = data?.conversations || [];
 
   return (
     <div className="container py-8 max-w-3xl">

@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useCallback } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { api } from "@/lib/api";
 
 interface User {
   id: string;
@@ -10,7 +11,7 @@ interface User {
   phone: string | null;
   avatar: string | null;
   verified: boolean;
-  createdAt: string;
+  createdAt: string | Date;
 }
 
 interface AuthContextType {
@@ -24,7 +25,7 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 async function fetchUser(): Promise<User | null> {
-  const res = await fetch("/api/auth/me");
+  const res = await api("auth/me", { method: "GET" });
   if (!res.ok) return null;
   const data = await res.json();
   return data.user;
@@ -45,7 +46,7 @@ export default function AuthProvider({
   });
 
   const logout = useCallback(async () => {
-    await fetch("/api/auth/logout", { method: "POST" });
+    await api("auth/logout", { method: "POST" });
     queryClient.setQueryData(["user"], null);
     window.location.href = "/";
   }, [queryClient]);

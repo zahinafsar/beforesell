@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { X, Upload, GripVertical, Loader2 } from "lucide-react";
+import { X, Upload, GripVertical, Loader2, ChevronLeft, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -16,62 +16,40 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { api } from "@/lib/api";
+import { DynamicAttributeField, type CategoryAttribute } from "@/components/dynamic-attribute-field";
+import { CategoryIcon } from "@/components/category-icon";
+import { cn } from "@/lib/utils";
 
-interface Category {
-  id: string;
-  name: string;
-  slug: string;
-  parentId: string | null;
-  children?: Category[];
-}
-
-interface Division {
-  id: string;
-  name: string;
-  districts: District[];
-}
-
-interface District {
-  id: string;
-  name: string;
-  divisionId: string;
-}
-
-interface ListingImage {
-  id: string;
-  url: string;
-  publicId: string;
-  order: number;
-}
-
-interface Listing {
-  id: string;
-  title: string;
-  description: string;
-  price: number;
-  negotiable: boolean;
-  condition: string;
-  categoryId: string;
-  districtId: string;
-  images: ListingImage[];
-  district?: { divisionId: string };
-}
-
-interface ListingFormProps {
-  categories: Category[];
-  divisions: Division[];
-  listing?: Listing;
-}
-
-const CONDITIONS = [
-  { value: "NEW", label: "Brand New" },
-  { value: "LIKE_NEW", label: "Like New" },
-  { value: "GOOD", label: "Good" },
-  { value: "FAIR", label: "Fair" },
-  { value: "POOR", label: "Poor" },
-];
-
-export function ListingForm({ categories, divisions, listing }: ListingFormProps) {
+export function ListingForm({
+  categories,
+  locations,
+  listing,
+}: {
+  categories: {
+    id: string;
+    name: string;
+    slug: string;
+    icon: string | null;
+    parentId: string | null;
+    children?: { id: string; name: string; slug: string }[];
+  }[];
+  locations: {
+    id: string;
+    address: string;
+  }[];
+  listing?: {
+    id: string;
+    title: string;
+    description: string;
+    price: number;
+    negotiable: boolean;
+    categoryId: string;
+    locationId: string;
+    images: { id: string; url: string; publicId: string; order: number }[];
+    attributeValues?: { attribute: { slug: string }; value: string }[];
+  };
+}) {
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const isEditing = !!listing;
@@ -80,69 +58,127 @@ export function ListingForm({ categories, divisions, listing }: ListingFormProps
   const [description, setDescription] = useState(listing?.description || "");
   const [price, setPrice] = useState(listing?.price?.toString() || "");
   const [negotiable, setNegotiable] = useState(listing?.negotiable ?? true);
-  const [condition, setCondition] = useState(listing?.condition || "GOOD");
   const [categoryId, setCategoryId] = useState(listing?.categoryId || "");
-  const [divisionId, setDivisionId] = useState(listing?.district?.divisionId || "");
-  const [districtId, setDistrictId] = useState(listing?.districtId || "");
-  const [images, setImages] = useState<ListingImage[]>(listing?.images || []);
+  const [locationId, setLocationId] = useState(listing?.locationId || "");
+  const [images, setImages] = useState(
+    listing?.images ||
+      ([] as { id: string; url: string; publicId: string; order: number }[]),
+  );
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
+  const [categoryAttributes, setCategoryAttributes] = useState<CategoryAttribute[]>([]);
+  const [attributeValues, setAttributeValues] = useState<Record<string, string | string[]>>(() => {
+    if (listing?.attributeValues) {
+      const values: Record<string, string | string[]> = {};
+      listing.attributeValues.forEach((av) => {
+        values[av.attribute.slug] = av.value;
+      });
+      return values;
+    }
+    return {};
+  });
+  const [loadingAttributes, setLoadingAttributes] = useState(false);
 
   const parentCategories = categories.filter((c) => !c.parentId);
-  const selectedParent = parentCategories.find((c) =>
-    c.id === categoryId || c.children?.some((sub) => sub.id === categoryId)
-  );
+
+  // Track selected parent category separately for better UX
+  const [selectedParentId, setSelectedParentId] = useState<string>(() => {
+    if (listing?.categoryId) {
+      // Find parent of the listing's category
+      const parent = parentCategories.find(
+        (c) => c.id === listing.categoryId || c.children?.some((sub) => sub.id === listing.categoryId)
+      );
+      return parent?.id || "";
+    }
+    return "";
+  });
+
+  const selectedParent = parentCategories.find((c) => c.id === selectedParentId);
   const subcategories = selectedParent?.children || [];
-  const selectedDivision = divisions.find((d) => d.id === divisionId);
-  const districts = selectedDivision?.districts || [];
 
-  const handleImageUpload = useCallback(async (files: FileList) => {
-    if (!listing) {
-      setError("Please save the listing first before uploading images");
-      return;
-    }
+  // Get the selected subcategory for display
+  const selectedSubcategory = subcategories.find((sub) => sub.id === categoryId);
 
-    if (images.length + files.length > 20) {
-      setError("Maximum 20 images allowed");
-      return;
-    }
-
-    setUploading(true);
-    setError("");
-
-    const formData = new FormData();
-    Array.from(files).forEach((file) => {
-      formData.append("images", file);
-    });
-
-    try {
-      const res = await fetch(`/api/listings/${listing!.id}/images`, {
-        method: "POST",
-        body: formData,
-      });
-
-      if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.error || "Upload failed");
+  // Fetch category attributes when categoryId changes
+  useEffect(() => {
+    async function fetchAttributes() {
+      if (!categoryId) {
+        setCategoryAttributes([]);
+        return;
       }
 
-      const data = await res.json();
-      setImages((prev) => [...prev, ...data.images]);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Upload failed");
-    } finally {
-      setUploading(false);
+      setLoadingAttributes(true);
+      try {
+        const res = await fetch(`/api/categories/${categoryId}/attributes`);
+        if (res.ok) {
+          const data = await res.json();
+          setCategoryAttributes(data.attributes || []);
+          // Reset attribute values when category changes (but keep if editing)
+          if (!listing) {
+            setAttributeValues({});
+          }
+        }
+      } catch {
+        console.error("Failed to fetch category attributes");
+      } finally {
+        setLoadingAttributes(false);
+      }
     }
-  }, [listing, images.length]);
+
+    fetchAttributes();
+  }, [categoryId, listing]);
+
+  const handleImageUpload = useCallback(
+    async (files: FileList) => {
+      if (!listing) {
+        setError("Please save the listing first before uploading images");
+        return;
+      }
+
+      if (images.length + files.length > 20) {
+        setError("Maximum 20 images allowed");
+        return;
+      }
+
+      setUploading(true);
+      setError("");
+
+      const formData = new FormData();
+      Array.from(files).forEach((file) => {
+        formData.append("images", file);
+      });
+
+      try {
+        const res = await fetch(`/api/listings/${listing!.id}/images`, {
+          method: "POST",
+          body: formData,
+        });
+
+        if (!res.ok) {
+          const data = await res.json();
+          throw new Error(data.error || "Upload failed");
+        }
+
+        const data = await res.json();
+        setImages((prev) => [...prev, ...data.images]);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Upload failed");
+      } finally {
+        setUploading(false);
+      }
+    },
+    [listing, images.length],
+  );
 
   const handleDeleteImage = async (imageId: string) => {
     if (!listing) return;
 
     try {
-      const res = await fetch(`/api/listings/${listing.id}/images?imageId=${imageId}`, {
+      const res = await api(`listings/[id]/images`, {
         method: "DELETE",
+        params: { id: listing.id },
       });
 
       if (!res.ok) throw new Error("Failed to delete");
@@ -174,19 +210,35 @@ export function ListingForm({ categories, divisions, listing }: ListingFormProps
     setDraggedIndex(null);
 
     try {
-      await fetch(`/api/listings/${listing.id}/images`, {
+      await api("listings/[id]/images", {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ imageIds: images.map((img) => img.id) }),
+        params: { id: listing.id },
+        body: { imageIds: images.map((img) => img.id) },
       });
     } catch {
       setError("Failed to reorder images");
     }
   };
 
+  const handleAttributeChange = (slug: string, value: string | string[]) => {
+    setAttributeValues((prev) => ({ ...prev, [slug]: value }));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+
+    // Validate required attributes
+    for (const attr of categoryAttributes) {
+      if (attr.required) {
+        const val = attributeValues[attr.slug];
+        if (!val || (Array.isArray(val) && val.length === 0)) {
+          setError(`${attr.name} is required`);
+          return;
+        }
+      }
+    }
+
     setIsSubmitting(true);
 
     const payload = {
@@ -194,22 +246,21 @@ export function ListingForm({ categories, divisions, listing }: ListingFormProps
       description,
       price: parseFloat(price),
       negotiable,
-      condition,
       categoryId,
-      districtId,
+      locationId,
+      attributes: attributeValues,
     };
 
     try {
-      const url = isEditing ? `/api/listings/${listing.id}` : "/api/listings";
-      const method = isEditing ? "PUT" : "POST";
+      const res = isEditing
+        ? await api("listings/[id]", {
+            method: "PUT",
+            params: { id: listing.id },
+            body: payload,
+          })
+        : await api("listings", { method: "POST", body: payload });
 
-      const res = await fetch(url, {
-        method,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-
-      let data;
+      let data: { listing?: { id: string }; error?: string };
       try {
         data = await res.json();
       } catch {
@@ -221,7 +272,7 @@ export function ListingForm({ categories, divisions, listing }: ListingFormProps
       }
 
       if (!isEditing) {
-        router.push(`/listings/new?id=${data.listing.id}`);
+        router.push(`/listings/new?id=${data.listing!.id}`);
         router.refresh();
       } else {
         router.push(`/listings/${listing.id}`);
@@ -274,35 +325,17 @@ export function ListingForm({ categories, divisions, listing }: ListingFormProps
             />
           </div>
 
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="space-y-2">
-              <Label htmlFor="price">Price (BDT)</Label>
-              <Input
-                id="price"
-                type="number"
-                value={price}
-                onChange={(e) => setPrice(e.target.value)}
-                placeholder="0"
-                required
-                min={0}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="condition">Condition</Label>
-              <Select value={condition} onValueChange={setCondition}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select condition" />
-                </SelectTrigger>
-                <SelectContent>
-                  {CONDITIONS.map((c) => (
-                    <SelectItem key={c.value} value={c.value}>
-                      {c.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+          <div className="space-y-2">
+            <Label htmlFor="price">Price (BDT)</Label>
+            <Input
+              id="price"
+              type="number"
+              value={price}
+              onChange={(e) => setPrice(e.target.value)}
+              placeholder="0"
+              required
+              min={0}
+            />
           </div>
 
           <div className="flex items-center gap-2">
@@ -325,99 +358,151 @@ export function ListingForm({ categories, divisions, listing }: ListingFormProps
           <CardTitle>Category</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="space-y-2">
-              <Label>Category</Label>
-              <Select
-                value={selectedParent?.id || ""}
-                onValueChange={(value) => {
-                  const parent = parentCategories.find((c) => c.id === value);
-                  if (parent?.children?.length) {
-                    setCategoryId("");
-                  } else {
-                    setCategoryId(value);
-                  }
+          {/* Show selected category breadcrumb when category is selected */}
+          {selectedParent && (
+            <div className="flex items-center gap-2 text-sm">
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="h-auto p-1"
+                onClick={() => {
+                  setSelectedParentId("");
+                  setCategoryId("");
+                  setAttributeValues({});
+                  setCategoryAttributes([]);
                 }}
               >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select category" />
-                </SelectTrigger>
-                <SelectContent>
-                  {parentCategories.map((cat) => (
-                    <SelectItem key={cat.id} value={cat.id}>
-                      {cat.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                <ChevronLeft className="h-4 w-4 mr-1" />
+                All Categories
+              </Button>
+              <span className="text-muted-foreground">/</span>
+              <span className="font-medium">{selectedParent.name}</span>
+              {selectedSubcategory && (
+                <>
+                  <span className="text-muted-foreground">/</span>
+                  <span className="font-medium text-primary">{selectedSubcategory.name}</span>
+                </>
+              )}
             </div>
+          )}
 
-            {subcategories.length > 0 && (
-              <div className="space-y-2">
-                <Label>Subcategory</Label>
-                <Select value={categoryId} onValueChange={setCategoryId}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select subcategory" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {subcategories.map((sub) => (
-                      <SelectItem key={sub.id} value={sub.id}>
-                        {sub.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+          {/* Parent category selection */}
+          {!selectedParentId && (
+            <div className="space-y-2">
+              <Label>Select a category</Label>
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                {parentCategories.map((cat) => (
+                  <button
+                    key={cat.id}
+                    type="button"
+                    onClick={() => {
+                      setSelectedParentId(cat.id);
+                      // If no subcategories, select this category directly
+                      if (!cat.children?.length) {
+                        setCategoryId(cat.id);
+                      } else {
+                        setCategoryId("");
+                      }
+                    }}
+                    className={cn(
+                      "flex flex-col items-center gap-2 p-4 rounded-lg border-2 transition-all hover:border-primary hover:bg-primary/5",
+                      selectedParentId === cat.id
+                        ? "border-primary bg-primary/5"
+                        : "border-border"
+                    )}
+                  >
+                    <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
+                      <CategoryIcon iconName={cat.icon} className="h-5 w-5 text-primary" />
+                    </div>
+                    <span className="text-sm font-medium text-center">{cat.name}</span>
+                  </button>
+                ))}
               </div>
-            )}
-          </div>
+            </div>
+          )}
+
+          {/* Subcategory selection */}
+          {selectedParentId && subcategories.length > 0 && (
+            <div className="space-y-2">
+              <Label>Select a subcategory</Label>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                {subcategories.map((sub) => (
+                  <button
+                    key={sub.id}
+                    type="button"
+                    onClick={() => setCategoryId(sub.id)}
+                    className={cn(
+                      "flex items-center justify-between gap-2 p-3 rounded-lg border-2 transition-all hover:border-primary hover:bg-primary/5 text-left",
+                      categoryId === sub.id
+                        ? "border-primary bg-primary/5"
+                        : "border-border"
+                    )}
+                  >
+                    <span className="text-sm font-medium">{sub.name}</span>
+                    {categoryId === sub.id && (
+                      <Check className="h-4 w-4 text-primary flex-shrink-0" />
+                    )}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* No subcategory selection needed message */}
+          {selectedParentId && subcategories.length === 0 && (
+            <div className="flex items-center gap-2 p-3 rounded-lg bg-primary/5 border border-primary/20">
+              <Check className="h-4 w-4 text-primary" />
+              <span className="text-sm">Category selected: <strong>{selectedParent?.name}</strong></span>
+            </div>
+          )}
         </CardContent>
       </Card>
+
+      {categoryId && categoryAttributes.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Details</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {loadingAttributes ? (
+              <div className="flex items-center gap-2 text-muted-foreground">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Loading attributes...
+              </div>
+            ) : (
+              categoryAttributes.map((attr) => (
+                <DynamicAttributeField
+                  key={attr.id}
+                  attribute={attr}
+                  value={attributeValues[attr.slug] || ""}
+                  onChange={(value) => handleAttributeChange(attr.slug, value)}
+                />
+              ))
+            )}
+          </CardContent>
+        </Card>
+      )}
 
       <Card>
         <CardHeader>
           <CardTitle>Location</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="space-y-2">
-              <Label>Division</Label>
-              <Select
-                value={divisionId}
-                onValueChange={(value) => {
-                  setDivisionId(value);
-                  setDistrictId("");
-                }}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select division" />
-                </SelectTrigger>
-                <SelectContent>
-                  {divisions.map((div) => (
-                    <SelectItem key={div.id} value={div.id}>
-                      {div.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            {districts.length > 0 && (
-              <div className="space-y-2">
-                <Label>District</Label>
-                <Select value={districtId} onValueChange={setDistrictId}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select district" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {districts.map((dist) => (
-                      <SelectItem key={dist.id} value={dist.id}>
-                        {dist.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            )}
+          <div className="space-y-2">
+            <Label>Location</Label>
+            <Select value={locationId} onValueChange={setLocationId}>
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Select location" />
+              </SelectTrigger>
+              <SelectContent>
+                {locations.map((loc) => (
+                  <SelectItem key={loc.id} value={loc.id}>
+                    {loc.address}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         </CardContent>
       </Card>
@@ -434,7 +519,9 @@ export function ListingForm({ categories, divisions, listing }: ListingFormProps
               accept="image/*"
               multiple
               className="hidden"
-              onChange={(e) => e.target.files && handleImageUpload(e.target.files)}
+              onChange={(e) =>
+                e.target.files && handleImageUpload(e.target.files)
+              }
             />
 
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
@@ -446,7 +533,9 @@ export function ListingForm({ categories, divisions, listing }: ListingFormProps
                   onDragOver={(e) => handleDragOver(e, index)}
                   onDragEnd={handleDragEnd}
                   className={`relative aspect-square rounded-lg overflow-hidden border-2 ${
-                    draggedIndex === index ? "border-primary opacity-50" : "border-transparent"
+                    draggedIndex === index
+                      ? "border-primary opacity-50"
+                      : "border-transparent"
                   }`}
                 >
                   <Image
@@ -512,11 +601,7 @@ export function ListingForm({ categories, divisions, listing }: ListingFormProps
             "Create & Add Images"
           )}
         </Button>
-        <Button
-          type="button"
-          variant="outline"
-          onClick={() => router.back()}
-        >
+        <Button type="button" variant="outline" onClick={() => router.back()}>
           Cancel
         </Button>
       </div>

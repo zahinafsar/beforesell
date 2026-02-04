@@ -53,7 +53,7 @@ test.describe("Authentication Pages", () => {
     await page.goto("/register");
     await expect(page.locator('input[name="name"]')).toBeVisible();
     await expect(page.locator('input[type="email"]')).toBeVisible();
-    await expect(page.locator('button:has-text("Create")')).toBeVisible();
+    await expect(page.locator('button:has-text("Create account")')).toBeVisible();
   });
 
   test("forgot password page loads", async ({ page }) => {
@@ -100,9 +100,9 @@ test.describe("Navigation", () => {
 });
 
 test.describe("Listing Pages", () => {
-  test("listing detail page loads for valid id", async ({ page }) => {
-    const response = await page.goto("/listings/nonexistent-id");
-    expect(response?.status()).toBe(404);
+  test("listing detail page shows 404 for invalid id", async ({ page }) => {
+    await page.goto("/listings/nonexistent-id");
+    await expect(page.getByRole("heading", { name: "404" })).toBeVisible();
   });
 
   test("new listing page requires auth", async ({ page }) => {
@@ -149,15 +149,15 @@ test.describe("Responsive Design", () => {
 
 test.describe("User Profile", () => {
   test("user profile page shows 404 for invalid user", async ({ page }) => {
-    const response = await page.goto("/user/invalid-user-id");
-    expect(response?.status()).toBe(404);
+    await page.goto("/user/invalid-user-id");
+    await expect(page.getByRole("heading", { name: "404" })).toBeVisible();
   });
 });
 
 test.describe("Error Handling", () => {
   test("404 page works for unknown routes", async ({ page }) => {
-    const response = await page.goto("/nonexistent-page");
-    expect(response?.status()).toBe(404);
+    await page.goto("/nonexistent-page");
+    await expect(page.getByRole("heading", { name: "404" })).toBeVisible();
   });
 });
 

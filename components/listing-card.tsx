@@ -8,9 +8,8 @@ interface ListingImage {
   url: string;
 }
 
-interface District {
-  name: string;
-  division: { name: string };
+interface Location {
+  address: string;
 }
 
 interface Listing {
@@ -19,12 +18,11 @@ interface Listing {
   slug: string;
   price: number;
   negotiable: boolean;
-  condition: string;
   status: string;
   views: number;
   createdAt: Date;
   images: ListingImage[];
-  district: District;
+  location: Location;
 }
 
 interface ListingCardProps {
@@ -69,7 +67,7 @@ export function ListingCard({ listing, showStatus }: ListingCardProps) {
           <div className="flex items-center justify-between text-xs text-muted-foreground">
             <span className="flex items-center gap-1 truncate">
               <MapPin className="h-3 w-3 flex-shrink-0" />
-              <span className="truncate">{listing.district.name}</span>
+              <span className="truncate">{listing.location.address}</span>
             </span>
             <span className="flex items-center gap-1">
               <Calendar className="h-3 w-3" />

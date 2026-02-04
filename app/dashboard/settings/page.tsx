@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Loader2, Camera, Save, User, Phone } from "lucide-react";
+import { api } from "@/lib/api";
 
 export default function SettingsPage() {
   const { user, isLoading: authLoading, refetch } = useAuth();
@@ -97,17 +98,16 @@ export default function SettingsPage() {
     setMessage(null);
 
     try {
-      const res = await fetch("/api/user/profile", {
+      const res = await api("user/profile", {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, phone: phone || null }),
+        body: { name, phone: phone || null } as { name?: string; phone?: string | null },
       });
 
       if (res.ok) {
         await refetch();
         setMessage({ type: "success", text: "Profile updated successfully" });
       } else {
-        const data = await res.json();
+        const data = await res.json() as { error?: string };
         setMessage({ type: "error", text: data.error || "Failed to update profile" });
       }
     } catch {

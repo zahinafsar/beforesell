@@ -1,7 +1,12 @@
 import { NextResponse } from "next/server";
+import { NextApiRequest } from "next-ts-api";
 import { prisma } from "@/lib/prisma";
 
-export async function POST(request: Request) {
+interface VerifyEmailBody {
+  token: string;
+}
+
+export async function POST(request: NextApiRequest<VerifyEmailBody>) {
   try {
     const { token } = await request.json();
 
