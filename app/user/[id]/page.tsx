@@ -1,7 +1,9 @@
+import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { prisma } from "@/lib/prisma";
+import { generateUserMetadata } from "@/lib/seo";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -9,6 +11,33 @@ import { Calendar, MapPin, Package, Eye } from "lucide-react";
 
 interface UserProfilePageProps {
   params: Promise<{ id: string }>;
+}
+
+export async function generateMetadata({ params }: UserProfilePageProps): Promise<Metadata> {
+  const { id } = await params;
+  const user = await prisma.user.findUnique({
+    where: { id },
+    select: {
+      id: true,
+      name: true,
+      createdAt: true,
+      _count: { select: { listings: { where: { status: "ACTIVE" } } } },
+    },
+  });
+
+  if (!user) {
+    return { title: "User Not Found" };
+  }
+
+  return generateUserMetadata({
+    userName: user.name,
+    userId: user.id,
+    listingCount: user._count.listings,
+    memberSince: new Date(user.createdAt).toLocaleDateString("en-US", {
+      month: "long",
+      year: "numeric",
+    }),
+  });
 }
 
 export default async function UserProfilePage({ params }: UserProfilePageProps) {

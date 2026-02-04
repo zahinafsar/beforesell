@@ -1,7 +1,9 @@
+import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth";
+import { generateListingMetadata, generateListingJsonLd, generateBreadcrumbJsonLd, getBaseUrl } from "@/lib/seo";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -22,6 +24,33 @@ const CONDITIONS: Record<string, string> = {
   FAIR: "Fair",
   POOR: "Poor",
 };
+
+export async function generateMetadata({ params }: ListingPageProps): Promise<Metadata> {
+  const { id } = await params;
+  const listing = await prisma.listing.findUnique({
+    where: { id },
+    include: {
+      images: { orderBy: { order: "asc" }, take: 1 },
+      district: { include: { division: true } },
+      user: { select: { name: true } },
+    },
+  });
+
+  if (!listing || listing.status === "DELETED") {
+    return { title: "Listing Not Found" };
+  }
+
+  return generateListingMetadata({
+    title: listing.title,
+    description: listing.description,
+    price: listing.price,
+    condition: CONDITIONS[listing.condition] || listing.condition,
+    image: listing.images[0]?.url,
+    location: `${listing.district.name}, ${listing.district.division.name}`,
+    listingId: listing.id,
+    sellerName: listing.user.name,
+  });
+}
 
 export default async function ListingPage({ params }: ListingPageProps) {
   const { id } = await params;
@@ -68,8 +97,45 @@ export default async function ListingPage({ params }: ListingPageProps) {
     ? `${listing.category.parent.name} > ${listing.category.name}`
     : listing.category.name;
 
+  const location = `${listing.district.name}, ${listing.district.division.name}`;
+  const baseUrl = getBaseUrl();
+
+  const listingJsonLd = generateListingJsonLd({
+    title: listing.title,
+    description: listing.description,
+    price: listing.price,
+    condition: listing.condition,
+    image: listing.images[0]?.url,
+    location,
+    listingId: listing.id,
+    sellerName: listing.user.name,
+    createdAt: listing.createdAt,
+    negotiable: listing.negotiable,
+  });
+
+  const breadcrumbItems = [
+    { name: "Home", url: baseUrl },
+    { name: "Categories", url: `${baseUrl}/categories` },
+    ...(listing.category.parent
+      ? [{ name: listing.category.parent.name, url: `${baseUrl}/categories/${listing.category.parent.slug}` }]
+      : []),
+    { name: listing.category.name, url: `${baseUrl}/categories/${listing.category.slug}` },
+    { name: listing.title, url: `${baseUrl}/listings/${listing.id}` },
+  ];
+
+  const breadcrumbJsonLd = generateBreadcrumbJsonLd(breadcrumbItems);
+
   return (
-    <div className="container py-8">
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(listingJsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+      />
+      <div className="container py-8">
       <div className="grid gap-8 lg:grid-cols-3">
         <div className="lg:col-span-2 space-y-6">
           <ListingImageGallery images={listing.images} title={listing.title} />
@@ -194,5 +260,6 @@ export default async function ListingPage({ params }: ListingPageProps) {
         </div>
       </div>
     </div>
+    </>
   );
 }

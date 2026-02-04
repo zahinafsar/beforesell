@@ -1,6 +1,14 @@
+import { Metadata } from "next";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
+import { generatePageMetadata } from "@/lib/seo";
 import CategoryIcon from "@/components/category-icon";
+
+export const metadata: Metadata = generatePageMetadata({
+  title: "All Categories",
+  description: "Browse all categories on BeforeSell. Find electronics, vehicles, property, jobs, fashion, and more in Bangladesh.",
+  path: "/categories",
+});
 
 interface Category {
   id: string;

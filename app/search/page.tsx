@@ -1,4 +1,6 @@
+import { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
+import { generatePageMetadata } from "@/lib/seo";
 import SearchClient from "@/components/search-client";
 
 interface SearchParams {
@@ -15,6 +17,25 @@ interface SearchParams {
 
 interface Props {
   searchParams: Promise<SearchParams>;
+}
+
+export async function generateMetadata({ searchParams }: Props): Promise<Metadata> {
+  const params = await searchParams;
+  const searchTerm = params.search;
+
+  if (searchTerm) {
+    return generatePageMetadata({
+      title: `Search results for "${searchTerm}"`,
+      description: `Find ${searchTerm} on BeforeSell. Browse listings in Bangladesh's trusted marketplace.`,
+      path: `/search?search=${encodeURIComponent(searchTerm)}`,
+    });
+  }
+
+  return generatePageMetadata({
+    title: "Search Listings",
+    description: "Search and browse thousands of listings on BeforeSell. Find electronics, vehicles, property, and more in Bangladesh.",
+    path: "/search",
+  });
 }
 
 export default async function SearchPage({ searchParams }: Props) {
