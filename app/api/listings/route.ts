@@ -76,10 +76,12 @@ export async function GET(request: NextRequest) {
     const maxPrice = searchParams.get("maxPrice");
     const condition = searchParams.get("condition");
     const sort = searchParams.get("sort") || "newest";
+    const featured = searchParams.get("featured");
 
     const where: Record<string, unknown> = {};
 
     if (userId) where.userId = userId;
+    if (featured === "true") where.featured = true;
     if (categoryId) {
       where.OR = [
         { categoryId },
