@@ -20,7 +20,23 @@ export const resetPasswordSchema = z.object({
   password: z.string().min(6, "Password must be at least 6 characters"),
 });
 
+export const createListingSchema = z.object({
+  title: z.string().min(5, "Title must be at least 5 characters").max(100, "Title too long"),
+  description: z.string().min(20, "Description must be at least 20 characters").max(5000, "Description too long"),
+  price: z.number().min(0, "Price must be positive"),
+  negotiable: z.boolean().default(true),
+  condition: z.enum(["NEW", "LIKE_NEW", "GOOD", "FAIR", "POOR"]),
+  categoryId: z.string().min(1, "Category is required"),
+  districtId: z.string().min(1, "Location is required"),
+});
+
+export const updateListingSchema = createListingSchema.partial().extend({
+  status: z.enum(["DRAFT", "ACTIVE", "SOLD", "EXPIRED", "DELETED"]).optional(),
+});
+
 export type RegisterInput = z.infer<typeof registerSchema>;
 export type LoginInput = z.infer<typeof loginSchema>;
 export type ForgotPasswordInput = z.infer<typeof forgotPasswordSchema>;
 export type ResetPasswordInput = z.infer<typeof resetPasswordSchema>;
+export type CreateListingInput = z.infer<typeof createListingSchema>;
+export type UpdateListingInput = z.infer<typeof updateListingSchema>;
