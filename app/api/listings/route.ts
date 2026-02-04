@@ -69,15 +69,65 @@ export async function GET(request: NextRequest) {
     const userId = searchParams.get("userId");
     const categoryId = searchParams.get("categoryId");
     const districtId = searchParams.get("districtId");
+    const divisionId = searchParams.get("divisionId");
     const status = searchParams.get("status");
+    const search = searchParams.get("search");
+    const minPrice = searchParams.get("minPrice");
+    const maxPrice = searchParams.get("maxPrice");
+    const condition = searchParams.get("condition");
+    const sort = searchParams.get("sort") || "newest";
 
     const where: Record<string, unknown> = {};
 
     if (userId) where.userId = userId;
-    if (categoryId) where.categoryId = categoryId;
+    if (categoryId) {
+      where.OR = [
+        { categoryId },
+        { category: { parentId: categoryId } },
+      ];
+    }
     if (districtId) where.districtId = districtId;
+    if (divisionId) where.district = { divisionId };
     if (status) where.status = status;
     else where.status = "ACTIVE";
+
+    if (search) {
+      where.OR = [
+        { title: { contains: search, mode: "insensitive" } },
+        { description: { contains: search, mode: "insensitive" } },
+      ];
+    }
+
+    if (minPrice || maxPrice) {
+      where.price = {};
+      if (minPrice) (where.price as Record<string, number>).gte = parseFloat(minPrice);
+      if (maxPrice) (where.price as Record<string, number>).lte = parseFloat(maxPrice);
+    }
+
+    if (condition) {
+      const conditions = condition.split(",");
+      if (conditions.length === 1) {
+        where.condition = condition;
+      } else {
+        where.condition = { in: conditions };
+      }
+    }
+
+    let orderBy: Record<string, string> = { createdAt: "desc" };
+    switch (sort) {
+      case "price_asc":
+        orderBy = { price: "asc" };
+        break;
+      case "price_desc":
+        orderBy = { price: "desc" };
+        break;
+      case "popular":
+        orderBy = { views: "desc" };
+        break;
+      case "newest":
+      default:
+        orderBy = { createdAt: "desc" };
+    }
 
     const [listings, total] = await Promise.all([
       prisma.listing.findMany({
@@ -88,7 +138,7 @@ export async function GET(request: NextRequest) {
           images: { orderBy: { order: "asc" }, take: 1 },
           user: { select: { id: true, name: true, avatar: true } },
         },
-        orderBy: { createdAt: "desc" },
+        orderBy,
         skip: (page - 1) * limit,
         take: limit,
       }),

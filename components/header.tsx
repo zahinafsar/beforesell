@@ -1,8 +1,11 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
-import { Menu, Plus, Heart, MessageCircle } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { Menu, Plus, Heart, MessageCircle, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Sheet,
   SheetContent,
@@ -20,6 +23,17 @@ import { useAuth } from "@/providers/auth-provider";
 
 export default function Header() {
   const { user, isLoading, logout } = useAuth();
+  const router = useRouter();
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      router.push(`/search?search=${encodeURIComponent(searchQuery.trim())}`);
+    } else {
+      router.push("/search");
+    }
+  };
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -68,6 +82,19 @@ export default function Header() {
               Categories
             </Link>
           </nav>
+
+          <form onSubmit={handleSearch} className="hidden md:flex items-center ml-4">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                type="text"
+                placeholder="Search..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10 w-64"
+              />
+            </div>
+          </form>
         </div>
 
         <div className="flex items-center gap-2">
