@@ -10,8 +10,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import { MapPin, Eye, Calendar, Phone, MessageCircle, Edit } from "lucide-react";
-import ListingImageGallery from "@/components/listing-image-gallery";
-import FavoriteButton from "@/components/favorite-button";
+import { ListingImageGallery } from "@/components/listing-image-gallery";
+import { FavoriteButton } from "@/components/favorite-button";
 
 interface ListingPageProps {
   params: Promise<{ id: string }>;

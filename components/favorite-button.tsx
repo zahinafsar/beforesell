@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 
 interface FavoriteButtonProps {
   listingId: string;
@@ -11,7 +12,7 @@ interface FavoriteButtonProps {
   isLoggedIn: boolean;
 }
 
-export default function FavoriteButton({ listingId, isFavorited, isLoggedIn }: FavoriteButtonProps) {
+export function FavoriteButton({ listingId, isFavorited, isLoggedIn }: FavoriteButtonProps) {
   const router = useRouter();
   const [favorited, setFavorited] = useState(isFavorited);
   const [isLoading, setIsLoading] = useState(false);
@@ -30,9 +31,12 @@ export default function FavoriteButton({ listingId, isFavorited, isLoggedIn }: F
 
       if (res.ok) {
         setFavorited(!favorited);
+        toast.success(favorited ? "Removed from favorites" : "Added to favorites");
+      } else {
+        toast.error("Failed to update favorites");
       }
     } catch {
-      // Silently fail
+      toast.error("Network error. Please try again.");
     } finally {
       setIsLoading(false);
     }

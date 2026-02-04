@@ -16,7 +16,7 @@ interface ListingImageGalleryProps {
   title: string;
 }
 
-export default function ListingImageGallery({ images, title }: ListingImageGalleryProps) {
+export function ListingImageGallery({ images, title }: ListingImageGalleryProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
 
   if (images.length === 0) {

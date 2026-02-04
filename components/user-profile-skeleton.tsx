@@ -1,8 +1,8 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import ListingsGridSkeleton from "./listings-grid-skeleton";
+import { ListingsGridSkeleton } from "./listings-grid-skeleton";
 
-export default function UserProfileSkeleton() {
+export function UserProfileSkeleton() {
   return (
     <div className="container py-8">
       <div className="grid gap-8 lg:grid-cols-4">

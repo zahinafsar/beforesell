@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import Image from "next/image";
 import { Plus, Eye, Edit } from "lucide-react";
-import DeleteListingButton from "@/components/delete-listing-button";
+import { DeleteListingButton } from "@/components/delete-listing-button";
 
 export default async function MyListingsPage() {
   const user = await getCurrentUser();

@@ -3,8 +3,8 @@ import { Search, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { prisma } from "@/lib/prisma";
-import ListingCard from "@/components/listing-card";
-import CategoryIcon from "@/components/category-icon";
+import { ListingCard } from "@/components/listing-card";
+import { CategoryIcon } from "@/components/category-icon";
 
 interface Category {
   id: string;

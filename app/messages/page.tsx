@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 import { Loader2 } from "lucide-react";
-import MessagesList from "@/components/messages-list";
+import { MessagesList } from "@/components/messages-list";
 
 function MessagesLoading() {
   return (

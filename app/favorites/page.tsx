@@ -6,7 +6,7 @@ import { prisma } from "@/lib/prisma";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Heart, MapPin, Calendar, Search } from "lucide-react";
-import RemoveFavoriteButton from "@/components/remove-favorite-button";
+import { RemoveFavoriteButton } from "@/components/remove-favorite-button";
 
 export default async function FavoritesPage() {
   const user = await getCurrentUser();

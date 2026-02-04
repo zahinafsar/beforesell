@@ -23,7 +23,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useAuth } from "@/providers/auth-provider";
 
-export default function Header() {
+export function Header() {
   const { user, isLoading, logout } = useAuth();
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");

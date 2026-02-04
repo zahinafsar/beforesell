@@ -79,25 +79,36 @@ export async function GET(request: NextRequest) {
     const featured = searchParams.get("featured");
 
     const where: Record<string, unknown> = {};
+    const andConditions: Record<string, unknown>[] = [];
 
     if (userId) where.userId = userId;
     if (featured === "true") where.featured = true;
+
     if (categoryId) {
-      where.OR = [
-        { categoryId },
-        { category: { parentId: categoryId } },
-      ];
+      andConditions.push({
+        OR: [
+          { categoryId },
+          { category: { parentId: categoryId } },
+        ],
+      });
     }
+
     if (districtId) where.districtId = districtId;
     if (divisionId) where.district = { divisionId };
     if (status) where.status = status;
     else where.status = "ACTIVE";
 
     if (search) {
-      where.OR = [
-        { title: { contains: search, mode: "insensitive" } },
-        { description: { contains: search, mode: "insensitive" } },
-      ];
+      andConditions.push({
+        OR: [
+          { title: { contains: search, mode: "insensitive" } },
+          { description: { contains: search, mode: "insensitive" } },
+        ],
+      });
+    }
+
+    if (andConditions.length > 0) {
+      where.AND = andConditions;
     }
 
     if (minPrice || maxPrice) {

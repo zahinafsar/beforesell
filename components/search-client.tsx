@@ -22,7 +22,7 @@ import {
 } from "@/components/ui/sheet";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import ListingCard from "@/components/listing-card";
+import { ListingCard } from "@/components/listing-card";
 
 interface Category {
   id: string;
@@ -107,7 +107,7 @@ const SORT_OPTIONS = [
   { value: "popular", label: "Most Popular" },
 ];
 
-export default function SearchClient({ categories, divisions, initialParams }: SearchClientProps) {
+export function SearchClient({ categories, divisions, initialParams }: SearchClientProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -231,14 +231,16 @@ export default function SearchClient({ categories, divisions, initialParams }: S
         </Select>
         {subcategories.length > 0 && (
           <Select
-            value={categoryId}
+            value=""
             onValueChange={(value) => {
-              setCategoryId(value);
-              setPage(1);
+              if (value) {
+                setCategoryId(value);
+                setPage(1);
+              }
             }}
           >
             <SelectTrigger className="w-full">
-              <SelectValue placeholder="All subcategories" />
+              <SelectValue placeholder="Filter by subcategory" />
             </SelectTrigger>
             <SelectContent>
               {subcategories.map((sub) => (
@@ -478,31 +480,40 @@ export default function SearchClient({ categories, divisions, initialParams }: S
                 Previous
               </Button>
               <div className="flex items-center gap-1">
-                {Array.from({ length: Math.min(pagination.totalPages, 5) }).map((_, i) => {
-                  const pageNum = i + 1;
-                  return (
-                    <Button
-                      key={pageNum}
-                      variant={page === pageNum ? "default" : "outline"}
-                      size="sm"
-                      onClick={() => setPage(pageNum)}
-                    >
-                      {pageNum}
-                    </Button>
+                {(() => {
+                  const totalPages = pagination.totalPages;
+                  const pages: (number | string)[] = [];
+
+                  if (totalPages <= 7) {
+                    for (let i = 1; i <= totalPages; i++) pages.push(i);
+                  } else {
+                    pages.push(1);
+                    if (page > 3) pages.push("...");
+
+                    const start = Math.max(2, page - 1);
+                    const end = Math.min(totalPages - 1, page + 1);
+
+                    for (let i = start; i <= end; i++) pages.push(i);
+
+                    if (page < totalPages - 2) pages.push("...");
+                    pages.push(totalPages);
+                  }
+
+                  return pages.map((p, idx) =>
+                    typeof p === "string" ? (
+                      <span key={`ellipsis-${idx}`} className="px-2">...</span>
+                    ) : (
+                      <Button
+                        key={p}
+                        variant={page === p ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => setPage(p)}
+                      >
+                        {p}
+                      </Button>
+                    )
                   );
-                })}
-                {pagination.totalPages > 5 && (
-                  <>
-                    <span className="px-2">...</span>
-                    <Button
-                      variant={page === pagination.totalPages ? "default" : "outline"}
-                      size="sm"
-                      onClick={() => setPage(pagination.totalPages)}
-                    >
-                      {pagination.totalPages}
-                    </Button>
-                  </>
-                )}
+                })()}
               </div>
               <Button
                 variant="outline"

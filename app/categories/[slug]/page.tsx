@@ -5,8 +5,8 @@ import { ChevronRight } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { generateCategoryMetadata, generateBreadcrumbJsonLd, getBaseUrl } from "@/lib/seo";
 import { Badge } from "@/components/ui/badge";
-import CategoryListings from "@/components/category-listings";
-import CategoryIcon from "@/components/category-icon";
+import { CategoryListings } from "@/components/category-listings";
+import { CategoryIcon } from "@/components/category-icon";
 
 interface Props {
   params: Promise<{ slug: string }>;

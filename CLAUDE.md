@@ -1,3 +1,6 @@
+Read .claude/memory.txt for more context on this project.
+After work update .claude/memory.txt with new contexts.
+
 # BeforeSell - Bikroy.com Competitor
 
 ## Project Overview
@@ -37,7 +40,7 @@ Full-featured classifieds marketplace for Bangladesh. Bikroy.com competitor with
 - Zod for all validation
 - JWT in httpOnly cookie, verify in middleware
 - Cloudinary for all image uploads (max 20/listing)
-- Use default export only
+- Use named export only
 - Properly use utils, hooks folders
 - Use snack-case for file names
 - Try to create as less components as possible

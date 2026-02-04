@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 
-export default function SettingsSkeleton() {
+export function SettingsSkeleton() {
   return (
     <div className="container py-8 max-w-2xl">
       <Skeleton className="h-9 w-40 mb-8" />

@@ -22,7 +22,7 @@ import {
 } from "@/components/ui/sheet";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import ListingCard from "@/components/listing-card";
+import { ListingCard } from "@/components/listing-card";
 
 interface Division {
   id: string;
@@ -97,7 +97,7 @@ const SORT_OPTIONS = [
   { value: "popular", label: "Most Popular" },
 ];
 
-export default function CategoryListings({
+export function CategoryListings({
   categoryId,
   divisions,
   initialParams,
@@ -115,6 +115,7 @@ export default function CategoryListings({
   const [listings, setListings] = useState<Listing[]>([]);
   const [pagination, setPagination] = useState<Pagination | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
 
   const selectedDivision = divisions.find((d) => d.id === divisionId);
@@ -147,14 +148,21 @@ export default function CategoryListings({
 
   const fetchListings = useCallback(async () => {
     setLoading(true);
+    setError(null);
     try {
       const query = buildQueryString();
       const res = await fetch(`/api/listings?${query}`);
+      if (!res.ok) {
+        throw new Error("Failed to fetch listings");
+      }
       const data = await res.json();
       setListings(data.listings || []);
       setPagination(data.pagination || null);
-    } catch (error) {
-      console.error("Failed to fetch listings:", error);
+    } catch (err) {
+      console.error("Failed to fetch listings:", err);
+      setError("Failed to load listings. Please try again.");
+      setListings([]);
+      setPagination(null);
     } finally {
       setLoading(false);
     }
@@ -351,6 +359,13 @@ export default function CategoryListings({
                 </div>
               ))}
             </div>
+          ) : error ? (
+            <div className="text-center py-12">
+              <p className="text-destructive mb-4">{error}</p>
+              <Button variant="outline" onClick={fetchListings}>
+                Try Again
+              </Button>
+            </div>
           ) : listings.length === 0 ? (
             <div className="text-center py-12">
               <p className="text-muted-foreground">No listings found in this category</p>
@@ -378,31 +393,40 @@ export default function CategoryListings({
                 Previous
               </Button>
               <div className="flex items-center gap-1">
-                {Array.from({ length: Math.min(pagination.totalPages, 5) }).map((_, i) => {
-                  const pageNum = i + 1;
-                  return (
-                    <Button
-                      key={pageNum}
-                      variant={page === pageNum ? "default" : "outline"}
-                      size="sm"
-                      onClick={() => setPage(pageNum)}
-                    >
-                      {pageNum}
-                    </Button>
+                {(() => {
+                  const totalPages = pagination.totalPages;
+                  const pages: (number | string)[] = [];
+
+                  if (totalPages <= 7) {
+                    for (let i = 1; i <= totalPages; i++) pages.push(i);
+                  } else {
+                    pages.push(1);
+                    if (page > 3) pages.push("...");
+
+                    const start = Math.max(2, page - 1);
+                    const end = Math.min(totalPages - 1, page + 1);
+
+                    for (let i = start; i <= end; i++) pages.push(i);
+
+                    if (page < totalPages - 2) pages.push("...");
+                    pages.push(totalPages);
+                  }
+
+                  return pages.map((p, idx) =>
+                    typeof p === "string" ? (
+                      <span key={`ellipsis-${idx}`} className="px-2">...</span>
+                    ) : (
+                      <Button
+                        key={p}
+                        variant={page === p ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => setPage(p)}
+                      >
+                        {p}
+                      </Button>
+                    )
                   );
-                })}
-                {pagination.totalPages > 5 && (
-                  <>
-                    <span className="px-2">...</span>
-                    <Button
-                      variant={page === pagination.totalPages ? "default" : "outline"}
-                      size="sm"
-                      onClick={() => setPage(pagination.totalPages)}
-                    >
-                      {pagination.totalPages}
-                    </Button>
-                  </>
-                )}
+                })()}
               </div>
               <Button
                 variant="outline"

@@ -1,7 +1,7 @@
 import { redirect, notFound } from "next/navigation";
 import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import ListingForm from "@/components/listing-form";
+import { ListingForm } from "@/components/listing-form";
 
 interface EditListingPageProps {
   params: Promise<{ id: string }>;

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import Link from "next/link";
@@ -48,7 +48,7 @@ function formatTime(date: string): string {
   return d.toLocaleDateString([], { month: "short", day: "numeric" });
 }
 
-export default function MessagesList() {
+export function MessagesList() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const listingId = searchParams.get("listing");
@@ -83,18 +83,22 @@ export default function MessagesList() {
     },
   });
 
+  const hasTriggeredRef = useRef(false);
+
   useEffect(() => {
-    if (listingId && user && !authLoading && !isLoading) {
+    if (listingId && user && !authLoading && !isLoading && !hasTriggeredRef.current) {
       const existingConv = data?.conversations?.find(
         (c: Conversation) => c.listing.id === listingId
       );
       if (existingConv) {
+        hasTriggeredRef.current = true;
         router.replace(`/messages/${existingConv.id}`);
-      } else {
+      } else if (!createConversation.isPending) {
+        hasTriggeredRef.current = true;
         createConversation.mutate(listingId);
       }
     }
-  }, [listingId, user, authLoading, isLoading, data, router, createConversation]);
+  }, [listingId, user, authLoading, isLoading, data, createConversation.isPending]);
 
   if (authLoading || isLoading) {
     return (

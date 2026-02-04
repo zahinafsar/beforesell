@@ -1,7 +1,7 @@
 import { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
 import { generatePageMetadata } from "@/lib/seo";
-import SearchClient from "@/components/search-client";
+import { SearchClient } from "@/components/search-client";
 
 interface SearchParams {
   search?: string;

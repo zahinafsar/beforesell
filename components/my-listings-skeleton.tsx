@@ -39,7 +39,7 @@ function ListingRowSkeleton() {
   );
 }
 
-export default function MyListingsSkeleton() {
+export function MyListingsSkeleton() {
   return (
     <div className="container py-8">
       <div className="flex items-center justify-between mb-6">

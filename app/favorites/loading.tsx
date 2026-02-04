@@ -1,4 +1,4 @@
-import FavoritesSkeleton from "@/components/favorites-skeleton";
+import { FavoritesSkeleton } from "@/components/favorites-skeleton";
 
 export default function FavoritesLoading() {
   return <FavoritesSkeleton />;

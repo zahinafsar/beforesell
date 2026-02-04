@@ -4,12 +4,13 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 
 interface RemoveFavoriteButtonProps {
   listingId: string;
 }
 
-export default function RemoveFavoriteButton({ listingId }: RemoveFavoriteButtonProps) {
+export function RemoveFavoriteButton({ listingId }: RemoveFavoriteButtonProps) {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
 
@@ -24,10 +25,13 @@ export default function RemoveFavoriteButton({ listingId }: RemoveFavoriteButton
       });
 
       if (res.ok) {
+        toast.success("Removed from favorites");
         router.refresh();
+      } else {
+        toast.error("Failed to remove from favorites");
       }
     } catch {
-      // Silently fail
+      toast.error("Network error. Please try again.");
     } finally {
       setIsLoading(false);
     }

@@ -22,7 +22,7 @@ const companyLinks = [
   { name: "Terms of Service", href: "/terms" },
 ];
 
-export default function Footer() {
+export function Footer() {
   return (
     <footer className="border-t bg-muted/50">
       <div className="container py-12">

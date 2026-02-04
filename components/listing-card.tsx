@@ -32,7 +32,7 @@ interface ListingCardProps {
   showStatus?: boolean;
 }
 
-export default function ListingCard({ listing, showStatus }: ListingCardProps) {
+export function ListingCard({ listing, showStatus }: ListingCardProps) {
   const imageUrl = listing.images[0]?.url || "/placeholder.png";
 
   return (

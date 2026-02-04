@@ -23,7 +23,7 @@ function FavoriteCardSkeleton() {
   );
 }
 
-export default function FavoritesSkeleton() {
+export function FavoritesSkeleton() {
   return (
     <div className="container py-8">
       <div className="flex items-center justify-between mb-6">

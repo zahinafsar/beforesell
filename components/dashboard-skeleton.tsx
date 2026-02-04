@@ -16,7 +16,7 @@ function StatCardSkeleton() {
   );
 }
 
-export default function DashboardSkeleton() {
+export function DashboardSkeleton() {
   return (
     <div className="container py-8">
       <div className="flex items-center justify-between mb-8">

@@ -4,12 +4,13 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Trash2, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 
 interface DeleteListingButtonProps {
   listingId: string;
 }
 
-export default function DeleteListingButton({ listingId }: DeleteListingButtonProps) {
+export function DeleteListingButton({ listingId }: DeleteListingButtonProps) {
   const router = useRouter();
   const [isDeleting, setIsDeleting] = useState(false);
 
@@ -25,10 +26,13 @@ export default function DeleteListingButton({ listingId }: DeleteListingButtonPr
       });
 
       if (res.ok) {
+        toast.success("Listing deleted successfully");
         router.refresh();
+      } else {
+        toast.error("Failed to delete listing");
       }
     } catch {
-      alert("Failed to delete listing");
+      toast.error("Network error. Please try again.");
     } finally {
       setIsDeleting(false);
     }

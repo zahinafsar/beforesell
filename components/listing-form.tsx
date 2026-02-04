@@ -71,7 +71,7 @@ const CONDITIONS = [
   { value: "POOR", label: "Poor" },
 ];
 
-export default function ListingForm({ categories, divisions, listing }: ListingFormProps) {
+export function ListingForm({ categories, divisions, listing }: ListingFormProps) {
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const isEditing = !!listing;
@@ -99,7 +99,7 @@ export default function ListingForm({ categories, divisions, listing }: ListingF
   const districts = selectedDivision?.districts || [];
 
   const handleImageUpload = useCallback(async (files: FileList) => {
-    if (!listing && !isEditing) {
+    if (!listing) {
       setError("Please save the listing first before uploading images");
       return;
     }
@@ -135,7 +135,7 @@ export default function ListingForm({ categories, divisions, listing }: ListingF
     } finally {
       setUploading(false);
     }
-  }, [listing, images.length, isEditing]);
+  }, [listing, images.length]);
 
   const handleDeleteImage = async (imageId: string) => {
     if (!listing) return;
@@ -209,7 +209,12 @@ export default function ListingForm({ categories, divisions, listing }: ListingF
         body: JSON.stringify(payload),
       });
 
-      const data = await res.json();
+      let data;
+      try {
+        data = await res.json();
+      } catch {
+        throw new Error("Invalid response from server");
+      }
 
       if (!res.ok) {
         throw new Error(data.error || "Failed to save listing");

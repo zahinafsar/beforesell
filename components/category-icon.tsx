@@ -8,7 +8,7 @@ interface CategoryIconProps {
   className?: string;
 }
 
-export default function CategoryIcon({ iconName, className }: CategoryIconProps) {
+export function CategoryIcon({ iconName, className }: CategoryIconProps) {
   if (!iconName) {
     return <LucideIcons.Package className={className} />;
   }

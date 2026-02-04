@@ -1,0 +1,10 @@
+# BeforeSell Project Memory
+
+## Recent Changes
+- Converted all /components/*.tsx files from default exports to named exports
+- Updated all imports in /app/**/*.tsx and /components/*.tsx to use named import syntax
+- App Router special files (page.tsx, layout.tsx, loading.tsx) still use default exports (Next.js requirement)
+
+## Component Export Pattern
+All components in /components/ now use: `export function ComponentName`
+All imports now use: `import { ComponentName } from "@/components/component-name"`

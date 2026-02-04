@@ -2,7 +2,7 @@ import { Metadata } from "next";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { generatePageMetadata } from "@/lib/seo";
-import CategoryIcon from "@/components/category-icon";
+import { CategoryIcon } from "@/components/category-icon";
 
 export const metadata: Metadata = generatePageMetadata({
   title: "All Categories",
