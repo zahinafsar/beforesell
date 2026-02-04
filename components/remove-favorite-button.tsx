@@ -1,0 +1,47 @@
+"use client";
+
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { Heart } from "lucide-react";
+import { Button } from "@/components/ui/button";
+
+interface RemoveFavoriteButtonProps {
+  listingId: string;
+}
+
+export default function RemoveFavoriteButton({ listingId }: RemoveFavoriteButtonProps) {
+  const router = useRouter();
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleRemove = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    setIsLoading(true);
+    try {
+      const res = await fetch(`/api/listings/${listingId}/favorite`, {
+        method: "POST",
+      });
+
+      if (res.ok) {
+        router.refresh();
+      }
+    } catch {
+      // Silently fail
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <Button
+      variant="ghost"
+      size="icon"
+      className="h-8 w-8 text-red-500 hover:text-red-600 hover:bg-red-50"
+      onClick={handleRemove}
+      disabled={isLoading}
+    >
+      <Heart className="h-4 w-4 fill-current" />
+    </Button>
+  );
+}

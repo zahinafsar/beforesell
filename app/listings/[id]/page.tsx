@@ -126,7 +126,7 @@ export default async function ListingPage({ params }: ListingPageProps) {
               <CardTitle className="text-lg">Seller Information</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="flex items-center gap-4">
+              <Link href={`/user/${listing.user.id}`} className="flex items-center gap-4 hover:opacity-80 transition-opacity">
                 <Avatar className="h-16 w-16">
                   <AvatarImage src={listing.user.avatar || undefined} />
                   <AvatarFallback className="text-xl">
@@ -143,7 +143,7 @@ export default async function ListingPage({ params }: ListingPageProps) {
                     {listing.user._count.listings !== 1 ? "s" : ""}
                   </p>
                 </div>
-              </div>
+              </Link>
 
               {isOwner ? (
                 <Button asChild className="w-full">
