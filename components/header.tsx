@@ -1,11 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useQuery } from "@tanstack/react-query";
 import { Menu, Plus, Heart, MessageCircle, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
 import {
   Sheet,
   SheetContent,
@@ -25,6 +27,29 @@ export default function Header() {
   const { user, isLoading, logout } = useAuth();
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
+
+  // Heartbeat to track online status
+  useEffect(() => {
+    if (!user) return;
+    const heartbeat = () => fetch("/api/users/heartbeat", { method: "POST" }).catch(() => {});
+    heartbeat();
+    const interval = setInterval(heartbeat, 30000);
+    return () => clearInterval(interval);
+  }, [user]);
+
+  // Unread message count
+  const { data: unreadData } = useQuery({
+    queryKey: ["unreadCount"],
+    queryFn: async () => {
+      const res = await fetch("/api/conversations/unread");
+      if (!res.ok) return { unreadCount: 0 };
+      return res.json();
+    },
+    enabled: !!user,
+    refetchInterval: 10000,
+  });
+
+  const unreadCount = unreadData?.unreadCount || 0;
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -61,8 +86,13 @@ export default function Header() {
                     <Link href="/favorites" className="text-lg">
                       Favorites
                     </Link>
-                    <Link href="/messages" className="text-lg">
+                    <Link href="/messages" className="text-lg flex items-center gap-2">
                       Messages
+                      {unreadCount > 0 && (
+                        <Badge className="h-5 min-w-5 flex items-center justify-center text-xs p-0">
+                          {unreadCount > 99 ? "99+" : unreadCount}
+                        </Badge>
+                      )}
                     </Link>
                   </>
                 )}
@@ -115,9 +145,14 @@ export default function Header() {
                     </Link>
                   </Button>
 
-                  <Button asChild variant="ghost" size="icon" className="hidden sm:flex">
+                  <Button asChild variant="ghost" size="icon" className="hidden sm:flex relative">
                     <Link href="/messages">
                       <MessageCircle className="h-5 w-5" />
+                      {unreadCount > 0 && (
+                        <Badge className="absolute -top-1 -right-1 h-5 min-w-5 flex items-center justify-center text-xs p-0">
+                          {unreadCount > 99 ? "99+" : unreadCount}
+                        </Badge>
+                      )}
                     </Link>
                   </Button>
 

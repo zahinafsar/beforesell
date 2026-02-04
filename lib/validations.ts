@@ -34,9 +34,21 @@ export const updateListingSchema = createListingSchema.partial().extend({
   status: z.enum(["DRAFT", "ACTIVE", "SOLD", "EXPIRED", "DELETED"]).optional(),
 });
 
+export const sendMessageSchema = z.object({
+  content: z.string().min(1, "Message cannot be empty").max(5000, "Message too long"),
+  conversationId: z.string().min(1, "Conversation ID required"),
+});
+
+export const createConversationSchema = z.object({
+  listingId: z.string().min(1, "Listing ID required"),
+  content: z.string().min(1, "Initial message required").max(5000, "Message too long"),
+});
+
 export type RegisterInput = z.infer<typeof registerSchema>;
 export type LoginInput = z.infer<typeof loginSchema>;
 export type ForgotPasswordInput = z.infer<typeof forgotPasswordSchema>;
 export type ResetPasswordInput = z.infer<typeof resetPasswordSchema>;
 export type CreateListingInput = z.infer<typeof createListingSchema>;
 export type UpdateListingInput = z.infer<typeof updateListingSchema>;
+export type SendMessageInput = z.infer<typeof sendMessageSchema>;
+export type CreateConversationInput = z.infer<typeof createConversationSchema>;
