@@ -17,7 +17,7 @@ export default function Error({ error, reset }: ErrorProps) {
   }, [error]);
 
   return (
-    <div className="container flex items-center justify-center min-h-[60vh] py-16">
+    <div className="container px-4 flex items-center justify-center min-h-[60vh] py-16">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <div className="mx-auto mb-4 h-16 w-16 rounded-full bg-destructive/10 flex items-center justify-center">

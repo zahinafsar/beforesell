@@ -18,8 +18,6 @@ import {
 import {
   Sheet,
   SheetContent,
-  SheetHeader,
-  SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { Badge } from "@/components/ui/badge";
@@ -431,11 +429,8 @@ export function ListingsBrowser({ categories, locations, initialParams }: Listin
               )}
             </Button>
           </SheetTrigger>
-          <SheetContent side="left" className="w-80">
-            <SheetHeader>
-              <SheetTitle>Filters</SheetTitle>
-            </SheetHeader>
-            <div className="mt-6">
+          <SheetContent side="left" className="w-80 flex flex-col">
+            <div className="flex-1 overflow-y-auto px-6 pb-4 pt-12">
               <FilterContent />
             </div>
           </SheetContent>

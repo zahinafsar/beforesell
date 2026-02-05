@@ -61,7 +61,7 @@ export default async function SearchPage({ searchParams }: Props) {
   ]);
 
   return (
-    <div className="container py-6">
+    <div className="container px-4 py-6">
       <ListingsBrowser
         categories={categories}
         locations={locations}

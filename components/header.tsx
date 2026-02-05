@@ -29,6 +29,7 @@ export function Header() {
   const { user, isLoading, logout } = useAuth();
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const authKey = user?.id;
 
   // Heartbeat to track online status
@@ -56,31 +57,31 @@ export function Header() {
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container flex h-16 items-center justify-between">
+      <div className="container px-4 flex h-16 items-center justify-between">
         <div className="flex items-center gap-4">
-          <Sheet>
+          <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
             <SheetTrigger asChild>
               <Button variant="ghost" size="icon" className="md:hidden">
                 <Menu className="h-5 w-5" />
               </Button>
             </SheetTrigger>
-            <SheetContent side="left">
-              <nav className="flex flex-col gap-4 mt-8">
-                <Link href="/" className="text-lg font-semibold">
+            <SheetContent side="left" className="flex flex-col">
+              <nav className="flex flex-col gap-4 mt-8 px-6">
+                <Link href="/" className="text-lg font-semibold" onClick={() => setSidebarOpen(false)}>
                   Home
                 </Link>
-                <Link href="/categories" className="text-lg">
+                <Link href="/categories" className="text-lg" onClick={() => setSidebarOpen(false)}>
                   Categories
                 </Link>
                 {user && (
                   <>
-                    <Link href="/dashboard" className="text-lg">
+                    <Link href="/dashboard" className="text-lg" onClick={() => setSidebarOpen(false)}>
                       Dashboard
                     </Link>
-                    <Link href="/favorites" className="text-lg">
+                    <Link href="/favorites" className="text-lg" onClick={() => setSidebarOpen(false)}>
                       Favorites
                     </Link>
-                    <Link href="/messages" className="text-lg flex items-center gap-2">
+                    <Link href="/messages" className="text-lg flex items-center gap-2" onClick={() => setSidebarOpen(false)}>
                       Messages
                       {unreadCount > 0 && (
                         <Badge className="h-5 min-w-5 flex items-center justify-center text-xs p-0">

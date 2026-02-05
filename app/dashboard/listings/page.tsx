@@ -36,7 +36,7 @@ export default async function MyListingsPage() {
   };
 
   return (
-    <div className="container py-8">
+    <div className="container px-4 py-8">
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-3xl font-bold">My Listings</h1>
         <Button asChild>

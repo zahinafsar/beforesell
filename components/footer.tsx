@@ -25,7 +25,7 @@ const companyLinks = [
 export function Footer() {
   return (
     <footer className="border-t bg-muted/50">
-      <div className="container py-12">
+      <div className="container px-4 py-12">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
           <div className="col-span-2 md:col-span-1">
             <Link href="/" className="text-xl font-bold text-primary">

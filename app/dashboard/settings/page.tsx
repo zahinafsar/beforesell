@@ -25,7 +25,7 @@ export default function SettingsPage() {
 
   if (authLoading) {
     return (
-      <div className="container py-8 flex items-center justify-center">
+      <div className="container px-4 py-8 flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin" />
       </div>
     );
@@ -118,7 +118,7 @@ export default function SettingsPage() {
   };
 
   return (
-    <div className="container py-8 max-w-2xl">
+    <div className="container px-4 py-8 max-w-2xl">
       <h1 className="text-3xl font-bold mb-6">Account Settings</h1>
 
       {message && (

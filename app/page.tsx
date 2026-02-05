@@ -39,8 +39,8 @@ export default async function HomePage() {
     <div className="flex flex-col">
       {/* Hero Section */}
       <section className="bg-gradient-to-b from-primary/10 to-background py-12 md:py-20">
-        <div className="container">
-          <div className="max-w-2xl mx-auto text-center space-y-6">
+        <div className="container px-4">
+          <div className="max-w-2xl mx-auto text-center space-y-6 px-2">
             <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight">
               Buy & Sell Anything in Bangladesh
             </h1>
@@ -67,7 +67,7 @@ export default async function HomePage() {
 
       {/* Categories Grid */}
       <section className="py-12">
-        <div className="container">
+        <div className="container px-4">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl font-bold">Browse Categories</h2>
             <Button variant="ghost" asChild>
@@ -101,7 +101,7 @@ export default async function HomePage() {
       {/* Featured Listings */}
       {featuredListings.length > 0 && (
         <section className="py-12 bg-muted/50">
-          <div className="container">
+          <div className="container px-4">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-2xl font-bold">Featured Listings</h2>
               <Button variant="ghost" asChild>
@@ -121,7 +121,7 @@ export default async function HomePage() {
 
       {/* Recent Listings */}
       <section className="py-12">
-        <div className="container">
+        <div className="container px-4">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl font-bold">Recent Listings</h2>
             <Button variant="ghost" asChild>
@@ -148,7 +148,7 @@ export default async function HomePage() {
 
       {/* CTA Section */}
       <section className="py-12 bg-primary text-primary-foreground">
-        <div className="container text-center space-y-4">
+        <div className="container px-4 text-center space-y-4">
           <h2 className="text-2xl md:text-3xl font-bold">Ready to Sell?</h2>
           <p className="text-primary-foreground/80">
             Post your ad for free and reach thousands of buyers

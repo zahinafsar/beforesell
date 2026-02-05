@@ -42,7 +42,7 @@ export default async function EditListingPage({ params }: EditListingPageProps) 
   }
 
   return (
-    <div className="container py-8 max-w-3xl">
+    <div className="container px-4 py-8 max-w-3xl">
       <h1 className="text-3xl font-bold mb-6">Edit Listing</h1>
       <ListingForm
         categories={categories}

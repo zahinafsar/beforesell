@@ -71,7 +71,7 @@ export default async function UserProfilePage({ params }: UserProfilePageProps) 
   }
 
   return (
-    <div className="container py-8">
+    <div className="container px-4 py-8">
       <Card className="mb-8">
         <CardContent className="pt-6">
           <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6">
