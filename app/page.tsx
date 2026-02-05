@@ -57,7 +57,7 @@ export default async function HomePage() {
                   className="pl-10 h-12"
                 />
               </div>
-              <Button type="submit" size="lg">
+              <Button type="submit" size="lg" className="h-12">
                 Search
               </Button>
             </form>
