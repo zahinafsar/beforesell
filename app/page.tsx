@@ -1,13 +1,23 @@
 import Link from "next/link";
-import { Search, ArrowRight } from "lucide-react";
+import { Search, ArrowRight, TrendingUp, Users, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { prisma } from "@/lib/prisma";
 import { ListingCard } from "@/components/listing-card";
 import { CategoryIcon } from "@/components/category-icon";
+import { HeroBackground } from "@/components/hero-background";
+
+const popularSearches = [
+  "iPhone",
+  "Toyota",
+  "Laptop",
+  "Apartment",
+  "Motorcycle",
+  "Samsung",
+];
 
 export default async function HomePage() {
-  const [categories, featuredListings, recentListings] = await Promise.all([
+  const [categories, featuredListings, recentListings, stats] = await Promise.all([
     prisma.category.findMany({
       where: { parentId: null },
       include: {
@@ -33,34 +43,88 @@ export default async function HomePage() {
       orderBy: { createdAt: "desc" },
       take: 8,
     }),
+    Promise.all([
+      prisma.listing.count({ where: { status: "ACTIVE" } }),
+      prisma.user.count(),
+    ]),
   ]);
+
+  const [listingCount, userCount] = stats;
 
   return (
     <div className="flex flex-col">
       {/* Hero Section */}
-      <section className="bg-gradient-to-b from-primary/10 to-background py-12 md:py-20">
-        <div className="container px-4">
-          <div className="max-w-2xl mx-auto text-center space-y-6 px-2">
-            <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight">
-              Buy & Sell Anything in Bangladesh
-            </h1>
-            <p className="text-muted-foreground text-lg">
-              Find great deals or post your ads for free on BeforeSell
-            </p>
-            <form action="/search" className="flex gap-2 max-w-lg mx-auto">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  type="text"
-                  name="search"
-                  placeholder="What are you looking for?"
-                  className="pl-10 h-12"
-                />
+      <section className="relative overflow-hidden bg-linear-to-br from-primary via-primary to-secondary py-16 md:py-24">
+        <HeroBackground />
+
+        <div className="container px-4 relative z-10">
+          <div className="max-w-3xl mx-auto text-center space-y-8">
+            <div className="space-y-4">
+              <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold tracking-tight text-white">
+                Buy & Sell Anything
+                <span className="block text-white/90">in Bangladesh</span>
+              </h1>
+              <p className="text-lg md:text-xl text-white/80 max-w-xl mx-auto">
+                Join thousands of buyers and sellers on Bangladesh&apos;s fastest-growing marketplace
+              </p>
+            </div>
+
+            {/* Search Form */}
+            <form action="/search" className="max-w-2xl mx-auto">
+              <div className="flex flex-col sm:flex-row gap-3 p-2 bg-white rounded-xl shadow-2xl">
+                <div className="relative flex-1">
+                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                  <Input
+                    type="text"
+                    name="search"
+                    placeholder="What are you looking for?"
+                    className="pl-12 h-14 text-lg border-0 shadow-none focus-visible:ring-0"
+                  />
+                </div>
+                <Button type="submit" size="lg" className="h-14 px-8 text-base font-semibold">
+                  Search
+                </Button>
               </div>
-              <Button type="submit" size="lg" className="h-12">
-                Search
-              </Button>
             </form>
+
+            {/* Popular Searches */}
+            <div className="flex flex-wrap items-center justify-center gap-2">
+              <span className="text-white/60 text-sm">Popular:</span>
+              {popularSearches.map((term) => (
+                <Link
+                  key={term}
+                  href={`/search?search=${encodeURIComponent(term)}`}
+                  className="px-3 py-1 text-sm bg-white/20 hover:bg-white/30 text-white rounded-full transition-colors"
+                >
+                  {term}
+                </Link>
+              ))}
+            </div>
+
+            {/* Trust Indicators */}
+            <div className="grid grid-cols-3 gap-4 max-w-lg mx-auto pt-4">
+              <div className="text-center">
+                <div className="flex items-center justify-center gap-1 text-white mb-1">
+                  <TrendingUp className="h-4 w-4" />
+                  <span className="text-2xl font-bold">{listingCount.toLocaleString()}+</span>
+                </div>
+                <p className="text-xs text-white/60">Active Listings</p>
+              </div>
+              <div className="text-center">
+                <div className="flex items-center justify-center gap-1 text-white mb-1">
+                  <Users className="h-4 w-4" />
+                  <span className="text-2xl font-bold">{userCount.toLocaleString()}+</span>
+                </div>
+                <p className="text-xs text-white/60">Happy Users</p>
+              </div>
+              <div className="text-center">
+                <div className="flex items-center justify-center gap-1 text-white mb-1">
+                  <ShieldCheck className="h-4 w-4" />
+                  <span className="text-2xl font-bold">100%</span>
+                </div>
+                <p className="text-xs text-white/60">Free to Use</p>
+              </div>
+            </div>
           </div>
         </div>
       </section>
