@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { Menu, Plus, Heart, MessageCircle, Search } from "lucide-react";
@@ -96,7 +97,8 @@ export function Header() {
           </Sheet>
 
           <Link href="/" className="flex items-center gap-2">
-            <span className="text-xl font-bold text-primary">BeforeSell</span>
+            <Image src="/logo.webp" alt="BeforeSell" width={32} height={32} className="h-8 w-8" />
+            <span className="text-xl font-bold text-primary hidden sm:inline">BeforeSell</span>
           </Link>
 
           <nav className="hidden md:flex items-center gap-6 ml-6">

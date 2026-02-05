@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { Separator } from "@/components/ui/separator";
 
 const categories = [
@@ -28,8 +29,9 @@ export function Footer() {
       <div className="container px-4 py-12">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
           <div className="col-span-2 md:col-span-1">
-            <Link href="/" className="text-xl font-bold text-primary">
-              BeforeSell
+            <Link href="/" className="flex items-center gap-2">
+              <Image src="/logo.webp" alt="BeforeSell" width={32} height={32} className="h-8 w-8" />
+              <span className="text-xl font-bold text-primary">BeforeSell</span>
             </Link>
             <p className="mt-4 text-sm text-muted-foreground">
               Bangladesh&apos;s trusted marketplace for buying and selling. Post free ads and find great deals.

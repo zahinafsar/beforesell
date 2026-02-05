@@ -26,6 +26,10 @@ export const metadata: Metadata = {
     default: "BeforeSell - Buy & Sell in Bangladesh",
     template: "%s | BeforeSell",
   },
+  icons: {
+    icon: "/favicon.ico",
+    apple: "/logo.webp",
+  },
   description:
     "Bangladesh's trusted marketplace for buying and selling. Post free ads and find great deals on electronics, vehicles, property, and more.",
   keywords: [
