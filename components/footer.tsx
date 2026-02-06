@@ -30,7 +30,7 @@ export function Footer() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
           <div className="col-span-2 md:col-span-1">
             <Link href="/" className="flex items-center gap-2">
-              <Image src="/logo.webp" alt="BeforeSell" width={32} height={32} className="h-8 w-8" />
+              <Image src="/logo.svg" alt="BeforeSell" width={32} height={32} className="h-8 w-8" />
               <span className="text-xl font-bold text-primary">BeforeSell</span>
             </Link>
             <p className="mt-4 text-sm text-muted-foreground">

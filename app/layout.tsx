@@ -27,8 +27,8 @@ export const metadata: Metadata = {
     template: "%s | BeforeSell",
   },
   icons: {
-    icon: "/favicon.ico",
-    apple: "/logo.webp",
+    icon: "/favicon.png",
+    apple: "/logo.svg",
   },
   description:
     "Bangladesh's trusted marketplace for buying and selling. Post free ads and find great deals on electronics, vehicles, property, and more.",

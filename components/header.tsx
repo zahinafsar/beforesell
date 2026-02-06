@@ -97,7 +97,7 @@ export function Header() {
           </Sheet>
 
           <Link href="/" className="flex items-center gap-2">
-            <Image src="/logo.webp" alt="BeforeSell" width={32} height={32} className="h-8 w-8" />
+            <Image src="/logo.svg" alt="BeforeSell" width={32} height={32} className="h-8 w-8" />
             <span className="text-xl font-bold text-primary hidden sm:inline">BeforeSell</span>
           </Link>
 
