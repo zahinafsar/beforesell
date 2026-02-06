@@ -18,7 +18,7 @@ interface ListingBody {
   price: number;
   negotiable: boolean;
   phone?: string | null;
-  categoryId: string;
+  categoryId?: string | null;
   locationId: string;
   attributes?: Record<string, string | string[]>;
 }
@@ -51,7 +51,7 @@ export async function POST(request: NextApiRequest<ListingBody>) {
         price,
         negotiable,
         phone: phone || null,
-        categoryId,
+        categoryId: categoryId || null,
         locationId,
         userId: user.id,
         status: "ACTIVE",
@@ -65,7 +65,7 @@ export async function POST(request: NextApiRequest<ListingBody>) {
     });
 
     // Save attribute values if provided
-    if (attributes && Object.keys(attributes).length > 0) {
+    if (categoryId && attributes && Object.keys(attributes).length > 0) {
       const categoryAttributes = await prisma.categoryAttribute.findMany({
         where: { categoryId },
         select: { id: true, slug: true },

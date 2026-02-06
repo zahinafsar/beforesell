@@ -1,6 +1,14 @@
 # BeforeSell Project Memory
 
 ## Recent Changes
+- Made categoryId optional on Listing model (schema + validation + API)
+  - `categoryId String?` and `Category?` relation in schema
+  - Validation: `z.string().optional().nullable()`
+  - API route handles null categoryId, skips attribute saving when no category
+- Added `scripts/seed-from-bikroy.ts` — scrapes 6 listings from bikroy.com search page
+  - Creates random user, scrapes from `serp.ads.data.ads` path in initialData
+  - All listings set to Dhaka location, no category, images stored as Bikroy CDN URLs
+  - Run: `npm run seed:bikroy`
 - Added per-listing phone number field
   - `phone` String? added to Listing model (schema + validations)
   - ListingForm accepts `userPhone` prop for pre-filling

@@ -10,8 +10,7 @@
     "typecheck": "tsc --noEmit",
     "test": "playwright test",
     "test:ui": "playwright test --ui",
-    "test:headed": "playwright test --headed",
-    "seed:mock": "npx tsx prisma/seed-mock.ts"
+    "test:headed": "playwright test --headed"
   },
   "prisma": {
     "seed": "npx tsx prisma/seed.ts"

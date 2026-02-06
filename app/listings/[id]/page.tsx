@@ -91,9 +91,9 @@ export default async function ListingPage({ params }: ListingPageProps) {
     : null;
 
   const isOwner = user?.id === listing.userId;
-  const categoryPath = listing.category.parent
+  const categoryPath = listing.category?.parent
     ? `${listing.category.parent.name} > ${listing.category.name}`
-    : listing.category.name;
+    : listing.category?.name || "Uncategorized";
 
   const location = listing.location.address;
   const baseUrl = getBaseUrl();
@@ -113,10 +113,10 @@ export default async function ListingPage({ params }: ListingPageProps) {
   const breadcrumbItems = [
     { name: "Home", url: baseUrl },
     { name: "Categories", url: `${baseUrl}/categories` },
-    ...(listing.category.parent
+    ...(listing.category?.parent
       ? [{ name: listing.category.parent.name, url: `${baseUrl}/categories/${listing.category.parent.slug}` }]
       : []),
-    { name: listing.category.name, url: `${baseUrl}/categories/${listing.category.slug}` },
+    { name: listing.category?.name || "Uncategorized", url: `${baseUrl}/categories/${listing.category?.slug}` },
     { name: listing.title, url: `${baseUrl}/listings/${listing.id}` },
   ];
 

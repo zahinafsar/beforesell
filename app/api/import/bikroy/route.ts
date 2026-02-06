@@ -81,19 +81,30 @@ export async function POST(request: NextApiRequest<ImportBody>) {
     });
 
     if (!response.ok) {
+      console.error(`Bikroy fetch failed: ${response.status} ${response.statusText}`);
       return NextResponse.json(
-        { error: "Failed to fetch listing from Bikroy.com" },
+        { error: `Failed to fetch listing from Bikroy.com (${response.status})` },
         { status: 502 }
       );
     }
 
     const html = await response.text();
+
+    if (html.includes("captcha") || html.includes("challenge")) {
+      console.error("Bikroy returned a captcha/challenge page");
+      return NextResponse.json(
+        { error: "Bikroy.com is blocking automated requests. Try again later." },
+        { status: 403 }
+      );
+    }
+
     const initialData = extractInitialData(html);
     const ad = initialData?.adDetail?.data?.ad;
 
     if (!ad) {
+      console.error("Could not extract initialData from HTML. First 500 chars:", html.substring(0, 500));
       return NextResponse.json(
-        { error: "Could not extract listing data. The URL may be invalid." },
+        { error: "Could not extract listing data. The page structure may have changed." },
         { status: 422 }
       );
     }

@@ -87,8 +87,8 @@ model Listing {
   userId      String
   user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  categoryId  String
-  category    Category      @relation(fields: [categoryId], references: [id])
+  categoryId  String?
+  category    Category?     @relation(fields: [categoryId], references: [id])
 
   locationId  String
   location    Location      @relation(fields: [locationId], references: [id])
