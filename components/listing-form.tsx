@@ -46,7 +46,7 @@ export function ListingForm({
     price: number;
     negotiable: boolean;
     phone?: string | null;
-    categoryId: string;
+    categoryId?: string | null;
     locationId: string;
     images: { id: string; url: string; publicId: string; order: number }[];
     attributeValues?: { attribute: { slug: string }; value: string }[];
