@@ -72,7 +72,7 @@ export function ListingImageGallery({ images, title }: ListingImageGalleryProps)
       </div>
 
       {images.length > 1 && (
-        <div className="flex gap-2 overflow-x-auto pb-2">
+        <div className="flex flex-wrap gap-2 overflow-x-auto pb-2">
           {images.map((image, index) => (
             <button
               key={image.id}
