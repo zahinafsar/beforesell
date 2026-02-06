@@ -244,11 +244,11 @@ export default async function ListingPage({ params }: ListingPageProps) {
                 </Button>
               ) : (
                 <div className="space-y-2">
-                  {listing.user.phone && (
+                  {(listing.phone || listing.user.phone) && (
                     <Button variant="outline" className="w-full" asChild>
-                      <a href={`tel:${listing.user.phone}`}>
+                      <a href={`tel:${listing.phone || listing.user.phone}`}>
                         <Phone className="h-4 w-4 mr-2" />
-                        {listing.user.phone}
+                        {listing.phone || listing.user.phone}
                       </a>
                     </Button>
                   )}

@@ -1,6 +1,15 @@
 # BeforeSell Project Memory
 
 ## Recent Changes
+- Added per-listing phone number field
+  - `phone` String? added to Listing model (schema + validations)
+  - ListingForm accepts `userPhone` prop for pre-filling
+  - Listing detail page shows listing.phone, falls back to user.phone
+- Added "Import from Bikroy.com" feature to listing form
+  - API: POST /api/import/bikroy accepts { url }, scrapes bikroy.com listing page
+  - Extracts title, description, price, negotiable, attributes, images, location, category
+  - Import card shown at top of ListingForm in create mode only
+  - Category/location must be selected manually (bikroy IDs don't match ours)
 - Merged search and category pages into unified `/search` page
   - New `ListingsBrowser` component handles all listing browsing
   - `/categories/[slug]` now redirects to `/search?categoryId=xxx`
@@ -76,8 +85,9 @@ const { data } = useQuery(conversationsQuery(authKey).list());
 - Query factories need return types for proper inference (e.g., ListingsResponse)
 - Components should derive types from query data, avoid explicit interface declarations
 - For FormData uploads (images, avatars), direct fetch() is acceptable
-- For query params in URLs, use template literal: `api(\`route?param=value\` as "route", ...)`
+- For query params in URLs, use `query` option: `api("route", { query: { key: value } })`
 - Error responses need type assertion: `await res.json() as { error?: string }`
+- Fixed bug: handleDeleteImage was missing `query: { imageId }` — always check route's query/param types match client call
 
 ### API Route Typing
 Use `NextApiRequest<BodyType, QueryType>` from 'next-ts-api' for typed request bodies and query params:

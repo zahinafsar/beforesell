@@ -79,6 +79,7 @@ model Listing {
   description String
   price       Float
   negotiable  Boolean       @default(true)
+  phone       String?
   status      ListingStatus @default(ACTIVE)
   views       Int           @default(0)
   featured    Boolean       @default(false)

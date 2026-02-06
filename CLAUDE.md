@@ -44,6 +44,8 @@ Full-featured classifieds marketplace for Bangladesh. Bikroy.com competitor with
 - Properly use utils, hooks folders
 - Use snack-case for file names
 - Try to create as less components as possible
+- **Never use raw `fetch()` for JSON API calls** — use `api()` from `@/lib/api` (typed via next-ts-api)
+- FormData uploads (images) are the only exception where raw `fetch()` is acceptable
 
 ## BD Location Data
 - 8 Divisions: Barishal, Chattogram, Dhaka, Khulna, Mymensingh, Rajshahi, Rangpur, Sylhet

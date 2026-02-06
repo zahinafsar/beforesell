@@ -3,7 +3,7 @@
 import { useState, useCallback, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { X, Upload, GripVertical, Loader2, ChevronLeft, Check } from "lucide-react";
+import { X, Upload, GripVertical, Loader2, ChevronLeft, Check, Import } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -25,6 +25,7 @@ export function ListingForm({
   categories,
   locations,
   listing,
+  userPhone,
 }: {
   categories: {
     id: string;
@@ -44,11 +45,13 @@ export function ListingForm({
     description: string;
     price: number;
     negotiable: boolean;
+    phone?: string | null;
     categoryId: string;
     locationId: string;
     images: { id: string; url: string; publicId: string; order: number }[];
     attributeValues?: { attribute: { slug: string }; value: string }[];
   };
+  userPhone?: string | null;
 }) {
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -58,12 +61,14 @@ export function ListingForm({
   const [description, setDescription] = useState(listing?.description || "");
   const [price, setPrice] = useState(listing?.price?.toString() || "");
   const [negotiable, setNegotiable] = useState(listing?.negotiable ?? true);
+  const [phone, setPhone] = useState(listing?.phone || userPhone || "");
   const [categoryId, setCategoryId] = useState(listing?.categoryId || "");
   const [locationId, setLocationId] = useState(listing?.locationId || "");
   const [images, setImages] = useState(
     listing?.images ||
       ([] as { id: string; url: string; publicId: string; order: number }[]),
   );
+  const [pendingFiles, setPendingFiles] = useState<File[]>([]);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -80,6 +85,9 @@ export function ListingForm({
     return {};
   });
   const [loadingAttributes, setLoadingAttributes] = useState(false);
+  const [importUrl, setImportUrl] = useState("");
+  const [importing, setImporting] = useState(false);
+  const [importMessage, setImportMessage] = useState("");
 
   const parentCategories = categories.filter((c) => !c.parentId);
 
@@ -111,7 +119,10 @@ export function ListingForm({
 
       setLoadingAttributes(true);
       try {
-        const res = await fetch(`/api/categories/${categoryId}/attributes`);
+        const res = await api("categories/[id]/attributes", {
+          method: "GET",
+          params: { id: categoryId },
+        });
         if (res.ok) {
           const data = await res.json();
           setCategoryAttributes(data.attributes || []);
@@ -130,14 +141,85 @@ export function ListingForm({
     fetchAttributes();
   }, [categoryId, listing]);
 
+  const handleImport = async () => {
+    if (!importUrl.trim()) return;
+    setImporting(true);
+    setImportMessage("");
+    setError("");
+
+    try {
+      const res = await api("import/bikroy", {
+        method: "POST",
+        body: { url: importUrl.trim() },
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error("Import failed");
+      }
+
+      if (data.title) setTitle(data.title);
+      if (data.description) setDescription(data.description);
+      if (data.price != null) setPrice(data.price.toString());
+      if (data.negotiable != null) setNegotiable(data.negotiable);
+      if (data.phone) setPhone(data.phone);
+
+      // Download images through proxy and add as pending files
+      if (data.images?.length > 0) {
+        const imagePromises = (data.images as string[]).map(async (imageUrl, i) => {
+          try {
+            const proxyRes = await api("import/proxy-image", {
+              method: "POST",
+              body: { url: imageUrl },
+            });
+            if (!proxyRes.ok) return null;
+            const blob = await proxyRes.blob();
+            return new File([blob], `bikroy-image-${i + 1}.jpg`, { type: blob.type || "image/jpeg" });
+          } catch {
+            return null;
+          }
+        });
+
+        const files = (await Promise.all(imagePromises)).filter((f): f is File => f !== null);
+        if (files.length > 0) {
+          setPendingFiles((prev) => [...prev, ...files].slice(0, 20));
+        }
+      }
+
+      const parts: string[] = [];
+      if (data.title) parts.push("title");
+      if (data.description) parts.push("description");
+      if (data.price != null) parts.push("price");
+      if (data.phone) parts.push("phone");
+      if (data.images?.length > 0) parts.push(`${data.images.length} images`);
+      setImportMessage(
+        parts.length > 0
+          ? `Imported ${parts.join(", ")}. Select category & location manually.`
+          : "No data found to import."
+      );
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Import failed");
+    } finally {
+      setImporting(false);
+    }
+  };
+
   const handleImageUpload = useCallback(
     async (files: FileList) => {
+      const fileArray = Array.from(files);
+
+      // In create mode, store files locally for upload after listing creation
       if (!listing) {
-        setError("Please save the listing first before uploading images");
+        if (pendingFiles.length + fileArray.length > 20) {
+          setError("Maximum 20 images allowed");
+          return;
+        }
+        setPendingFiles((prev) => [...prev, ...fileArray]);
         return;
       }
 
-      if (images.length + files.length > 20) {
+      if (images.length + fileArray.length > 20) {
         setError("Maximum 20 images allowed");
         return;
       }
@@ -146,12 +228,12 @@ export function ListingForm({
       setError("");
 
       const formData = new FormData();
-      Array.from(files).forEach((file) => {
+      fileArray.forEach((file) => {
         formData.append("images", file);
       });
 
       try {
-        const res = await fetch(`/api/listings/${listing!.id}/images`, {
+        const res = await fetch(`/api/listings/${listing.id}/images`, {
           method: "POST",
           body: formData,
         });
@@ -169,16 +251,17 @@ export function ListingForm({
         setUploading(false);
       }
     },
-    [listing, images.length],
+    [listing, images.length, pendingFiles.length],
   );
 
   const handleDeleteImage = async (imageId: string) => {
     if (!listing) return;
 
     try {
-      const res = await api(`listings/[id]/images`, {
+      const res = await api("listings/[id]/images", {
         method: "DELETE",
         params: { id: listing.id },
+        query: { imageId },
       });
 
       if (!res.ok) throw new Error("Failed to delete");
@@ -246,6 +329,7 @@ export function ListingForm({
       description,
       price: parseFloat(price),
       negotiable,
+      phone: phone.trim() || null,
       categoryId,
       locationId,
       attributes: attributeValues,
@@ -271,8 +355,26 @@ export function ListingForm({
         throw new Error(data.error || "Failed to save listing");
       }
 
+      // Upload pending images after creating listing
+      if (!isEditing && pendingFiles.length > 0 && data.listing?.id) {
+        const formData = new FormData();
+        pendingFiles.forEach((file) => {
+          formData.append("images", file);
+        });
+
+        const uploadRes = await fetch(`/api/listings/${data.listing.id}/images`, {
+          method: "POST",
+          body: formData,
+        });
+
+        if (!uploadRes.ok) {
+          const uploadData = await uploadRes.json();
+          throw new Error(uploadData.error || "Failed to upload images");
+        }
+      }
+
       if (!isEditing) {
-        router.push(`/listings/new?id=${data.listing!.id}`);
+        router.push(`/listings/${data.listing!.id}`);
         router.refresh();
       } else {
         router.push(`/listings/${listing.id}`);
@@ -291,6 +393,45 @@ export function ListingForm({
         <div className="p-3 text-sm text-red-600 bg-red-50 rounded-md">
           {error}
         </div>
+      )}
+
+      {!isEditing && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Import className="h-5 w-5" />
+              Import from Bikroy.com
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <div className="flex gap-2">
+              <Input
+                value={importUrl}
+                onChange={(e) => setImportUrl(e.target.value)}
+                placeholder="Paste bikroy.com listing URL..."
+                disabled={importing}
+              />
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleImport}
+                disabled={importing || !importUrl.trim()}
+              >
+                {importing ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  "Import"
+                )}
+              </Button>
+            </div>
+            {importMessage && (
+              <p className="text-sm text-green-600">{importMessage}</p>
+            )}
+            <p className="text-xs text-muted-foreground">
+              Pre-fill listing details by importing from an existing Bikroy.com ad.
+            </p>
+          </CardContent>
+        </Card>
       )}
 
       <Card>
@@ -349,6 +490,20 @@ export function ListingForm({
             <Label htmlFor="negotiable" className="font-normal">
               Price is negotiable
             </Label>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="phone">Phone Number</Label>
+            <Input
+              id="phone"
+              type="tel"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              placeholder="+880 1XXX-XXXXXX"
+            />
+            <p className="text-xs text-muted-foreground">
+              Visible to buyers on this listing
+            </p>
           </div>
         </CardContent>
       </Card>
@@ -507,98 +662,128 @@ export function ListingForm({
         </CardContent>
       </Card>
 
-      {isEditing && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Images ({images.length}/20)</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/*"
-              multiple
-              className="hidden"
-              onChange={(e) =>
-                e.target.files && handleImageUpload(e.target.files)
-              }
-            />
+      <Card>
+        <CardHeader>
+          <CardTitle>Images ({isEditing ? images.length : pendingFiles.length}/20)</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            multiple
+            className="hidden"
+            onChange={(e) =>
+              e.target.files && handleImageUpload(e.target.files)
+            }
+          />
 
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-              {images.map((image, index) => (
-                <div
-                  key={image.id}
-                  draggable
-                  onDragStart={() => handleDragStart(index)}
-                  onDragOver={(e) => handleDragOver(e, index)}
-                  onDragEnd={handleDragEnd}
-                  className={`relative aspect-square rounded-lg overflow-hidden border-2 ${
-                    draggedIndex === index
-                      ? "border-primary opacity-50"
-                      : "border-transparent"
-                  }`}
-                >
-                  <Image
-                    src={image.url}
-                    alt={`Image ${index + 1}`}
-                    fill
-                    className="object-cover"
-                  />
-                  <div className="absolute inset-0 bg-black/40 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                    <GripVertical className="h-6 w-6 text-white cursor-grab" />
-                    <button
-                      type="button"
-                      onClick={() => handleDeleteImage(image.id)}
-                      className="p-1 bg-red-500 rounded-full"
-                    >
-                      <X className="h-4 w-4 text-white" />
-                    </button>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            {isEditing
+              ? images.map((image, index) => (
+                  <div
+                    key={image.id}
+                    draggable
+                    onDragStart={() => handleDragStart(index)}
+                    onDragOver={(e) => handleDragOver(e, index)}
+                    onDragEnd={handleDragEnd}
+                    className={`relative aspect-square rounded-lg overflow-hidden border-2 ${
+                      draggedIndex === index
+                        ? "border-primary opacity-50"
+                        : "border-transparent"
+                    }`}
+                  >
+                    <Image
+                      src={image.url}
+                      alt={`Image ${index + 1}`}
+                      fill
+                      className="object-cover"
+                    />
+                    <div className="absolute inset-0 bg-black/40 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                      <GripVertical className="h-6 w-6 text-white cursor-grab" />
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteImage(image.id)}
+                        className="p-1 bg-red-500 rounded-full"
+                      >
+                        <X className="h-4 w-4 text-white" />
+                      </button>
+                    </div>
+                    {index === 0 && (
+                      <span className="absolute top-1 left-1 px-2 py-0.5 bg-primary text-white text-xs rounded">
+                        Cover
+                      </span>
+                    )}
                   </div>
-                  {index === 0 && (
-                    <span className="absolute top-1 left-1 px-2 py-0.5 bg-primary text-white text-xs rounded">
-                      Cover
-                    </span>
-                  )}
-                </div>
-              ))}
+                ))
+              : pendingFiles.map((file, index) => (
+                  <div
+                    key={`${file.name}-${index}`}
+                    className="relative aspect-square rounded-lg overflow-hidden border-2 border-transparent"
+                  >
+                    <Image
+                      src={URL.createObjectURL(file)}
+                      alt={`Image ${index + 1}`}
+                      fill
+                      className="object-cover"
+                    />
+                    <div className="absolute inset-0 bg-black/40 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center">
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setPendingFiles((prev) => prev.filter((_, i) => i !== index))
+                        }
+                        className="p-1 bg-red-500 rounded-full"
+                      >
+                        <X className="h-4 w-4 text-white" />
+                      </button>
+                    </div>
+                    {index === 0 && (
+                      <span className="absolute top-1 left-1 px-2 py-0.5 bg-primary text-white text-xs rounded">
+                        Cover
+                      </span>
+                    )}
+                  </div>
+                ))}
 
-              {images.length < 20 && (
-                <button
-                  type="button"
-                  onClick={() => fileInputRef.current?.click()}
-                  disabled={uploading}
-                  className="aspect-square rounded-lg border-2 border-dashed border-gray-300 flex flex-col items-center justify-center gap-2 hover:border-primary hover:bg-gray-50 transition-colors disabled:opacity-50"
-                >
-                  {uploading ? (
-                    <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
-                  ) : (
-                    <>
-                      <Upload className="h-8 w-8 text-gray-400" />
-                      <span className="text-sm text-gray-500">Add Photos</span>
-                    </>
-                  )}
-                </button>
-              )}
-            </div>
+            {(isEditing ? images.length : pendingFiles.length) < 20 && (
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={uploading}
+                className="aspect-square rounded-lg border-2 border-dashed border-gray-300 flex flex-col items-center justify-center gap-2 hover:border-primary hover:bg-gray-50 transition-colors disabled:opacity-50"
+              >
+                {uploading ? (
+                  <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
+                ) : (
+                  <>
+                    <Upload className="h-8 w-8 text-gray-400" />
+                    <span className="text-sm text-gray-500">Add Photos</span>
+                  </>
+                )}
+              </button>
+            )}
+          </div>
 
-            <p className="text-sm text-muted-foreground">
-              Drag to reorder. First image will be the cover photo.
-            </p>
-          </CardContent>
-        </Card>
-      )}
+          <p className="text-sm text-muted-foreground">
+            {isEditing
+              ? "Drag to reorder. First image will be the cover photo."
+              : "First image will be the cover photo."}
+          </p>
+        </CardContent>
+      </Card>
 
       <div className="flex gap-4">
         <Button type="submit" disabled={isSubmitting} className="flex-1">
           {isSubmitting ? (
             <>
               <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-              {isEditing ? "Saving..." : "Creating..."}
+              {isEditing ? "Saving..." : "Publishing..."}
             </>
           ) : isEditing ? (
             "Save Changes"
           ) : (
-            "Create & Add Images"
+            "Publish Listing"
           )}
         </Button>
         <Button type="button" variant="outline" onClick={() => router.back()}>

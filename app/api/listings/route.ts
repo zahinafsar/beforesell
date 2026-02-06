@@ -17,6 +17,7 @@ interface ListingBody {
   description: string;
   price: number;
   negotiable: boolean;
+  phone?: string | null;
   categoryId: string;
   locationId: string;
   attributes?: Record<string, string | string[]>;
@@ -39,7 +40,7 @@ export async function POST(request: NextApiRequest<ListingBody>) {
       );
     }
 
-    const { title, description, price, negotiable, categoryId, locationId } = validation.data;
+    const { title, description, price, negotiable, phone, categoryId, locationId } = validation.data;
     const attributes = body.attributes as Record<string, string | string[]> | undefined;
 
     const listing = await prisma.listing.create({
@@ -49,6 +50,7 @@ export async function POST(request: NextApiRequest<ListingBody>) {
         description,
         price,
         negotiable,
+        phone: phone || null,
         categoryId,
         locationId,
         userId: user.id,

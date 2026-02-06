@@ -55,6 +55,7 @@ interface UpdateListingBody {
   description?: string;
   price?: number;
   negotiable?: boolean;
+  phone?: string | null;
   categoryId?: string;
   locationId?: string;
   attributes?: Record<string, string | string[]>;

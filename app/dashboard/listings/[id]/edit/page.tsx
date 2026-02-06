@@ -48,6 +48,7 @@ export default async function EditListingPage({ params }: EditListingPageProps) 
         categories={categories}
         locations={locations}
         listing={listing}
+        userPhone={user.phone}
       />
     </div>
   );

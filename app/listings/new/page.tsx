@@ -43,12 +43,13 @@ export default async function NewListingPage({ searchParams }: NewListingPagePro
   return (
     <div className="container px-4 py-8 max-w-3xl">
       <h1 className="text-3xl font-bold mb-6">
-        {listing ? "Add Images to Your Listing" : "Post a New Ad"}
+        {listing ? "Edit Listing" : "Post a New Ad"}
       </h1>
       <ListingForm
         categories={categories}
         locations={locations}
         listing={listing || undefined}
+        userPhone={user.phone}
       />
     </div>
   );

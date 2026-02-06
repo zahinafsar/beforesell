@@ -11,13 +11,15 @@ import type { POST as POST_9 } from '../app/api/conversations/[id]/messages/rout
 import type { GET as GET_10 } from '../app/api/conversations/[id]/route';
 import type { GET as GET_11, POST as POST_11 } from '../app/api/conversations/route';
 import type { GET as GET_12 } from '../app/api/conversations/unread/route';
-import type { POST as POST_13 } from '../app/api/listings/[id]/favorite/route';
-import type { POST as POST_14, PUT as PUT_14, DELETE as DELETE_14 } from '../app/api/listings/[id]/images/route';
-import type { GET as GET_15, PUT as PUT_15, DELETE as DELETE_15 } from '../app/api/listings/[id]/route';
-import type { POST as POST_16, GET as GET_16 } from '../app/api/listings/route';
-import type { GET as GET_17 } from '../app/api/user/favorites/route';
-import type { GET as GET_18, PUT as PUT_18 } from '../app/api/user/profile/route';
-import type { POST as POST_19 } from '../app/api/users/heartbeat/route';
+import type { POST as POST_13 } from '../app/api/import/bikroy/route';
+import type { POST as POST_14 } from '../app/api/import/proxy-image/route';
+import type { POST as POST_15 } from '../app/api/listings/[id]/favorite/route';
+import type { POST as POST_16, PUT as PUT_16, DELETE as DELETE_16 } from '../app/api/listings/[id]/images/route';
+import type { GET as GET_17, PUT as PUT_17, DELETE as DELETE_17 } from '../app/api/listings/[id]/route';
+import type { POST as POST_18, GET as GET_18 } from '../app/api/listings/route';
+import type { GET as GET_19 } from '../app/api/user/favorites/route';
+import type { GET as GET_20, PUT as PUT_20 } from '../app/api/user/profile/route';
+import type { POST as POST_21 } from '../app/api/users/heartbeat/route';
 
 export type ApiRoutes = {
   'auth/forgot-password': {
@@ -117,7 +119,7 @@ export type ApiRoutes = {
       params: ExtractNextParams<typeof GET_12>
     },
   };
-  'listings/[id]/favorite': {
+  'import/bikroy': {
     POST: {
       body: ExtractNextBody<typeof POST_13>
       response: ExtractNextResponse<typeof POST_13>
@@ -125,82 +127,98 @@ export type ApiRoutes = {
       params: ExtractNextParams<typeof POST_13>
     },
   };
-  'listings/[id]/images': {
+  'import/proxy-image': {
     POST: {
       body: ExtractNextBody<typeof POST_14>
       response: ExtractNextResponse<typeof POST_14>
       query: ExtractNextQuery<typeof POST_14>
       params: ExtractNextParams<typeof POST_14>
     },
-    PUT: {
-      body: ExtractNextBody<typeof PUT_14>
-      response: ExtractNextResponse<typeof PUT_14>
-      query: ExtractNextQuery<typeof PUT_14>
-      params: ExtractNextParams<typeof PUT_14>
-    },
-    DELETE: {
-      response: ExtractNextResponse<typeof DELETE_14>
-      query: ExtractNextQuery<typeof DELETE_14>
-      params: ExtractNextParams<typeof DELETE_14>
+  };
+  'listings/[id]/favorite': {
+    POST: {
+      body: ExtractNextBody<typeof POST_15>
+      response: ExtractNextResponse<typeof POST_15>
+      query: ExtractNextQuery<typeof POST_15>
+      params: ExtractNextParams<typeof POST_15>
     },
   };
-  'listings/[id]': {
-    GET: {
-      response: ExtractNextResponse<typeof GET_15>
-      query: ExtractNextQuery<typeof GET_15>
-      params: ExtractNextParams<typeof GET_15>
-    },
-    PUT: {
-      body: ExtractNextBody<typeof PUT_15>
-      response: ExtractNextResponse<typeof PUT_15>
-      query: ExtractNextQuery<typeof PUT_15>
-      params: ExtractNextParams<typeof PUT_15>
-    },
-    DELETE: {
-      response: ExtractNextResponse<typeof DELETE_15>
-      query: ExtractNextQuery<typeof DELETE_15>
-      params: ExtractNextParams<typeof DELETE_15>
-    },
-  };
-  'listings': {
+  'listings/[id]/images': {
     POST: {
       body: ExtractNextBody<typeof POST_16>
       response: ExtractNextResponse<typeof POST_16>
       query: ExtractNextQuery<typeof POST_16>
       params: ExtractNextParams<typeof POST_16>
     },
-    GET: {
-      response: ExtractNextResponse<typeof GET_16>
-      query: ExtractNextQuery<typeof GET_16>
-      params: ExtractNextParams<typeof GET_16>
+    PUT: {
+      body: ExtractNextBody<typeof PUT_16>
+      response: ExtractNextResponse<typeof PUT_16>
+      query: ExtractNextQuery<typeof PUT_16>
+      params: ExtractNextParams<typeof PUT_16>
+    },
+    DELETE: {
+      response: ExtractNextResponse<typeof DELETE_16>
+      query: ExtractNextQuery<typeof DELETE_16>
+      params: ExtractNextParams<typeof DELETE_16>
     },
   };
-  'user/favorites': {
+  'listings/[id]': {
     GET: {
       response: ExtractNextResponse<typeof GET_17>
       query: ExtractNextQuery<typeof GET_17>
       params: ExtractNextParams<typeof GET_17>
     },
+    PUT: {
+      body: ExtractNextBody<typeof PUT_17>
+      response: ExtractNextResponse<typeof PUT_17>
+      query: ExtractNextQuery<typeof PUT_17>
+      params: ExtractNextParams<typeof PUT_17>
+    },
+    DELETE: {
+      response: ExtractNextResponse<typeof DELETE_17>
+      query: ExtractNextQuery<typeof DELETE_17>
+      params: ExtractNextParams<typeof DELETE_17>
+    },
   };
-  'user/profile': {
+  'listings': {
+    POST: {
+      body: ExtractNextBody<typeof POST_18>
+      response: ExtractNextResponse<typeof POST_18>
+      query: ExtractNextQuery<typeof POST_18>
+      params: ExtractNextParams<typeof POST_18>
+    },
     GET: {
       response: ExtractNextResponse<typeof GET_18>
       query: ExtractNextQuery<typeof GET_18>
       params: ExtractNextParams<typeof GET_18>
     },
+  };
+  'user/favorites': {
+    GET: {
+      response: ExtractNextResponse<typeof GET_19>
+      query: ExtractNextQuery<typeof GET_19>
+      params: ExtractNextParams<typeof GET_19>
+    },
+  };
+  'user/profile': {
+    GET: {
+      response: ExtractNextResponse<typeof GET_20>
+      query: ExtractNextQuery<typeof GET_20>
+      params: ExtractNextParams<typeof GET_20>
+    },
     PUT: {
-      body: ExtractNextBody<typeof PUT_18>
-      response: ExtractNextResponse<typeof PUT_18>
-      query: ExtractNextQuery<typeof PUT_18>
-      params: ExtractNextParams<typeof PUT_18>
+      body: ExtractNextBody<typeof PUT_20>
+      response: ExtractNextResponse<typeof PUT_20>
+      query: ExtractNextQuery<typeof PUT_20>
+      params: ExtractNextParams<typeof PUT_20>
     },
   };
   'users/heartbeat': {
     POST: {
-      body: ExtractNextBody<typeof POST_19>
-      response: ExtractNextResponse<typeof POST_19>
-      query: ExtractNextQuery<typeof POST_19>
-      params: ExtractNextParams<typeof POST_19>
+      body: ExtractNextBody<typeof POST_21>
+      response: ExtractNextResponse<typeof POST_21>
+      query: ExtractNextQuery<typeof POST_21>
+      params: ExtractNextParams<typeof POST_21>
     },
   };
 };
