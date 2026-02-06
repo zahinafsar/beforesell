@@ -1,6 +1,7 @@
 "use client";
 
 import { Suspense, useEffect, useRef, useState } from "react";
+import { usePresence } from "@/hooks/use-presence";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
@@ -75,6 +76,9 @@ function MessagesContent() {
 
   const { user, isLoading: authLoading } = useAuth();
   const authKey = user?.id;
+
+  // Track presence — instantly marks offline on tab close/browser close
+  usePresence(!!user);
 
   const [newMessage, setNewMessage] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);

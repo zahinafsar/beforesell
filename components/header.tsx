@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -24,7 +24,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useAuth } from "@/providers/auth-provider";
 import { conversationsQuery } from "@/lib/queries";
-import { api } from "@/lib/api";
+
 
 export function Header() {
   const { user, isLoading, logout } = useAuth();
@@ -32,15 +32,6 @@ export function Header() {
   const [searchQuery, setSearchQuery] = useState("");
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const authKey = user?.id;
-
-  // Heartbeat to track online status
-  useEffect(() => {
-    if (!user) return;
-    const heartbeat = () => api("users/heartbeat", { method: "POST" }).catch(() => {});
-    heartbeat();
-    const interval = setInterval(heartbeat, 30000);
-    return () => clearInterval(interval);
-  }, [user]);
 
   // Unread message count
   const { data: unreadData } = useQuery(conversationsQuery(authKey).unreadCount());

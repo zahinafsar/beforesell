@@ -3,6 +3,7 @@ import { NextApiRequest } from "next-ts-api";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth";
 import { createConversationSchema } from "@/lib/validations";
+import { sendNewMessageEmail } from "@/lib/email";
 
 export async function GET(request: NextApiRequest<unknown>) {
   try {
@@ -101,7 +102,13 @@ export async function POST(request: NextApiRequest<CreateConversationBody>) {
 
     const listing = await prisma.listing.findUnique({
       where: { id: listingId },
-      select: { id: true, userId: true, status: true },
+      select: {
+        id: true,
+        title: true,
+        userId: true,
+        status: true,
+        user: { select: { email: true, name: true, lastSeen: true } },
+      },
     });
 
     if (!listing) {
@@ -158,6 +165,22 @@ export async function POST(request: NextApiRequest<CreateConversationBody>) {
         }),
       ]);
 
+      // Send email notification if recipient is offline
+      const oneMinuteAgo = new Date(Date.now() - 60 * 1000);
+      if (listing.user.lastSeen < oneMinuteAgo) {
+        const conversationUrl = `${process.env.NEXT_PUBLIC_APP_URL}/messages?conversation=${existingConversation.id}`;
+        try {
+          await sendNewMessageEmail(
+            listing.user.email,
+            user.name,
+            listing.title,
+            conversationUrl
+          );
+        } catch (emailError) {
+          console.error("Failed to send email notification:", emailError);
+        }
+      }
+
       return NextResponse.json({ conversationId: existingConversation.id });
     }
 
@@ -176,6 +199,22 @@ export async function POST(request: NextApiRequest<CreateConversationBody>) {
         },
       },
     });
+
+    // Send email notification if recipient is offline
+    const oneMinuteAgo = new Date(Date.now() - 60 * 1000);
+    if (listing.user.lastSeen < oneMinuteAgo) {
+      const conversationUrl = `${process.env.NEXT_PUBLIC_APP_URL}/messages?conversation=${conversation.id}`;
+      try {
+        await sendNewMessageEmail(
+          listing.user.email,
+          user.name,
+          listing.title,
+          conversationUrl
+        );
+      } catch (emailError) {
+        console.error("Failed to send email notification:", emailError);
+      }
+    }
 
     return NextResponse.json({ conversationId: conversation.id }, { status: 201 });
   } catch (error) {

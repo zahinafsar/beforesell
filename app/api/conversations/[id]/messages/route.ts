@@ -73,12 +73,12 @@ export async function POST(
       }),
     ]);
 
-    // Send email notification if recipient offline >5 minutes
+    // Send email notification if recipient is offline
     const recipient = conversation.participants.find((p) => p.userId !== user.id)?.user;
     if (recipient) {
-      const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
-      if (recipient.lastSeen < fiveMinutesAgo) {
-        const conversationUrl = `${process.env.APP_URL || "http://localhost:3000"}/messages/${id}`;
+      const oneMinuteAgo = new Date(Date.now() - 60 * 1000);
+      if (recipient.lastSeen < oneMinuteAgo) {
+        const conversationUrl = `${process.env.NEXT_PUBLIC_APP_URL}/messages?conversation=${id}`;
         try {
           await sendNewMessageEmail(
             recipient.email,
