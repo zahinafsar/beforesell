@@ -46,6 +46,7 @@ export function ListingForm({
     price: number;
     negotiable: boolean;
     phone?: string | null;
+    status?: string;
     categoryId?: string | null;
     locationId: string;
     images: { id: string; url: string; publicId: string; order: number }[];
@@ -58,6 +59,7 @@ export function ListingForm({
   const isEditing = !!listing;
 
   const [title, setTitle] = useState(listing?.title || "");
+  const [status, setStatus] = useState(listing?.status || "ACTIVE");
   const [description, setDescription] = useState(listing?.description || "");
   const [price, setPrice] = useState(listing?.price?.toString() || "");
   const [negotiable, setNegotiable] = useState(listing?.negotiable ?? true);
@@ -330,6 +332,7 @@ export function ListingForm({
       price: parseFloat(price),
       negotiable,
       phone: phone.trim() || null,
+      ...(isEditing && { status: status as "DRAFT" | "ACTIVE" | "SOLD" | "EXPIRED" | "DELETED" }),
       categoryId,
       locationId,
       attributes: attributeValues,
@@ -389,6 +392,23 @@ export function ListingForm({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
+      {isEditing && (
+        <div className="flex items-center justify-between">
+          <h1 className="text-3xl font-bold">Edit Listing</h1>
+          <Select value={status} onValueChange={setStatus}>
+            <SelectTrigger className="w-36">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="ACTIVE">Active</SelectItem>
+              <SelectItem value="SOLD">Sold</SelectItem>
+              <SelectItem value="EXPIRED">Expired</SelectItem>
+              <SelectItem value="DRAFT">Draft</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      )}
+
       {error && (
         <div className="p-3 text-sm text-red-600 bg-red-50 rounded-md">
           {error}
@@ -505,6 +525,7 @@ export function ListingForm({
               Visible to buyers on this listing
             </p>
           </div>
+
         </CardContent>
       </Card>
 
@@ -614,7 +635,7 @@ export function ListingForm({
         </CardContent>
       </Card>
 
-      {categoryId && categoryAttributes.length > 0 && (
+      {categoryId && (loadingAttributes || categoryAttributes.length > 0) && (
         <Card>
           <CardHeader>
             <CardTitle>Details</CardTitle>

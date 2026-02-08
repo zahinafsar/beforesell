@@ -35,6 +35,17 @@
 - Removed `condition` field from Listing model (db schema, APIs, forms, filters, display)
 - Converted all /components/*.tsx files from default exports to named exports
 - Implemented next-ts-api for type-safe API calls (auto-generated types)
+- Added admin panel with Role enum (USER/ADMIN), requireAdmin() helper
+  - Schema: Role enum added to User model, `role Role @default(USER)`
+  - Auth: `role` in getCurrentUser() select, `requireAdmin()` in lib/auth.ts
+  - Auth provider: `isAdmin` computed field exposed in context
+  - Middleware: `/admin` added to protectedPaths + config matcher, sets `x-pathname` header
+  - Root layout: conditionally hides Header/Footer on admin routes via `x-pathname` header
+  - Admin layout: `app/admin/layout.tsx` — checks requireAdmin(), redirects non-admins
+  - Admin sidebar: `components/admin-sidebar.tsx` — responsive with Sheet for mobile
+  - API routes: admin/stats, admin/users, admin/users/[id], admin/listings, admin/listings/[id], admin/categories, admin/categories/[id], admin/categories/[id]/attributes, admin/categories/[id]/attributes/[attrId]
+  - Query factory: `lib/queries/admin.ts` — adminQuery(authKey) with stats(), users(), listings(), categories(), categoryAttributes()
+  - Pages: Dashboard (server component with stats), Users (search, role toggle, verify), Listings (filter by status, featured toggle, delete), Categories (CRUD + attribute management)
 
 ## Component Export Pattern
 All components in /components/ use: `export function ComponentName`

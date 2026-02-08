@@ -7,7 +7,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import Image from "next/image";
 import { Plus, Eye, Edit } from "lucide-react";
-import { DeleteListingButton } from "@/components/delete-listing-button";
 
 export default async function MyListingsPage() {
   const user = await getCurrentUser();
@@ -160,14 +159,11 @@ export default async function MyListingsPage() {
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2">
-                  <Button variant="outline" size="sm" asChild>
-                    <Link href={`/dashboard/listings/${listing.id}/edit`}>
-                      <Edit className="h-4 w-4" />
-                    </Link>
-                  </Button>
-                  <DeleteListingButton listingId={listing.id} />
-                </div>
+                <Button variant="outline" size="sm" asChild>
+                  <Link href={`/dashboard/listings/${listing.id}/edit`}>
+                    <Edit className="h-4 w-4" />
+                  </Link>
+                </Button>
               </CardContent>
             </Card>
           ))}

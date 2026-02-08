@@ -56,6 +56,7 @@ interface UpdateListingBody {
   price?: number;
   negotiable?: boolean;
   phone?: string | null;
+  status?: "DRAFT" | "ACTIVE" | "SOLD" | "EXPIRED" | "DELETED";
   categoryId?: string;
   locationId?: string;
   attributes?: Record<string, string | string[]>;
@@ -97,9 +98,12 @@ export async function PUT(
 
     const attributes = body.attributes as Record<string, string | string[]> | undefined;
 
+    const updateData = { ...validation.data };
+    if (updateData.categoryId === "") updateData.categoryId = null;
+
     const listing = await prisma.listing.update({
       where: { id },
-      data: validation.data,
+      data: updateData,
       include: {
         category: true,
         location: true,

@@ -173,9 +173,7 @@ async function scrapeBikroyListing(url: string): Promise<BikroyListing> {
 }
 
 async function main() {
-  const url =
-    process.argv[2] ||
-    "https://bikroy.com/en/ad/samsung-galaxy-j2-prime-delivery-possible-used-for-sale-dhaka";
+  const url = process.argv[2];
 
   try {
     const data = await scrapeBikroyListing(url);

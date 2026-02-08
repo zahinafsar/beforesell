@@ -4,7 +4,7 @@ import { jwtVerify } from "jose";
 
 const JWT_SECRET = new TextEncoder().encode(process.env.JWT_SECRET || "secret");
 
-const protectedPaths = ["/dashboard", "/listings/new", "/messages", "/favorites"];
+const protectedPaths = ["/dashboard", "/listings/new", "/messages", "/favorites", "/admin"];
 const authPaths = ["/login", "/register", "/forgot-password", "/reset-password"];
 
 export async function middleware(request: NextRequest) {
@@ -38,7 +38,9 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL("/dashboard", request.url));
   }
 
-  return NextResponse.next();
+  const response = NextResponse.next();
+  response.headers.set("x-pathname", pathname);
+  return response;
 }
 
 export const config = {
@@ -47,6 +49,7 @@ export const config = {
     "/listings/new",
     "/messages/:path*",
     "/favorites/:path*",
+    "/admin/:path*",
     "/login",
     "/register",
     "/forgot-password",

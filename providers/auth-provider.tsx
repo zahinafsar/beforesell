@@ -10,6 +10,7 @@ interface User {
   name: string;
   phone: string | null;
   avatar: string | null;
+  role: "USER" | "ADMIN";
   verified: boolean;
   createdAt: string | Date;
 }
@@ -18,6 +19,7 @@ interface AuthContextType {
   user: User | null;
   isLoading: boolean;
   isAuthenticated: boolean;
+  isAdmin: boolean;
   refetch: () => void;
   logout: () => Promise<void>;
 }
@@ -57,6 +59,7 @@ export default function AuthProvider({
         user: user ?? null,
         isLoading,
         isAuthenticated: !!user,
+        isAdmin: user?.role === "ADMIN",
         refetch,
         logout,
       }}

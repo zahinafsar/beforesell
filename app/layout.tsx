@@ -5,6 +5,7 @@ import QueryProvider from "@/providers/query-provider";
 import AuthProvider from "@/providers/auth-provider";
 import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
+import { headers } from "next/headers";
 import { Toaster } from "sonner";
 import { getBaseUrl, generateOrganizationJsonLd, generateWebsiteJsonLd } from "@/lib/seo";
 
@@ -79,11 +80,13 @@ export const metadata: Metadata = {
   verification: {},
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const headersList = await headers();
+  const isAdmin = (headersList.get("x-pathname") || "").startsWith("/admin");
   const organizationJsonLd = generateOrganizationJsonLd();
   const websiteJsonLd = generateWebsiteJsonLd();
 
@@ -104,9 +107,9 @@ export default function RootLayout({
       >
         <QueryProvider>
           <AuthProvider>
-            <Header />
+            {!isAdmin && <Header />}
             <main className="flex-1">{children}</main>
-            <Footer />
+            {!isAdmin && <Footer />}
             <Toaster richColors position="bottom-right" />
           </AuthProvider>
         </QueryProvider>

@@ -73,11 +73,18 @@ export async function getCurrentUser() {
       name: true,
       phone: true,
       avatar: true,
+      role: true,
       verified: true,
       createdAt: true,
     },
   });
 
+  return user;
+}
+
+export async function requireAdmin() {
+  const user = await getCurrentUser();
+  if (!user || user.role !== "ADMIN") return null;
   return user;
 }
 

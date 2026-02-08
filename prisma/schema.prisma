@@ -14,6 +14,7 @@ model User {
   name          String
   phone         String?
   avatar        String?
+  role          Role      @default(USER)
   verified      Boolean   @default(false)
   verifyToken   String?
   resetToken    String?
@@ -54,6 +55,11 @@ model Location {
   updatedAt DateTime  @updatedAt
 
   @@map("locations")
+}
+
+enum Role {
+  USER
+  ADMIN
 }
 
 enum ListingStatus {
