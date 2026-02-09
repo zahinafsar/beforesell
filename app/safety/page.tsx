@@ -80,8 +80,8 @@ export default function SafetyPage() {
         <h2 className="text-xl font-semibold mb-2">Report Suspicious Activity</h2>
         <p className="text-muted-foreground">
           If you encounter a suspicious listing or user, please report it immediately. Contact us at{" "}
-          <a href="mailto:support@beforesell.com" className="text-primary hover:underline">
-            support@beforesell.com
+          <a href="mailto:help.beforesell@gmail.com" className="text-primary hover:underline">
+            help.beforesell@gmail.com
           </a>
         </p>
       </div>

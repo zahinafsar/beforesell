@@ -100,8 +100,8 @@ export default function TermsPage() {
           <h2 className="text-xl font-semibold mb-3">10. Contact</h2>
           <p className="text-muted-foreground">
             For questions about these terms, contact us at{" "}
-            <a href="mailto:support@beforesell.com" className="text-primary hover:underline">
-              support@beforesell.com
+            <a href="mailto:help.beforesell@gmail.com" className="text-primary hover:underline">
+              help.beforesell@gmail.com
             </a>
           </p>
         </section>

@@ -10,8 +10,8 @@ const contactInfo = [
   {
     icon: Mail,
     label: "Email",
-    value: "support@beforesell.com",
-    href: "mailto:support@beforesell.com",
+    value: "help.beforesell@gmail.com",
+    href: "mailto:help.beforesell@gmail.com",
   },
   {
     icon: Phone,

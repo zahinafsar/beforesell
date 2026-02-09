@@ -51,11 +51,11 @@ export function Footer() {
             </p>
             <div className="mt-4 space-y-2">
               <a
-                href="mailto:support@beforesell.com"
+                href="mailto:help.beforesell@gmail.com"
                 className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
               >
                 <Mail className="h-4 w-4" />
-                support@beforesell.com
+                help.beforesell@gmail.com
               </a>
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <MapPin className="h-4 w-4" />

@@ -172,7 +172,7 @@ async function main() {
           status: "ACTIVE",
           userId: user.id,
           locationId: dhaka.id,
-          categoryId: null,
+          categoryId: "",
           expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
           images: {
             create: data.images.map((imgUrl, i) => ({

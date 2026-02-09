@@ -99,7 +99,6 @@ export async function PUT(
     const attributes = body.attributes as Record<string, string | string[]> | undefined;
 
     const updateData = { ...validation.data };
-    if (updateData.categoryId === "") updateData.categoryId = null;
 
     const listing = await prisma.listing.update({
       where: { id },

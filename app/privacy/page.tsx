@@ -81,8 +81,8 @@ export default function PrivacyPage() {
           <h2 className="text-xl font-semibold mb-3">7. Contact</h2>
           <p className="text-muted-foreground">
             For privacy-related questions, contact us at{" "}
-            <a href="mailto:support@beforesell.com" className="text-primary hover:underline">
-              support@beforesell.com
+            <a href="mailto:help.beforesell@gmail.com" className="text-primary hover:underline">
+              help.beforesell@gmail.com
             </a>
           </p>
         </section>
