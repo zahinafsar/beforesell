@@ -18,7 +18,7 @@ interface ListingBody {
   price: number;
   negotiable: boolean;
   phone?: string | null;
-  categoryId?: string | null;
+  categoryId: string;
   locationId: string;
   attributes?: Record<string, string | string[]>;
 }
@@ -51,7 +51,7 @@ export async function POST(request: NextApiRequest<ListingBody>) {
         price,
         negotiable,
         phone: phone || null,
-        categoryId: categoryId || null,
+        categoryId,
         locationId,
         userId: user.id,
         status: "ACTIVE",

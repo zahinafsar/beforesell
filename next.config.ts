@@ -8,7 +8,7 @@ const withNextTsApi = nextTsApi({
 
 const nextConfig: NextConfig = {
   images: {
-    domains: ["res.cloudinary.com", "picsum.photos", "i.bikroy-st.com"],
+    domains: ["res.cloudinary.com", "picsum.photos"],
   },
 };
 

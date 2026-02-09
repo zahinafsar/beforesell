@@ -26,7 +26,7 @@ export const createListingSchema = z.object({
   price: z.number().min(0, "Price must be positive"),
   negotiable: z.boolean().default(true),
   phone: z.string().optional().nullable(),
-  categoryId: z.string().optional().nullable(),
+  categoryId: z.string().min(1, "Category is required"),
   locationId: z.string().min(1, "Location is required"),
 });
 

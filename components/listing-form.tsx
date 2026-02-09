@@ -3,7 +3,7 @@
 import { useState, useCallback, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { X, Upload, GripVertical, Loader2, ChevronLeft, Check, Import } from "lucide-react";
+import { X, Upload, GripVertical, Loader2, ChevronLeft, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -87,9 +87,6 @@ export function ListingForm({
     return {};
   });
   const [loadingAttributes, setLoadingAttributes] = useState(false);
-  const [importUrl, setImportUrl] = useState("");
-  const [importing, setImporting] = useState(false);
-  const [importMessage, setImportMessage] = useState("");
 
   const parentCategories = categories.filter((c) => !c.parentId);
 
@@ -142,70 +139,6 @@ export function ListingForm({
 
     fetchAttributes();
   }, [categoryId, listing]);
-
-  const handleImport = async () => {
-    if (!importUrl.trim()) return;
-    setImporting(true);
-    setImportMessage("");
-    setError("");
-
-    try {
-      const res = await api("import/bikroy", {
-        method: "POST",
-        body: { url: importUrl.trim() },
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error("Import failed");
-      }
-
-      if (data.title) setTitle(data.title);
-      if (data.description) setDescription(data.description);
-      if (data.price != null) setPrice(data.price.toString());
-      if (data.negotiable != null) setNegotiable(data.negotiable);
-      if (data.phone) setPhone(data.phone);
-
-      // Download images through proxy and add as pending files
-      if (data.images?.length > 0) {
-        const imagePromises = (data.images as string[]).map(async (imageUrl, i) => {
-          try {
-            const proxyRes = await api("import/proxy-image", {
-              method: "POST",
-              body: { url: imageUrl },
-            });
-            if (!proxyRes.ok) return null;
-            const blob = await proxyRes.blob();
-            return new File([blob], `bikroy-image-${i + 1}.jpg`, { type: blob.type || "image/jpeg" });
-          } catch {
-            return null;
-          }
-        });
-
-        const files = (await Promise.all(imagePromises)).filter((f): f is File => f !== null);
-        if (files.length > 0) {
-          setPendingFiles((prev) => [...prev, ...files].slice(0, 20));
-        }
-      }
-
-      const parts: string[] = [];
-      if (data.title) parts.push("title");
-      if (data.description) parts.push("description");
-      if (data.price != null) parts.push("price");
-      if (data.phone) parts.push("phone");
-      if (data.images?.length > 0) parts.push(`${data.images.length} images`);
-      setImportMessage(
-        parts.length > 0
-          ? `Imported ${parts.join(", ")}. Select category & location manually.`
-          : "No data found to import."
-      );
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Import failed");
-    } finally {
-      setImporting(false);
-    }
-  };
 
   const handleImageUpload = useCallback(
     async (files: FileList) => {
@@ -313,6 +246,11 @@ export function ListingForm({
     e.preventDefault();
     setError("");
 
+    if (!categoryId) {
+      setError("Category is required");
+      return;
+    }
+
     // Validate required attributes
     for (const attr of categoryAttributes) {
       if (attr.required) {
@@ -413,45 +351,6 @@ export function ListingForm({
         <div className="p-3 text-sm text-red-600 bg-red-50 rounded-md">
           {error}
         </div>
-      )}
-
-      {!isEditing && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Import className="h-5 w-5" />
-              Import from Bikroy.com
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <div className="flex gap-2">
-              <Input
-                value={importUrl}
-                onChange={(e) => setImportUrl(e.target.value)}
-                placeholder="Paste bikroy.com listing URL..."
-                disabled={importing}
-              />
-              <Button
-                type="button"
-                variant="outline"
-                onClick={handleImport}
-                disabled={importing || !importUrl.trim()}
-              >
-                {importing ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  "Import"
-                )}
-              </Button>
-            </div>
-            {importMessage && (
-              <p className="text-sm text-green-600">{importMessage}</p>
-            )}
-            <p className="text-xs text-muted-foreground">
-              Pre-fill listing details by importing from an existing Bikroy.com ad.
-            </p>
-          </CardContent>
-        </Card>
       )}
 
       <Card>
