@@ -1,0 +1,163 @@
+{
+  "design": {
+    "host": "http://localhost:3000",
+    "pages": [
+      {
+        "route": "/",
+        "x": 0,
+        "y": 0
+      },
+      {
+        "route": "/about",
+        "x": 1340,
+        "y": 0
+      },
+      {
+        "route": "/admin",
+        "x": 2680,
+        "y": 0,
+        "compact": false
+      },
+      {
+        "route": "/admin/categories",
+        "x": 0,
+        "y": 860
+      },
+      {
+        "route": "/admin/listings",
+        "x": 1340,
+        "y": 860
+      },
+      {
+        "route": "/admin/users",
+        "x": 2680,
+        "y": 860
+      },
+      {
+        "route": "/categories",
+        "x": 0,
+        "y": 1720
+      },
+      {
+        "route": "/categories/[slug]",
+        "x": 1340,
+        "y": 1720
+      },
+      {
+        "route": "/contact",
+        "x": 2680,
+        "y": 1720
+      },
+      {
+        "route": "/dashboard",
+        "x": 0,
+        "y": 2580
+      },
+      {
+        "route": "/dashboard/listings",
+        "x": 1340,
+        "y": 2580
+      },
+      {
+        "route": "/dashboard/listings/[id]",
+        "x": 2680,
+        "y": 2580
+      },
+      {
+        "route": "/dashboard/settings",
+        "x": 0,
+        "y": 3449.277961384555
+      },
+      {
+        "route": "/favorites",
+        "x": 1340,
+        "y": 3440
+      },
+      {
+        "route": "/forgot-password",
+        "x": 2680,
+        "y": 3440
+      },
+      {
+        "route": "/how-it-works",
+        "x": 0,
+        "y": 4300
+      },
+      {
+        "route": "/listings",
+        "x": 1340,
+        "y": 4300
+      },
+      {
+        "route": "/listings/new",
+        "x": 2680,
+        "y": 4300
+      },
+      {
+        "route": "/listings/[id]",
+        "x": 0,
+        "y": 5160
+      },
+      {
+        "route": "/login",
+        "x": 1340,
+        "y": 5160
+      },
+      {
+        "route": "/messages",
+        "x": 2680,
+        "y": 5160
+      },
+      {
+        "route": "/messages/[id]",
+        "x": 0,
+        "y": 6020
+      },
+      {
+        "route": "/privacy",
+        "x": 1340,
+        "y": 6020
+      },
+      {
+        "route": "/register",
+        "x": 2680,
+        "y": 6020
+      },
+      {
+        "route": "/reset-password",
+        "x": 0,
+        "y": 6880
+      },
+      {
+        "route": "/safety",
+        "x": 1340,
+        "y": 6880
+      },
+      {
+        "route": "/search",
+        "x": 2680,
+        "y": 6880
+      },
+      {
+        "route": "/survey",
+        "x": 0,
+        "y": 7740
+      },
+      {
+        "route": "/terms",
+        "x": 1340,
+        "y": 7740
+      },
+      {
+        "route": "/user/[id]",
+        "x": 2680,
+        "y": 7740
+      },
+      {
+        "route": "/verify",
+        "x": 0,
+        "y": 8600
+      }
+    ]
+  }
+}

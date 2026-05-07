@@ -19,11 +19,11 @@ const popularSearches = [
 ];
 
 export default async function HomePage() {
-  const [categories, featuredListings, recentListings, stats] = await Promise.all([
+  const [categoriesRaw, featuredListings, recentListings, stats] = await Promise.all([
     prisma.category.findMany({
       where: { parentId: null },
       include: {
-        _count: { select: { listings: { where: { status: "ACTIVE" } } } },
+        children: { select: { id: true } },
       },
       orderBy: { name: "asc" },
     }),
@@ -52,6 +52,18 @@ export default async function HomePage() {
   ]);
 
   const [listingCount, userCount] = stats;
+
+  const categoryCounts = await Promise.all(
+    categoriesRaw.map((c) =>
+      prisma.listing.count({
+        where: {
+          status: "ACTIVE",
+          categoryId: { in: [c.id, ...c.children.map((ch) => ch.id)] },
+        },
+      })
+    )
+  );
+  const categories = categoriesRaw.map((c, i) => ({ ...c, listingCount: categoryCounts[i] }));
 
   return (
     <div className="flex flex-col">
@@ -155,7 +167,7 @@ export default async function HomePage() {
                 <div className="text-center">
                   <p className="font-medium text-sm">{category.name}</p>
                   <p className="text-xs text-muted-foreground">
-                    {category._count.listings} ads
+                    {category.listingCount} ads
                   </p>
                 </div>
               </Link>

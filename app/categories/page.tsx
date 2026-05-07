@@ -11,14 +11,25 @@ export const metadata: Metadata = generatePageMetadata({
 });
 
 export default async function CategoriesPage() {
-  const categories = await prisma.category.findMany({
+  const categoriesRaw = await prisma.category.findMany({
     where: { parentId: null },
     include: {
       children: { orderBy: { name: "asc" } },
-      _count: { select: { listings: { where: { status: "ACTIVE" } } } },
     },
     orderBy: { name: "asc" },
   });
+
+  const counts = await Promise.all(
+    categoriesRaw.map((c) =>
+      prisma.listing.count({
+        where: {
+          status: "ACTIVE",
+          categoryId: { in: [c.id, ...c.children.map((ch) => ch.id)] },
+        },
+      })
+    )
+  );
+  const categories = categoriesRaw.map((c, i) => ({ ...c, listingCount: counts[i] }));
 
   return (
     <div className="container px-4 py-8">
@@ -33,13 +44,13 @@ export default async function CategoriesPage() {
               href={`/search?categoryId=${category.id}`}
               className="flex items-center gap-3 hover:text-primary transition-colors"
             >
-              <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+              <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
                 <CategoryIcon iconName={category.icon} className="h-5 w-5 text-primary" />
               </div>
               <div>
                 <h2 className="font-semibold">{category.name}</h2>
                 <p className="text-sm text-muted-foreground">
-                  {category._count.listings} ads
+                  {category.listingCount} ads
                 </p>
               </div>
             </Link>
