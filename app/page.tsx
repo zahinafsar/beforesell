@@ -1,22 +1,13 @@
 export const dynamic = "force-dynamic";
 
 import Link from "next/link";
-import { Search, ArrowRight, TrendingUp, Users, ShieldCheck } from "lucide-react";
+import Image from "next/image";
+import { ArrowRight, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { prisma } from "@/lib/prisma";
 import { ListingCard } from "@/components/listing-card";
 import { CategoryIcon } from "@/components/category-icon";
-import { HeroBackground } from "@/components/hero-background";
-
-const popularSearches = [
-  "iPhone",
-  "Toyota",
-  "Laptop",
-  "Apartment",
-  "Motorcycle",
-  "Samsung",
-];
+import { HeroCollage } from "@/components/hero-collage";
 
 export default async function HomePage() {
   const [categoriesRaw, featuredListings, recentListings, stats] = await Promise.all([
@@ -68,77 +59,51 @@ export default async function HomePage() {
   return (
     <div className="flex flex-col">
       {/* Hero Section */}
-      <section className="relative overflow-hidden bg-linear-to-br from-primary via-primary to-secondary py-16 md:py-24">
-        <HeroBackground />
+      <section className="bg-white">
+        <div className="container px-4 py-16 md:py-24">
+          <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+            {/* Left content */}
+            <div className="space-y-8">
+              <div className="flex items-center gap-3 text-primary text-sm font-semibold uppercase tracking-wider">
+                <span className="h-px w-8 bg-primary" />
+                Start Selling Today
+              </div>
 
-        <div className="container px-4 relative z-10">
-          <div className="max-w-3xl mx-auto text-center space-y-8">
-            <div className="space-y-4">
-              <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold tracking-tight text-white">
-                Buy & Sell Anything
-                <span className="block text-white/90">in Bangladesh</span>
+              <h1 className="text-5xl md:text-6xl lg:text-7xl font-black tracking-tight text-primary leading-[1.05]">
+                Buy, Sell &<br />
+                <span className="italic font-serif font-bold">Trade Anything</span>
               </h1>
-              <p className="text-lg md:text-xl text-white/80 max-w-xl mx-auto">
-                Join thousands of buyers and sellers on Bangladesh&apos;s fastest-growing marketplace
+
+              <p className="text-base md:text-lg text-neutral-600 max-w-md leading-relaxed">
+                Bangladesh&apos;s fastest-growing classifieds marketplace. From electronics to estates — your next deal is one click away.
               </p>
-            </div>
 
-            {/* Search Form */}
-            <form action="/search" className="max-w-2xl mx-auto">
-              <div className="flex flex-col sm:flex-row gap-3 p-2 bg-white rounded-xl shadow-2xl">
-                <div className="relative flex-1">
-                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                  <Input
-                    type="text"
-                    name="search"
-                    placeholder="What are you looking for?"
-                    className="pl-12 h-14 text-lg border-0 shadow-none focus-visible:ring-0"
-                  />
-                </div>
-                <Button type="submit" size="lg" className="h-14 px-8 text-base font-semibold">
-                  Search
+              <div className="flex flex-wrap items-center gap-6">
+                <Button asChild size="lg" className="h-14 px-8 text-base font-semibold">
+                  <Link href="/listings/new">Post Free Ad</Link>
                 </Button>
-              </div>
-            </form>
 
-            {/* Popular Searches */}
-            <div className="flex flex-wrap items-center justify-center gap-2">
-              <span className="text-white/60 text-sm">Popular:</span>
-              {popularSearches.map((term) => (
-                <Link
-                  key={term}
-                  href={`/search?search=${encodeURIComponent(term)}`}
-                  className="px-3 py-1 text-sm bg-white/20 hover:bg-white/30 text-white rounded-full transition-colors"
-                >
-                  {term}
-                </Link>
-              ))}
+                <div className="flex items-center gap-3">
+                  <div className="flex -space-x-2">
+                    <div className="h-9 w-9 border-2 border-white bg-primary/20 flex items-center justify-center text-xs font-bold text-primary">A</div>
+                    <div className="h-9 w-9 border-2 border-white bg-primary/40 flex items-center justify-center text-xs font-bold text-primary">M</div>
+                    <div className="h-9 w-9 border-2 border-white bg-primary/60 flex items-center justify-center text-xs font-bold text-white">S</div>
+                  </div>
+                  <div className="text-sm">
+                    <div className="flex items-center gap-1 text-amber-500">
+                      {Array.from({ length: 5 }).map((_, i) => (
+                        <Star key={i} className="h-3.5 w-3.5 fill-current" />
+                      ))}
+                      <span className="ml-1 font-bold text-neutral-900">4.8</span>
+                    </div>
+                    <p className="text-xs text-neutral-600">from {userCount.toLocaleString()}+ users</p>
+                  </div>
+                </div>
+              </div>
             </div>
 
-            {/* Trust Indicators */}
-            <div className="grid grid-cols-3 gap-4 max-w-lg mx-auto pt-4">
-              <div className="text-center">
-                <div className="flex items-center justify-center gap-1 text-white mb-1">
-                  <TrendingUp className="h-4 w-4" />
-                  <span className="text-2xl font-bold">{listingCount.toLocaleString()}+</span>
-                </div>
-                <p className="text-xs text-white/60">Active Listings</p>
-              </div>
-              <div className="text-center">
-                <div className="flex items-center justify-center gap-1 text-white mb-1">
-                  <Users className="h-4 w-4" />
-                  <span className="text-2xl font-bold">{userCount.toLocaleString()}+</span>
-                </div>
-                <p className="text-xs text-white/60">Happy Users</p>
-              </div>
-              <div className="text-center">
-                <div className="flex items-center justify-center gap-1 text-white mb-1">
-                  <ShieldCheck className="h-4 w-4" />
-                  <span className="text-2xl font-bold">100%</span>
-                </div>
-                <p className="text-xs text-white/60">Free to Use</p>
-              </div>
-            </div>
+            {/* Right collage */}
+            <HeroCollage />
           </div>
         </div>
       </section>
@@ -159,16 +124,26 @@ export default async function HomePage() {
               <Link
                 key={category.id}
                 href={`/search?categoryId=${category.id}`}
-                className="flex flex-col items-center gap-3 p-4 rounded-lg border bg-card hover:bg-accent hover:border-primary transition-colors"
+                className="relative overflow-hidden border bg-card aspect-square group hover:border-primary transition-colors"
               >
-                <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
-                  <CategoryIcon iconName={category.icon} className="h-6 w-6 text-primary" />
-                </div>
-                <div className="text-center">
-                  <p className="font-medium text-sm">{category.name}</p>
-                  <p className="text-xs text-muted-foreground">
-                    {category.listingCount} ads
-                  </p>
+                {category.image && (
+                  <Image
+                    src={category.image}
+                    alt={category.name}
+                    fill
+                    sizes="(min-width: 1280px) 16vw, (min-width: 1024px) 20vw, (min-width: 768px) 25vw, (min-width: 640px) 33vw, 50vw"
+                    className="object-cover"
+                  />
+                )}
+                <div className="absolute inset-x-0 bottom-0 h-1/4 backdrop-blur-md bg-black/30" />
+                <div className="absolute inset-0 p-3 flex flex-col justify-between text-white">
+                  <div className="h-9 w-9 bg-white/15 backdrop-blur flex items-center justify-center">
+                    <CategoryIcon iconName={category.icon} className="h-5 w-5 text-white" />
+                  </div>
+                  <div>
+                    <p className="font-semibold text-sm leading-tight">{category.name}</p>
+                    <p className="text-xs text-white/80">{category.listingCount} ads</p>
+                  </div>
                 </div>
               </Link>
             ))}
