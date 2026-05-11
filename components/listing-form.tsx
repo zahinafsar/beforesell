@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useCallback, useRef, useEffect } from "react";
+import { useState, useCallback, useRef, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { X, Upload, GripVertical, Loader2, ChevronLeft, Check } from "lucide-react";
+import { X, Upload, GripVertical, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -16,10 +16,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
 import { api } from "@/lib/api";
 import { DynamicAttributeField, type CategoryAttribute } from "@/components/dynamic-attribute-field";
-import { CategoryIcon } from "@/components/category-icon";
-import { cn } from "@/lib/utils";
 
 export function ListingForm({
   categories,
@@ -88,25 +87,52 @@ export function ListingForm({
   });
   const [loadingAttributes, setLoadingAttributes] = useState(false);
 
-  const parentCategories = categories.filter((c) => !c.parentId);
+  const categoryMap = useMemo(() => {
+    const m = new Map<string, (typeof categories)[number]>();
+    categories.forEach((c) => m.set(c.id, c));
+    return m;
+  }, [categories]);
 
-  // Track selected parent category separately for better UX
-  const [selectedParentId, setSelectedParentId] = useState<string>(() => {
-    if (listing?.categoryId) {
-      // Find parent of the listing's category
-      const parent = parentCategories.find(
-        (c) => c.id === listing.categoryId || c.children?.some((sub) => sub.id === listing.categoryId)
-      );
-      return parent?.id || "";
+  const rootCategories = useMemo(
+    () => categories.filter((c) => !c.parentId),
+    [categories],
+  );
+
+  // Walk parents from listing.categoryId to derive initial path
+  const [categoryPath, setCategoryPath] = useState<string[]>(() => {
+    if (!listing?.categoryId) return [];
+    const path: string[] = [];
+    let cur = categoryMap.get(listing.categoryId);
+    while (cur) {
+      path.unshift(cur.id);
+      cur = cur.parentId ? categoryMap.get(cur.parentId) : undefined;
     }
-    return "";
+    return path;
   });
 
-  const selectedParent = parentCategories.find((c) => c.id === selectedParentId);
-  const subcategories = selectedParent?.children || [];
+  // Options for a given level: roots at level 0, or children of selection at level - 1
+  const optionsForLevel = useCallback(
+    (level: number) => {
+      if (level === 0) return rootCategories;
+      const parentId = categoryPath[level - 1];
+      return parentId ? categoryMap.get(parentId)?.children || [] : [];
+    },
+    [rootCategories, categoryPath, categoryMap],
+  );
 
-  // Get the selected subcategory for display
-  const selectedSubcategory = subcategories.find((sub) => sub.id === categoryId);
+  // Render one Select per level. Stop when the current level has no options.
+  const levels = useMemo(() => {
+    const arr: number[] = [];
+    let i = 0;
+    while (true) {
+      const opts = optionsForLevel(i);
+      if (opts.length === 0) break;
+      arr.push(i);
+      if (!categoryPath[i]) break;
+      i++;
+    }
+    return arr;
+  }, [optionsForLevel, categoryPath]);
 
   // Fetch category attributes when categoryId changes
   useEffect(() => {
@@ -399,12 +425,10 @@ export function ListingForm({
           </div>
 
           <div className="flex items-center gap-2">
-            <input
-              type="checkbox"
+            <Checkbox
               id="negotiable"
               checked={negotiable}
-              onChange={(e) => setNegotiable(e.target.checked)}
-              className="rounded border-gray-300"
+              onCheckedChange={(v) => setNegotiable(v === true)}
             />
             <Label htmlFor="negotiable" className="font-normal">
               Price is negotiable
@@ -433,104 +457,34 @@ export function ListingForm({
           <CardTitle>Category</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          {/* Show selected category breadcrumb when category is selected */}
-          {selectedParent && (
-            <div className="flex items-center gap-2 text-sm">
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                className="h-auto p-1"
-                onClick={() => {
-                  setSelectedParentId("");
-                  setCategoryId("");
-                  setAttributeValues({});
-                  setCategoryAttributes([]);
-                }}
-              >
-                <ChevronLeft className="h-4 w-4 mr-1" />
-                All Categories
-              </Button>
-              <span className="text-muted-foreground">/</span>
-              <span className="font-medium">{selectedParent.name}</span>
-              {selectedSubcategory && (
-                <>
-                  <span className="text-muted-foreground">/</span>
-                  <span className="font-medium text-primary">{selectedSubcategory.name}</span>
-                </>
-              )}
-            </div>
-          )}
-
-          {/* Parent category selection */}
-          {!selectedParentId && (
-            <div className="space-y-2">
-              <Label>Select a category</Label>
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-                {parentCategories.map((cat) => (
-                  <button
-                    key={cat.id}
-                    type="button"
-                    onClick={() => {
-                      setSelectedParentId(cat.id);
-                      // If no subcategories, select this category directly
-                      if (!cat.children?.length) {
-                        setCategoryId(cat.id);
-                      } else {
-                        setCategoryId("");
-                      }
-                    }}
-                    className={cn(
-                      "flex flex-col items-center gap-2 p-4 rounded-lg border-2 transition-all hover:border-primary hover:bg-primary/5",
-                      selectedParentId === cat.id
-                        ? "border-primary bg-primary/5"
-                        : "border-border"
-                    )}
-                  >
-                    <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
-                      <CategoryIcon iconName={cat.icon} className="h-5 w-5 text-primary" />
-                    </div>
-                    <span className="text-sm font-medium text-center">{cat.name}</span>
-                  </button>
-                ))}
+          {levels.map((lvl) => {
+            const opts = optionsForLevel(lvl);
+            return (
+              <div key={lvl} className="space-y-2">
+                <Label>{lvl === 0 ? "Select a category" : "Select a subcategory"}</Label>
+                <Select
+                  value={categoryPath[lvl] || ""}
+                  onValueChange={(value) => {
+                    setCategoryPath((p) => [...p.slice(0, lvl), value]);
+                    setCategoryId(value);
+                    setAttributeValues({});
+                    setCategoryAttributes([]);
+                  }}
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Select..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {opts.map((opt) => (
+                      <SelectItem key={opt.id} value={opt.id}>
+                        {opt.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
-            </div>
-          )}
-
-          {/* Subcategory selection */}
-          {selectedParentId && subcategories.length > 0 && (
-            <div className="space-y-2">
-              <Label>Select a subcategory</Label>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                {subcategories.map((sub) => (
-                  <button
-                    key={sub.id}
-                    type="button"
-                    onClick={() => setCategoryId(sub.id)}
-                    className={cn(
-                      "flex items-center justify-between gap-2 p-3 rounded-lg border-2 transition-all hover:border-primary hover:bg-primary/5 text-left",
-                      categoryId === sub.id
-                        ? "border-primary bg-primary/5"
-                        : "border-border"
-                    )}
-                  >
-                    <span className="text-sm font-medium">{sub.name}</span>
-                    {categoryId === sub.id && (
-                      <Check className="h-4 w-4 text-primary flex-shrink-0" />
-                    )}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* No subcategory selection needed message */}
-          {selectedParentId && subcategories.length === 0 && (
-            <div className="flex items-center gap-2 p-3 rounded-lg bg-primary/5 border border-primary/20">
-              <Check className="h-4 w-4 text-primary" />
-              <span className="text-sm">Category selected: <strong>{selectedParent?.name}</strong></span>
-            </div>
-          )}
+            );
+          })}
         </CardContent>
       </Card>
 
