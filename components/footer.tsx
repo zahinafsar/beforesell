@@ -14,6 +14,7 @@ const quickLinks = [
   { name: "Post Free Ad", href: "/listings/new" },
   { name: "How It Works", href: "/how-it-works" },
   { name: "Safety Tips", href: "/safety" },
+  { name: "Blog", href: "/blog" },
 ];
 
 const companyLinks = [

@@ -1,4 +1,5 @@
 import { Metadata } from "next";
+import type { BlogPost, BlogLang } from "@/lib/blog";
 
 const SITE_NAME = "BeforeSell";
 const SITE_URL = process.env.NEXT_PUBLIC_URL || "https://beforesell.com";
@@ -236,6 +237,83 @@ export function generateListingJsonLd({
       },
     ],
     datePosted: createdAt.toISOString(),
+  };
+}
+
+interface BlogMetadataOptions {
+  post: BlogPost;
+  lang: BlogLang;
+}
+
+export function generateBlogMetadata({ post, lang }: BlogMetadataOptions): Metadata {
+  const content = post[lang];
+  const url = `${SITE_URL}/${lang}/${content.slug}`;
+  const enUrl = `${SITE_URL}/en/${post.en.slug}`;
+  const bnUrl = `${SITE_URL}/bn/${post.bn.slug}`;
+  const fullTitle = `${content.title} | ${SITE_NAME}`;
+  const ogLocale = lang === "bn" ? "bn_BD" : "en_BD";
+  const image = post.cover;
+
+  return {
+    title: fullTitle,
+    description: content.description,
+    alternates: {
+      canonical: url,
+      languages: {
+        en: enUrl,
+        bn: bnUrl,
+        "x-default": enUrl,
+      },
+    },
+    openGraph: {
+      title: content.title,
+      description: content.description,
+      url,
+      siteName: SITE_NAME,
+      locale: ogLocale,
+      type: "article",
+      publishedTime: post.publishedAt,
+      modifiedTime: post.updatedAt,
+      ...(image && { images: [{ url: image, width: 1200, height: 630 }] }),
+    },
+    twitter: {
+      card: image ? "summary_large_image" : "summary",
+      title: content.title,
+      description: content.description,
+      ...(image && { images: [image] }),
+    },
+  };
+}
+
+export function generateBlogJsonLd({ post, lang }: BlogMetadataOptions) {
+  const content = post[lang];
+  const url = `${SITE_URL}/${lang}/${content.slug}`;
+  return {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    headline: content.title,
+    description: content.description,
+    inLanguage: lang === "bn" ? "bn-BD" : "en-BD",
+    datePublished: post.publishedAt,
+    dateModified: post.updatedAt,
+    author: {
+      "@type": "Organization",
+      name: SITE_NAME,
+      url: SITE_URL,
+    },
+    publisher: {
+      "@type": "Organization",
+      name: SITE_NAME,
+      logo: {
+        "@type": "ImageObject",
+        url: `${SITE_URL}/logo.png`,
+      },
+    },
+    mainEntityOfPage: {
+      "@type": "WebPage",
+      "@id": url,
+    },
+    ...(post.cover && { image: post.cover.startsWith("http") ? post.cover : `${SITE_URL}${post.cover}` }),
   };
 }
 

@@ -1,6 +1,7 @@
 import { MetadataRoute } from "next";
 import { prisma } from "@/lib/prisma";
 import { getBaseUrl } from "@/lib/seo";
+import { BLOG_POSTS } from "@/lib/blog";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = getBaseUrl();
@@ -38,12 +39,34 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.9,
     },
     {
-      url: `${baseUrl}/categories`,
+      url: `${baseUrl}/blog`,
       lastModified: new Date(),
       changeFrequency: "weekly",
-      priority: 0.8,
+      priority: 0.7,
     },
   ];
+
+  const blogPages: MetadataRoute.Sitemap = BLOG_POSTS.flatMap((post) => {
+    const enUrl = `${baseUrl}/en/${post.en.slug}`;
+    const bnUrl = `${baseUrl}/bn/${post.bn.slug}`;
+    const alternates = { languages: { en: enUrl, bn: bnUrl } };
+    return [
+      {
+        url: enUrl,
+        lastModified: new Date(post.updatedAt),
+        changeFrequency: "monthly" as const,
+        priority: 0.8,
+        alternates,
+      },
+      {
+        url: bnUrl,
+        lastModified: new Date(post.updatedAt),
+        changeFrequency: "monthly" as const,
+        priority: 0.8,
+        alternates,
+      },
+    ];
+  });
 
   const listingPages: MetadataRoute.Sitemap = listings.map((listing) => ({
     url: `${baseUrl}/listings/${listing.id}`,
@@ -66,5 +89,5 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.5,
   }));
 
-  return [...staticPages, ...categoryPages, ...listingPages, ...userPages];
+  return [...staticPages, ...blogPages, ...categoryPages, ...listingPages, ...userPages];
 }
