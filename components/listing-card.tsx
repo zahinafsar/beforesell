@@ -45,20 +45,20 @@ export function ListingCard({ listing, showStatus }: ListingCardProps) {
         className="object-cover"
       />
 
-      <span className="absolute top-3 left-3 z-10 bg-black/60 backdrop-blur px-3 py-1.5 text-xs font-bold text-white whitespace-nowrap">
+      <span className="absolute top-2 left-2 md:top-3 md:left-3 z-10 bg-black/60 backdrop-blur px-2 py-1 md:px-3 md:py-1.5 text-[10px] md:text-xs font-bold text-white whitespace-nowrap">
         ৳{listing.price.toLocaleString()}
         {listing.negotiable && (
-          <span className="ml-1 font-normal text-white/70">· Nego</span>
+          <span className="ml-1 font-normal text-white/70 hidden md:inline">· Nego</span>
         )}
       </span>
 
-      <div className="absolute top-3 right-3 z-10 flex flex-col items-end gap-1.5 max-w-[55%]">
+      <div className="absolute top-2 right-2 md:top-3 md:right-3 z-10 flex flex-col items-end gap-1 md:gap-1.5 max-w-[45%]">
         {showStatusBadge && (
-          <span className="bg-black/70 backdrop-blur px-2 py-1 text-[10px] font-semibold uppercase tracking-wide text-white">
+          <span className="bg-black/70 backdrop-blur px-1.5 py-0.5 md:px-2 md:py-1 text-[9px] md:text-[10px] font-semibold uppercase tracking-wide text-white">
             {listing.status}
           </span>
         )}
-        <span className="bg-white/20 backdrop-blur px-2.5 py-1 text-[10px] font-medium text-white truncate max-w-full">
+        <span className="bg-white/20 backdrop-blur px-1.5 py-0.5 md:px-2.5 md:py-1 text-[9px] md:text-[10px] font-medium text-white truncate max-w-full">
           {listing.location.address}
         </span>
       </div>
@@ -76,12 +76,12 @@ export function ListingCard({ listing, showStatus }: ListingCardProps) {
         </div>
         <div className="absolute inset-0 bg-black/45" />
 
-        <div className="relative flex flex-col gap-2 p-4 text-white">
-          <h3 className="font-bold text-base leading-tight">
+        <div className="relative flex flex-col gap-2 p-3 md:p-4 text-white">
+          <h3 className="font-bold text-xs md:text-base leading-tight line-clamp-2">
             {listing.title}
           </h3>
           {listing.description && (
-            <div className="grid grid-rows-[0fr] group-hover:grid-rows-[1fr] transition-[grid-template-rows] duration-300 ease-out">
+            <div className="hidden md:grid grid-rows-[0fr] group-hover:grid-rows-[1fr] transition-[grid-template-rows] duration-300 ease-out">
               <p className="text-xs text-white/80 leading-snug overflow-hidden line-clamp-4">
                 {listing.description}
               </p>
