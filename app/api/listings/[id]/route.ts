@@ -18,7 +18,6 @@ export async function GET(
         location: true,
         images: { orderBy: { order: "asc" } },
         user: { select: { id: true, name: true, avatar: true, phone: true, createdAt: true } },
-        _count: { select: { favorites: true } },
         attributeValues: {
           include: {
             attribute: {

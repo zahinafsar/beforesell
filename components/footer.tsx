@@ -7,12 +7,11 @@ const categories = [
   { name: "Electronics", href: "/categories/electronics" },
   { name: "Vehicles", href: "/categories/vehicles" },
   { name: "Property", href: "/categories/property" },
-  { name: "Jobs", href: "/categories/jobs" },
+  { name: "Fashion", href: "/categories/fashion" },
 ];
 
 const quickLinks = [
   { name: "Post Free Ad", href: "/listings/new" },
-  { name: "All Categories", href: "/categories" },
   { name: "How It Works", href: "/how-it-works" },
   { name: "Safety Tips", href: "/safety" },
 ];

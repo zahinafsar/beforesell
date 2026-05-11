@@ -30,7 +30,6 @@ export async function GET(request: NextApiRequest<unknown>) {
         _count: {
           select: {
             listings: { where: { status: "ACTIVE" } },
-            favorites: true,
           },
         },
       },

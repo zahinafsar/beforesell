@@ -5,7 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Package, Heart, Eye, Settings, Plus, CheckCircle, AlertCircle } from "lucide-react";
+import { Package, Eye, Settings, Plus, CheckCircle, AlertCircle } from "lucide-react";
 
 export default async function DashboardPage() {
   const user = await getCurrentUser();
@@ -14,12 +14,11 @@ export default async function DashboardPage() {
     redirect("/login");
   }
 
-  const [listings, favorites, totalViews] = await Promise.all([
+  const [listings, totalViews] = await Promise.all([
     prisma.listing.findMany({
       where: { userId: user.id, status: { not: "DELETED" } },
       select: { status: true, views: true },
     }),
-    prisma.favorite.count({ where: { userId: user.id } }),
     prisma.listing.aggregate({
       where: { userId: user.id },
       _sum: { views: true },
@@ -31,7 +30,6 @@ export default async function DashboardPage() {
     activeListings: listings.filter((l) => l.status === "ACTIVE").length,
     soldListings: listings.filter((l) => l.status === "SOLD").length,
     totalViews: totalViews._sum.views || 0,
-    favorites,
   };
 
   return (
@@ -46,7 +44,7 @@ export default async function DashboardPage() {
         </Button>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-8">
+      <div className="grid gap-6 md:grid-cols-3 mb-8">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
@@ -74,21 +72,6 @@ export default async function DashboardPage() {
             <p className="text-xs text-muted-foreground">
               Across all listings
             </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Saved Items
-            </CardTitle>
-            <Heart className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <p className="text-2xl font-bold">{stats.favorites}</p>
-            <Link href="/favorites" className="text-xs text-primary hover:underline">
-              View favorites
-            </Link>
           </CardContent>
         </Card>
 
@@ -155,12 +138,6 @@ export default async function DashboardPage() {
               <Link href="/dashboard/listings">
                 <Package className="h-4 w-4 mr-2" />
                 My Listings
-              </Link>
-            </Button>
-            <Button variant="outline" asChild className="w-full justify-start">
-              <Link href="/favorites">
-                <Heart className="h-4 w-4 mr-2" />
-                My Favorites
               </Link>
             </Button>
             <Button variant="outline" asChild className="w-full justify-start">

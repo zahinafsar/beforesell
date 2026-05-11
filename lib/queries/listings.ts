@@ -90,16 +90,6 @@ export const listingsQuery = (authKey?: string | null) => {
         queryFn: () => fetchListings(props?.userId ? { userId: props.userId } : undefined),
         enabled: !!authKey,
       }),
-
-    favorites: () =>
-      queryOptions({
-        queryKey: createKey(...query.all, "favorites", authKey),
-        queryFn: async () => {
-          const res = await api("user/favorites", { method: "GET" });
-          return res.json();
-        },
-        enabled: !!authKey,
-      }),
   };
 
   return query;

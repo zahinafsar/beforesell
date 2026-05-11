@@ -29,7 +29,7 @@ export async function GET(
       role: true,
       verified: true,
       createdAt: true,
-      _count: { select: { listings: true, favorites: true } },
+      _count: { select: { listings: true } },
     },
   });
 

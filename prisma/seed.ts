@@ -6,7 +6,6 @@ const categories = [
   { name: "Electronics", slug: "electronics", icon: "Laptop" },
   { name: "Vehicles", slug: "vehicles", icon: "Car" },
   { name: "Property", slug: "property", icon: "Home" },
-  { name: "Jobs", slug: "jobs", icon: "Briefcase" },
   { name: "Fashion", slug: "fashion", icon: "Shirt" },
   { name: "Pets", slug: "pets", icon: "PawPrint" },
   { name: "Home & Living", slug: "home-living", icon: "Sofa" },
@@ -222,7 +221,6 @@ async function main() {
   await prisma.message.deleteMany();
   await prisma.conversationParticipant.deleteMany();
   await prisma.conversation.deleteMany();
-  await prisma.favorite.deleteMany();
   await prisma.listingImage.deleteMany();
   await prisma.listing.deleteMany();
 

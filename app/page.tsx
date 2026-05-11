@@ -2,8 +2,9 @@ export const dynamic = "force-dynamic";
 
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowRight, Star } from "lucide-react";
+import { ArrowRight, Search, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { prisma } from "@/lib/prisma";
 import { ListingCard } from "@/components/listing-card";
 import { CategoryIcon } from "@/components/category-icon";
@@ -64,10 +65,10 @@ export default async function HomePage() {
           <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
             {/* Left content */}
             <div className="space-y-8">
-              <div className="flex items-center gap-3 text-primary text-sm font-semibold uppercase tracking-wider">
+              {/* <div className="flex items-center gap-3 text-primary text-sm font-semibold uppercase tracking-wider">
                 <span className="h-px w-8 bg-primary" />
                 Start Selling Today
-              </div>
+              </div> */}
 
               <h1 className="text-5xl md:text-6xl lg:text-7xl font-black tracking-tight text-primary leading-[1.05]">
                 Buy, Sell &<br />
@@ -78,26 +79,37 @@ export default async function HomePage() {
                 Bangladesh&apos;s fastest-growing classifieds marketplace. From electronics to estates — your next deal is one click away.
               </p>
 
+              {/* Search Form */}
+              <form action="/search" className="max-w-xl">
+                <div className="flex border border-primary/20 bg-white p-1.5 shadow-lg shadow-primary/5">
+                  <div className="relative flex-1">
+                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-neutral-500" />
+                    <Input
+                      type="text"
+                      name="search"
+                      placeholder="What are you looking for?"
+                      className="pl-12 h-12 text-base bg-transparent border-0 shadow-none focus-visible:ring-0"
+                    />
+                  </div>
+                  <Button type="submit" size="lg" className="h-12 px-6 text-sm font-semibold">
+                    Search
+                  </Button>
+                </div>
+              </form>
+
               <div className="flex flex-wrap items-center gap-6">
                 <Button asChild size="lg" className="h-14 px-8 text-base font-semibold">
                   <Link href="/listings/new">Post Free Ad</Link>
                 </Button>
 
-                <div className="flex items-center gap-3">
-                  <div className="flex -space-x-2">
-                    <div className="h-9 w-9 border-2 border-white bg-primary/20 flex items-center justify-center text-xs font-bold text-primary">A</div>
-                    <div className="h-9 w-9 border-2 border-white bg-primary/40 flex items-center justify-center text-xs font-bold text-primary">M</div>
-                    <div className="h-9 w-9 border-2 border-white bg-primary/60 flex items-center justify-center text-xs font-bold text-white">S</div>
+                <div className="text-sm">
+                  <div className="flex items-center gap-1 text-amber-500">
+                    {Array.from({ length: 5 }).map((_, i) => (
+                      <Star key={i} className="h-3.5 w-3.5 fill-current" />
+                    ))}
+                    <span className="ml-1 font-bold text-neutral-900">4.8</span>
                   </div>
-                  <div className="text-sm">
-                    <div className="flex items-center gap-1 text-amber-500">
-                      {Array.from({ length: 5 }).map((_, i) => (
-                        <Star key={i} className="h-3.5 w-3.5 fill-current" />
-                      ))}
-                      <span className="ml-1 font-bold text-neutral-900">4.8</span>
-                    </div>
-                    <p className="text-xs text-neutral-600">from {userCount.toLocaleString()}+ users</p>
-                  </div>
+                  <p className="text-xs text-neutral-600">from {userCount.toLocaleString()}+ users</p>
                 </div>
               </div>
             </div>
@@ -111,13 +123,8 @@ export default async function HomePage() {
       {/* Categories Grid */}
       <section className="py-12">
         <div className="container px-4">
-          <div className="flex items-center justify-between mb-6">
+          <div className="mb-6">
             <h2 className="text-2xl font-bold">Browse Categories</h2>
-            <Button variant="ghost" asChild>
-              <Link href="/categories">
-                View All <ArrowRight className="h-4 w-4 ml-1" />
-              </Link>
-            </Button>
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
             {categories.map((category) => (

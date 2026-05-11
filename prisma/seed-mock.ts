@@ -9,7 +9,6 @@ const CONFIG = {
   users: 200,
   listingsPerUser: { min: 0, max: 15 },
   imagesPerListing: { min: 1, max: 5 },
-  favoritesPerUser: { min: 0, max: 20 },
   conversationsPerListing: { min: 0, max: 3 },
   messagesPerConversation: { min: 2, max: 10 },
 };
@@ -340,33 +339,6 @@ async function main() {
   }
   console.log(`✅ Created ${listings.length} listings with images and attributes\n`);
 
-  // Create favorites
-  console.log("Creating favorites...");
-  let favoriteCount = 0;
-  const activeListings = listings.filter((l) => l.userId);
-
-  for (const user of users) {
-    const favCount = getRandomInt(CONFIG.favoritesPerUser.min, CONFIG.favoritesPerUser.max);
-    const otherListings = activeListings.filter((l) => l.userId !== user.id);
-    const shuffled = otherListings.sort(() => 0.5 - Math.random());
-    const toFavorite = shuffled.slice(0, Math.min(favCount, shuffled.length));
-
-    for (const listing of toFavorite) {
-      try {
-        await prisma.favorite.create({
-          data: {
-            userId: user.id,
-            listingId: listing.id,
-          },
-        });
-        favoriteCount++;
-      } catch {
-        // Duplicate, skip
-      }
-    }
-  }
-  console.log(`✅ Created ${favoriteCount} favorites\n`);
-
   // Create conversations and messages
   console.log("Creating conversations and messages...");
   let conversationCount = 0;
@@ -418,7 +390,6 @@ async function main() {
   const totalUsers = await prisma.user.count();
   const totalImages = await prisma.listingImage.count();
   const totalAttributes = await prisma.listingAttributeValue.count();
-  const totalFavorites = await prisma.favorite.count();
   const totalConversations = await prisma.conversation.count();
   const totalMessages = await prisma.message.count();
 
@@ -427,7 +398,6 @@ async function main() {
   console.log(`   Listings: ${totalListings}`);
   console.log(`   Images: ${totalImages}`);
   console.log(`   Attribute Values: ${totalAttributes}`);
-  console.log(`   Favorites: ${totalFavorites}`);
   console.log(`   Conversations: ${totalConversations}`);
   console.log(`   Messages: ${totalMessages}`);
   console.log("\n🎉 Mock data generation complete!");

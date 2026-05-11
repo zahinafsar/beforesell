@@ -3,11 +3,9 @@
 import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
-import { Menu, Plus, Heart, MessageCircle, Search } from "lucide-react";
+import { Menu, Plus, MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import {
   Sheet,
@@ -28,24 +26,11 @@ import { conversationsQuery } from "@/lib/queries";
 
 export function Header() {
   const { user, isLoading, logout } = useAuth();
-  const router = useRouter();
-  const [searchQuery, setSearchQuery] = useState("");
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const authKey = user?.id;
 
-  // Unread message count
   const { data: unreadData } = useQuery(conversationsQuery(authKey).unreadCount());
-
   const unreadCount = unreadData?.unreadCount || 0;
-
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (searchQuery.trim()) {
-      router.push(`/search?search=${encodeURIComponent(searchQuery.trim())}`);
-    } else {
-      router.push("/search");
-    }
-  };
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -62,16 +47,13 @@ export function Header() {
                 <Link href="/" className="text-lg font-semibold" onClick={() => setSidebarOpen(false)}>
                   Home
                 </Link>
-                <Link href="/categories" className="text-lg" onClick={() => setSidebarOpen(false)}>
+                <Link href="/search" className="text-lg" onClick={() => setSidebarOpen(false)}>
                   Categories
                 </Link>
                 {user && (
                   <>
                     <Link href="/dashboard" className="text-lg" onClick={() => setSidebarOpen(false)}>
                       Dashboard
-                    </Link>
-                    <Link href="/favorites" className="text-lg" onClick={() => setSidebarOpen(false)}>
-                      Favorites
                     </Link>
                     <Link href="/messages" className="text-lg flex items-center gap-2" onClick={() => setSidebarOpen(false)}>
                       Messages
@@ -92,27 +74,6 @@ export function Header() {
             <span className="text-xl font-bold text-primary hidden sm:inline">BeforeSell</span>
           </Link>
 
-          <nav className="hidden md:flex items-center gap-6 ml-6">
-            <Link
-              href="/categories"
-              className="text-sm font-medium hover:text-primary transition-colors"
-            >
-              Categories
-            </Link>
-          </nav>
-
-          <form onSubmit={handleSearch} className="hidden md:flex items-center ml-4">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                type="text"
-                placeholder="Search..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 w-64"
-              />
-            </div>
-          </form>
         </div>
 
         <div className="flex items-center gap-2">
@@ -124,12 +85,6 @@ export function Header() {
                     <Link href="/listings/new">
                       <Plus className="h-4 w-4 mr-1" />
                       Post Ad
-                    </Link>
-                  </Button>
-
-                  <Button asChild variant="ghost" size="icon" className="hidden sm:flex">
-                    <Link href="/favorites">
-                      <Heart className="h-5 w-5" />
                     </Link>
                   </Button>
 

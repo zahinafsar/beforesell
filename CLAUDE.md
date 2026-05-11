@@ -52,4 +52,4 @@ Full-featured classifieds marketplace for Bangladesh. Bikroy.com competitor with
 - 64 Districts mapped to divisions
 
 ## Categories
-Electronics, Vehicles, Property, Jobs, Fashion, Pets, Home & Living, Hobbies/Sports, Business, Education, Services, Agriculture, Essentials
+Electronics, Vehicles, Property, Fashion, Pets, Home & Living, Hobbies/Sports, Business, Education, Services, Agriculture, Essentials

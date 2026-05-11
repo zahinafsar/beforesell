@@ -11,7 +11,6 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import { MapPin, Eye, Calendar, Phone, MessageCircle, Edit } from "lucide-react";
 import { ListingImageGallery } from "@/components/listing-image-gallery";
-import { FavoriteButton } from "@/components/favorite-button";
 
 interface ListingPageProps {
   params: Promise<{ id: string }>;
@@ -63,7 +62,6 @@ export default async function ListingPage({ params }: ListingPageProps) {
           _count: { select: { listings: { where: { status: "ACTIVE" } } } },
         },
       },
-      _count: { select: { favorites: true } },
       attributeValues: {
         include: {
           attribute: {
@@ -83,12 +81,6 @@ export default async function ListingPage({ params }: ListingPageProps) {
     where: { id },
     data: { views: { increment: 1 } },
   });
-
-  const isFavorited = user
-    ? await prisma.favorite.findUnique({
-        where: { userId_listingId: { userId: user.id, listingId: id } },
-      })
-    : null;
 
   const isOwner = user?.id === listing.userId;
   const categoryPath = listing.category?.parent
@@ -258,11 +250,6 @@ export default async function ListingPage({ params }: ListingPageProps) {
                       Send Message
                     </Link>
                   </Button>
-                  <FavoriteButton
-                    listingId={listing.id}
-                    isFavorited={!!isFavorited}
-                    isLoggedIn={!!user}
-                  />
                 </div>
               )}
             </CardContent>
