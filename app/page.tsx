@@ -213,7 +213,7 @@ export default async function HomePage() {
           <p className="text-primary-foreground/80">
             Post your ad for free and reach thousands of buyers
           </p>
-          <Button variant="secondary" size="lg" asChild>
+          <Button variant="outline" size="lg" asChild>
             <Link href="/listings/new">Post Free Ad</Link>
           </Button>
         </div>
