@@ -141,3 +141,101 @@ Next.js adds `.next/types/**/*.ts` to includes. Add `.next` to excludes to avoid
 ```json
 "exclude": ["node_modules", ".next"]
 ```
+
+## Mobile App (/mobile) — Expo SDK 56, expo-router, audio calling
+- Separate Expo (RN 0.85, React 19) app at `/mobile`. NOT next-ts-api — uses its own `src/lib/api.ts` fetch wrapper.
+- Auth for mobile: backend now returns JWT in body on login AND register; `lib/auth.ts` `getAuthToken()`
+  falls back to `Authorization: Bearer` header when no cookie. Register also returns token+user (mobile
+  signs in immediately, email verification still emailed but not required for mobile).
+- New public endpoint `GET /api/users` (app/api/users/route.ts): auth-required, returns all users except
+  self (id, name, avatar, lastSeen) ordered by lastSeen desc. Presence derived client-side (online if
+  lastSeen < 60s). Reuses existing `POST /api/users/heartbeat`.
+- Mobile auth: `src/lib/auth-context.tsx` (Context), token in expo-secure-store, React Query for fetching.
+  Routing gated via expo-router `Stack.Protected` in `src/app/_layout.tsx` — (auth) group vs (tabs) group.
+- Audio calling: AGORA (switched from Zego). `react-native-agora` (RTC media) + `agora-react-native-rtm`
+  2.x (Signaling). Backend `POST /api/agora/token` (app/api/agora/token/route.ts) issues RTM+RTC tokens via
+  `agora-token` from env `AGORA_APP_ID` + `AGORA_APP_CERTIFICATE` (RTM account = user.id, RTC uid 0).
+  `src/lib/agora.ts` = engine/RTM singletons + token fetch. `src/lib/call-context.tsx` = CallProvider state
+  machine (idle/outgoing/incoming/active) — RTM login on auth, peer invites via RTM user-channel JSON
+  signals (invite/accept/decline/cancel/end), RTC join on accept. UI overlay `src/components/call-overlay.tsx`
+  + `call-button.tsx` (mute/speaker/hangup/timer), mounted in `_layout.tsx` inside CallProvider. Front tab
+  `(tabs)/index.tsx` call button → `useCall().startCall`.
+- Requires a DEV BUILD (no Expo Go). Online calling fully built.
+  Env: mobile `EXPO_PUBLIC_AGORA_APP_ID` (+ API_URL); backend `AGORA_APP_ID`/`AGORA_APP_CERTIFICATE`.
+  bundleId/package com.beforesell.app. NOTE: web tsconfig now excludes `mobile/`.
+- OFFLINE incoming-call ringing — ANDROID IMPLEMENTED via own-backend FCM (agora-react-native-rtm wrapper
+  exposes NO offline-push API, so Agora Console push is NOT used). Flow: caller `startCall` fires
+  `POST /api/agora/notify` alongside RTM invite → backend `lib/fcm.ts` (firebase-admin) sends data-only
+  high-priority FCM to callee `User.fcmToken` → mobile `src/lib/push-background.ts` (imported FIRST in
+  index.js, before expo-router/entry) raises a notifee FULL-SCREEN-INTENT notif (`src/lib/push.ts`) →
+  accept persists pending call to SecureStore → `call-context` reads it post-RTM-login, sets `incoming`,
+  existing CallOverlay flow joins RTC. Token saved via `POST /api/users/push-token` on login
+  (registerPushToken), cleared on logout (unregisterPushToken). DB: added `User.fcmToken String?`.
+  Deps added: backend `firebase-admin`; mobile `@react-native-firebase/app`+`/messaging`,
+  `@notifee/react-native`. app.json: those config plugins + `USE_FULL_SCREEN_INTENT` perm.
+  REQUIRES backend env `FIREBASE_SERVICE_ACCOUNT` (service-account JSON one line) — pushes silently skip if
+  unset. Foreground push = no-op (live RTM handles it). iOS offline ringing still NOT wired (needs
+  PushKit/CallKit). See `mobile/CALLING_SETUP.md` §5.
+  GOTCHA: pasted service-account JSON has private_key newlines as literal `\n`; `lib/fcm.ts` MUST
+  `private_key.replace(/\\n/g,'\n')` after JSON.parse or firebase-admin throws "Failed to parse private
+  key" (ERR_OSSL_UNSUPPORTED) and /api/agora/notify swallows it → no push, app never rings. Verified fix
+  via logcat: `NotifeeHeadlessJS` runs + full-screen intent launches MainActivity over keyguard.
+- CALL ALERT UX: proper full-screen ringing (not a passive heads-up). push-background.ts sets the pending
+  call to SecureStore (now timestamped `at`, 60s TTL in push.ts getPendingCall) BEFORE displayIncomingCall,
+  so the notifee fullScreenAction launches the app straight into the in-app incoming CallOverlay. Channel
+  `calls` uses bundled ringtone `android/app/src/main/res/raw/ringtone.mp3` (generated via ffmpeg dual-tone
+  440+480Hz 2s-on/4s-off loop, `assets/ringtone.mp3`, copied by config plugin `plugins/with-call-ringtone.js`
+  in app.json), notif has `loopSound:true`+`lightUpScreen`+vibrationPattern. call-context reset()/accept()
+  call cancelIncomingCall()+setPendingCall(null) to stop the ring on answer/decline/end.
+- CALL AUDIO: joinRtc in call-context.tsx sets `setDefaultAudioRouteToSpeakerphone(true)` (before join) +
+  `setEnableSpeakerphone(true)` (after) — comms profile defaults to earpiece else sounds silent. NOTE:
+  emulator has no mic, so real audio test needs TWO PHYSICAL phones.
+- Emulator (AVD Pixel_7, arm64): data partition grown 6G→16G via `disk.dataPartition.size=16G` in
+  ~/.android/avd/Pixel_7.avd/config.ini + cold boot with `-wipe-data` (plain cold boot does NOT resize;
+  needs wipe to recreate userdata). 415MB APK kept failing to install at 6G.
+- REALTIME CHAT — runs entirely on FIRESTORE (RTDB removed; @react-native-firebase/database uninstalled).
+  Only new-message FCM uses our backend. Deps: @react-native-firebase/firestore, lucide-react-native
+  (+react-native-svg). `src/lib/firebase.ts` exports only db (Firestore). Messages: `chats/{a__b}/messages`
+  (chatId=sorted ids), onSnapshot (`src/lib/chat.ts`, `src/hooks/use-chat.ts`). Typing/seen on the
+  `chats/{chatId}` doc: `typing.{uid}`=client-ms (peer typing if <6s fresh, TYPING_TTL_MS — no onDisconnect
+  so freshness-based + 2s tick in use-chat); `lastRead.{uid}`=serverTimestamp written while chat open
+  (markRead on messages change) → message shows "Seen" when peerLastRead>=msg.createdAt else "Sent".
+  Presence: Firestore `status/{uid}={online,lastActive}`; heartbeat every 25s while AppState active + write
+  online/offline on AppState change; reader derives online = online && lastActive fresh (ONLINE_TTL_MS 45s)
+  with a 15s tick in usePresence (`src/lib/presence.ts`, `src/hooks/use-presence.ts`, registered in
+  `_layout.tsx` useRegisterPresence). New-message push: client writes Firestore then POST `/api/chat/notify`
+  → backend `lib/fcm.ts` sendMessagePush → FCM data `chat_message` → push-background.ts notifee (channel
+  `messages`); foreground via `src/hooks/use-message-notifications.ts`; suppressed for open chat via
+  `src/lib/active-chat.ts` (chat screen useFocusEffect). Tap notif → pending-chat SecureStore → _layout
+  routes `/chat/[id]`. UI: `(tabs)/index.tsx` user list (tap→chat, Phone btn, search, Lucide) — NO presence
+  in list (removed to kill read fan-out); presence shown ONLY in chat header (`src/app/chat/[id].tsx`).
+  Theme gained `tint`+`online`. NO Firebase Auth — needs Firestore enabled w/ OPEN TEST RULES
+  (mobile/CHAT_SETUP.md). Old /api/users/heartbeat unused by mobile.
+- SCALE/PAGINATION (1M users): `/api/users` cursor-paginated (orderBy id, take limit+1, nextCursor); mobile
+  useInfiniteQuery + debounced search + onEndReached. Messages paginated: subscribeRecentMessages (newest
+  MESSAGE_PAGE_SIZE=30 live) + fetchOlderMessages (startAfter cursor) on inverted FlatList onEndReached.
+  Typing throttled to false→true transition only (typingActive ref). Presence: read fan-out removed (chat
+  only); heartbeat writes remain (HEARTBEAT_MS=25s, ONLINE_TTL_MS=45s knobs). Full analysis in
+  mobile/PERFORMANCE.md. TODO before scale: pg_trgm index on User.name for search; lock Firestore rules.
+- MOBILE SAFE-AREA/KEYBOARD/STATUSBAR FIXES: root `_layout.tsx` wraps app in `SafeAreaProvider` +
+  `KeyboardProvider` (react-native-keyboard-controller) and renders `<StatusBar style="auto" />`
+  (expo-status-bar) — previously NONE present, so useSafeAreaInsets returned 0 (header under notch, no
+  bottom inset) and status-bar icons were invisible (white-on-white in light). Chat input keyboard
+  avoidance: RN KeyboardAvoidingView AND android adjustResize BOTH FAIL under edge-to-edge (targetSdk 36) —
+  use `KeyboardAvoidingView` from `react-native-keyboard-controller` (behavior="padding") in
+  `src/app/chat/[id].tsx`. Chat header needs explicit paddingTop for camera/notch clearance. Native dep →
+  rebuild. DEV MODE: assembleDebug (~555MB) installed both devices; `adb -s <d> reverse tcp:8081 tcp:8081`;
+  `npx expo start --dev-client`; launch via deep link
+  `beforesell://expo-development-client/?url=http%3A%2F%2Flocalhost%3A8081`. Fast Refresh for JS; rebuild
+  only for native deps.
+- HOME = RECENT-CONVERSATION LIST (Firestore, no backend): `(tabs)/index.tsx` rewritten from user directory
+  to conversation list. `sendMessage` stamps chat doc with participants/lastMessage/lastMessageAt/lastSenderId.
+  `subscribeConversations(uid)` queries `chats where participants array-contains uid` (NO orderBy/limit →
+  avoids composite index; auto single-field index) and SORTS CLIENT-SIDE in `useConversations` hook
+  (`src/hooks/use-conversations.ts`). Peer name/avatar from Firestore `profiles/{uid}` (`src/lib/profile.ts`,
+  `syncProfile` called in _layout on login). Rows: avatar, name, preview ("You: " prefix), time, unread dot
+  (unread = lastSenderId!=me && lastMessageAt>lastRead[me]). Search filters loaded convos by name. GOTCHA:
+  Firestore array-contains + orderBy(other field) needs a COMPOSITE INDEX — avoided by dropping orderBy and
+  sorting in JS (convo counts per user are small). Old chats (pre-change) won't appear until a NEW message is
+  sent (stamps the metadata). onSnapshot error cb gets null snapshot — guard `if(snap)`. New-chat-with-
+  stranger entry point NOT built (future: + button → old /api/users directory).

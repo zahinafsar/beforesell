@@ -52,6 +52,8 @@ export async function POST(request: NextApiRequest<LoginBody>) {
     });
 
     return NextResponse.json({
+      // Mobile clients use this token as a Bearer header; web ignores it and uses the cookie.
+      token,
       user: {
         id: user.id,
         email: user.email,

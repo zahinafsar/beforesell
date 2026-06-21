@@ -1,4 +1,4 @@
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { SignJWT, jwtVerify, type JWTPayload as JoseJWTPayload } from "jose";
 import bcrypt from "bcryptjs";
 import { prisma } from "./prisma";
@@ -55,7 +55,16 @@ export async function removeAuthCookie(): Promise<void> {
 
 export async function getAuthToken(): Promise<string | undefined> {
   const cookieStore = await cookies();
-  return cookieStore.get("auth-token")?.value;
+  const cookieToken = cookieStore.get("auth-token")?.value;
+  if (cookieToken) return cookieToken;
+
+  // Mobile clients send the JWT as a Bearer token instead of a cookie.
+  const authHeader = (await headers()).get("authorization");
+  if (authHeader?.startsWith("Bearer ")) {
+    return authHeader.slice(7).trim() || undefined;
+  }
+
+  return undefined;
 }
 
 export async function getCurrentUser() {

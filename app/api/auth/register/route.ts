@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { NextApiRequest } from "next-ts-api";
 import { prisma } from "@/lib/prisma";
-import { hashPassword, generateToken } from "@/lib/auth";
+import { hashPassword, generateToken, createToken } from "@/lib/auth";
 import { sendVerificationEmail } from "@/lib/email";
 import { registerSchema } from "@/lib/validations";
 
@@ -54,8 +54,18 @@ export async function POST(request: NextApiRequest<RegisterBody>) {
       // Email failed but user created - they can request a new verification email later
     }
 
+    // Issue an auth token so mobile clients can sign in immediately after registering.
+    const authToken = await createToken({ userId: user.id, email: user.email });
+
     return NextResponse.json({
       message: "Registration successful. Please check your email to verify your account.",
+      token: authToken,
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        verified: user.verified,
+      },
     });
   } catch {
     return NextResponse.json(
