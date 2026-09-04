@@ -3,6 +3,7 @@ import { NextApiRequest } from "next-ts-api";
 import { z } from "zod";
 import { requireAdmin } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { sendPromotionStatusEmail } from "@/lib/email";
 
 const updatePromotionSchema = z.object({
   status: z.enum(["PENDING_REVIEW", "PROCESSING", "APPROVED", "REJECTED"]),
@@ -31,7 +32,12 @@ export async function PUT(
   const { id } = await params;
   const existing = await prisma.listingPromotion.findUnique({
     where: { id },
-    select: { id: true },
+    select: {
+      id: true,
+      status: true,
+      user: { select: { email: true, name: true } },
+      listing: { select: { title: true, slug: true } },
+    },
   });
   if (!existing) {
     return NextResponse.json({ error: "Promotion not found" }, { status: 404 });
@@ -46,6 +52,21 @@ export async function PUT(
       reviewedById: admin.id,
     },
   });
+
+  if (existing.status !== promotion.status) {
+    try {
+      await sendPromotionStatusEmail({
+        email: existing.user.email,
+        ownerName: existing.user.name,
+        listingTitle: existing.listing.title,
+        listingSlug: existing.listing.slug,
+        status: promotion.status,
+        reviewNote: promotion.reviewNote,
+      });
+    } catch (error) {
+      console.error("Failed to send promotion status email", error);
+    }
+  }
 
   return NextResponse.json({ promotion });
 }

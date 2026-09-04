@@ -1,7 +1,7 @@
 import { Resend } from "resend";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
-
+const reviewEmail = process.env.BOOST_REVIEW_EMAIL || "afsarzahin@gmail.com";
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL;
 const FROM_EMAIL = "BeforeSell <noreply@beforesell.com>";
 
@@ -60,6 +60,40 @@ export async function sendVerificationEmail(
       </p>
     `),
   });
+}
+
+export async function sendNewUserSignupEmail({
+  userName,
+  userEmail,
+  createdAt,
+}: {
+  userName: string;
+  userEmail: string;
+  createdAt: Date;
+}): Promise<void> {
+  const usersUrl = `${APP_URL}/admin/users`;
+  const result = await resend.emails.send({
+    from: FROM_EMAIL,
+    to: reviewEmail,
+    subject: `New BeforeSell signup: ${userName}`,
+    html: emailLayout(`
+      <p style="margin: 0 0 8px; color: #2563eb; font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase;">New User</p>
+      <h1 style="margin: 0 0 12px; font-size: 22px; color: #111;">A new user signed up</h1>
+      <p style="color: #6b7280; font-size: 14px; line-height: 1.6; margin: 0 0 20px;">
+        A new account was created on BeforeSell.
+      </p>
+      <div style="background: #f9fafb; border-radius: 8px; padding: 16px; margin-bottom: 24px;">
+        <p style="margin: 0 0 10px; font-size: 14px; color: #111;"><strong>Name:</strong> ${escapeHtml(userName)}</p>
+        <p style="margin: 0 0 10px; font-size: 14px; color: #111;"><strong>Email:</strong> ${escapeHtml(userEmail)}</p>
+        <p style="margin: 0; font-size: 14px; color: #111;"><strong>Signed up:</strong> ${createdAt.toLocaleString("en-BD", { timeZone: "Asia/Dhaka" })}</p>
+      </div>
+      ${button(usersUrl, "View users")}
+    `),
+  });
+
+  if (result.error) {
+    throw new Error(result.error.message);
+  }
 }
 
 export async function sendPasswordResetEmail(
@@ -123,7 +157,6 @@ export async function sendPromotionReviewEmail({
   durationDays: number;
 }): Promise<void> {
   const reviewUrl = `${APP_URL}/admin/promotions?promotion=${promotionId}`;
-  const reviewEmail = process.env.BOOST_REVIEW_EMAIL || "afsarzahin@gmail.com";
 
   await resend.emails.send({
     from: FROM_EMAIL,
@@ -142,4 +175,80 @@ export async function sendPromotionReviewEmail({
       ${button(reviewUrl, "Review promotion")}
     `),
   });
+}
+
+export async function sendPromotionStatusEmail({
+  email,
+  ownerName,
+  listingTitle,
+  listingSlug,
+  status,
+  reviewNote,
+}: {
+  email: string;
+  ownerName: string;
+  listingTitle: string;
+  listingSlug: string;
+  status: "PENDING_REVIEW" | "PROCESSING" | "APPROVED" | "REJECTED";
+  reviewNote?: string | null;
+}): Promise<void> {
+  const statusDetails = {
+    PENDING_REVIEW: {
+      label: "Pending review",
+      subject: "Your boost request is pending review",
+      message: "Your boost request has been moved back to the review queue. We will notify you when there is another update.",
+      color: "#b45309",
+      background: "#fffbeb",
+    },
+    PROCESSING: {
+      label: "Processing",
+      subject: "Your boost request is being processed",
+      message: "We are now preparing your listing promotion. We will notify you again when it is approved or if we need anything else.",
+      color: "#1d4ed8",
+      background: "#eff6ff",
+    },
+    APPROVED: {
+      label: "Approved",
+      subject: "Your listing boost has been approved",
+      message: "Your listing promotion has been approved and is ready to run according to its scheduled campaign details.",
+      color: "#047857",
+      background: "#ecfdf5",
+    },
+    REJECTED: {
+      label: "Rejected",
+      subject: "Update on your listing boost request",
+      message: "Your listing promotion request was not approved. Review the details below and contact us if you need help.",
+      color: "#b91c1c",
+      background: "#fef2f2",
+    },
+  }[status];
+  const listingUrl = `${APP_URL}/listings/${listingSlug}`;
+  const note = reviewNote?.trim();
+  const result = await resend.emails.send({
+    from: FROM_EMAIL,
+    to: email,
+    subject: `${statusDetails.subject}: ${listingTitle}`,
+    html: emailLayout(`
+      <p style="margin: 0 0 8px; color: ${statusDetails.color}; font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase;">Promotion Update</p>
+      <h1 style="margin: 0 0 12px; font-size: 22px; color: #111;">${escapeHtml(listingTitle)}</h1>
+      <p style="color: #6b7280; font-size: 14px; line-height: 1.6; margin: 0 0 20px;">
+        Hi ${escapeHtml(ownerName)}, ${statusDetails.message}
+      </p>
+      <div style="background: ${statusDetails.background}; border-left: 4px solid ${statusDetails.color}; padding: 14px 16px; margin-bottom: ${note ? "16px" : "24px"};">
+        <p style="margin: 0; font-size: 13px; color: #6b7280;">Current status</p>
+        <p style="margin: 4px 0 0; font-size: 18px; font-weight: 700; color: ${statusDetails.color};">${statusDetails.label}</p>
+      </div>
+      ${note ? `
+        <div style="background: #f9fafb; border-radius: 8px; padding: 14px 16px; margin-bottom: 24px;">
+          <p style="margin: 0 0 6px; font-size: 12px; font-weight: 700; color: #374151; text-transform: uppercase; letter-spacing: .06em;">Review note</p>
+          <p style="margin: 0; color: #4b5563; font-size: 14px; line-height: 1.6;">${escapeHtml(note)}</p>
+        </div>
+      ` : ""}
+      ${button(listingUrl, "View listing")}
+    `),
+  });
+
+  if (result.error) {
+    throw new Error(result.error.message);
+  }
 }

@@ -2,7 +2,10 @@ import { NextResponse } from "next/server";
 import { NextApiRequest } from "next-ts-api";
 import { prisma } from "@/lib/prisma";
 import { hashPassword, generateToken, createToken } from "@/lib/auth";
-import { sendVerificationEmail } from "@/lib/email";
+import {
+  sendNewUserSignupEmail,
+  sendVerificationEmail,
+} from "@/lib/email";
 import { registerSchema } from "@/lib/validations";
 
 interface RegisterBody {
@@ -52,6 +55,16 @@ export async function POST(request: NextApiRequest<RegisterBody>) {
       await sendVerificationEmail(user.email, user.name, verifyToken);
     } catch {
       // Email failed but user created - they can request a new verification email later
+    }
+
+    try {
+      await sendNewUserSignupEmail({
+        userName: user.name,
+        userEmail: user.email,
+        createdAt: user.createdAt,
+      })
+    } catch (error) {
+      console.error("Failed to send new user signup emails", error);
     }
 
     // Issue an auth token so mobile clients can sign in immediately after registering.
