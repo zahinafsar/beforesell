@@ -16,6 +16,7 @@ model User {
   avatar       String?
   role         Role      @default(USER)
   verified     Boolean   @default(false)
+  blocked      Boolean   @default(false)
   verifyToken  String?
   resetToken   String?
   resetExpires DateTime?

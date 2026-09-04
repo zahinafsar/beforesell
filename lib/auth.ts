@@ -84,11 +84,15 @@ export async function getCurrentUser() {
       avatar: true,
       role: true,
       verified: true,
+      blocked: true,
       createdAt: true,
     },
   });
 
-  return user;
+  if (!user || user.blocked) return null;
+
+  const { blocked, ...currentUser } = user;
+  return currentUser;
 }
 
 export async function requireAdmin() {

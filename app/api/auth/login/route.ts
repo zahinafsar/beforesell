@@ -43,6 +43,13 @@ export async function POST(request: NextApiRequest<LoginBody>) {
       );
     }
 
+    if (user.blocked) {
+      return NextResponse.json(
+        { error: "Your account has been blocked" },
+        { status: 403 }
+      );
+    }
+
     const token = await createToken({ userId: user.id, email: user.email });
     await setAuthCookie(token);
 

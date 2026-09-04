@@ -5,16 +5,12 @@ import { jwtVerify } from "jose";
 const JWT_SECRET = new TextEncoder().encode(process.env.JWT_SECRET || "secret");
 
 const protectedPaths = ["/dashboard", "/listings/new", "/messages", "/favorites", "/admin"];
-const authPaths = ["/login", "/register", "/forgot-password", "/reset-password"];
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const token = request.cookies.get("auth-token")?.value;
 
   const isProtectedPath = protectedPaths.some(
-    (path) => pathname === path || pathname.startsWith(path + "/")
-  );
-  const isAuthPath = authPaths.some(
     (path) => pathname === path || pathname.startsWith(path + "/")
   );
 
@@ -34,10 +30,6 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(loginUrl);
   }
 
-  if (isAuthPath && isValidToken) {
-    return NextResponse.redirect(new URL("/dashboard", request.url));
-  }
-
   const response = NextResponse.next();
   response.headers.set("x-pathname", pathname);
   return response;
@@ -50,9 +42,5 @@ export const config = {
     "/messages/:path*",
     "/favorites/:path*",
     "/admin/:path*",
-    "/login",
-    "/register",
-    "/forgot-password",
-    "/reset-password",
   ],
 };

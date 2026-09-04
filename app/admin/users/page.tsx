@@ -19,13 +19,6 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
   AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
@@ -34,9 +27,39 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Shield, ShieldOff, CheckCircle, XCircle, Search } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  Ban,
+  CheckCircle,
+  MoreHorizontal,
+  Search,
+  Shield,
+  ShieldOff,
+  UserRoundCheck,
+  XCircle,
+} from "lucide-react";
+
+interface UserUpdate {
+  role?: "USER" | "ADMIN";
+  verified?: boolean;
+  blocked?: boolean;
+}
+
+interface PendingAction {
+  id: string;
+  title: string;
+  description: string;
+  confirmLabel: string;
+  destructive?: boolean;
+  data: UserUpdate;
+}
 
 export default function AdminUsersPage() {
   const { user } = useAuth();
@@ -44,6 +67,9 @@ export default function AdminUsersPage() {
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
   const [searchInput, setSearchInput] = useState("");
+  const [pendingAction, setPendingAction] = useState<PendingAction | null>(
+    null,
+  );
 
   const { data, isLoading } = useQuery(
     adminQuery(user?.id).users({ page, limit: 20, search }),
@@ -55,7 +81,7 @@ export default function AdminUsersPage() {
       data: updateData,
     }: {
       id: string;
-      data: { role?: "USER" | "ADMIN"; verified?: boolean };
+      data: UserUpdate;
     }) => {
       const res = await api("admin/users/[id]", {
         method: "PUT",
@@ -68,8 +94,16 @@ export default function AdminUsersPage() {
       }
       return res.json();
     },
-    onSuccess: () => {
+    onSuccess: (_result, variables) => {
       queryClient.invalidateQueries({ queryKey: ["admin"] });
+      if (variables.data.blocked === true) {
+        toast.success("User blocked and listings moved to drafts");
+        return;
+      }
+      if (variables.data.blocked === false) {
+        toast.success("User unblocked");
+        return;
+      }
       toast.success("User updated");
     },
     onError: (err) => toast.error(err.message),
@@ -121,9 +155,10 @@ export default function AdminUsersPage() {
                     <TableHead>Email</TableHead>
                     <TableHead>Role</TableHead>
                     <TableHead>Verified</TableHead>
+                    <TableHead>Status</TableHead>
                     <TableHead>Listings</TableHead>
                     <TableHead>Joined</TableHead>
-                    <TableHead>Actions</TableHead>
+                    <TableHead className="w-12 text-right">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -147,81 +182,93 @@ export default function AdminUsersPage() {
                           <XCircle className="h-4 w-4 text-red-400" />
                         )}
                       </TableCell>
+                      <TableCell>
+                        <Badge variant={u.blocked ? "destructive" : "outline"}>
+                          {u.blocked ? "Blocked" : "Active"}
+                        </Badge>
+                      </TableCell>
                       <TableCell>{u._count.listings}</TableCell>
                       <TableCell className="text-sm text-muted-foreground">
                         {new Date(u.createdAt).toLocaleDateString()}
                       </TableCell>
-                      <TableCell>
-                        <div className="flex gap-1">
-                          <AlertDialog>
-                            <AlertDialogTrigger asChild>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                title={
-                                  u.role === "ADMIN"
-                                    ? "Revoke admin"
-                                    : "Make admin"
-                                }
-                                disabled={u.id === user?.id}
-                              >
-                                {u.role === "ADMIN" ? (
-                                  <ShieldOff className="h-4 w-4" />
-                                ) : (
-                                  <Shield className="h-4 w-4" />
-                                )}
-                              </Button>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent>
-                              <AlertDialogHeader>
-                                <AlertDialogTitle>
-                                  {u.role === "ADMIN"
-                                    ? "Revoke Admin?"
-                                    : "Grant Admin?"}
-                                </AlertDialogTitle>
-                                <AlertDialogDescription>
-                                  {u.role === "ADMIN"
-                                    ? `Remove admin privileges from ${u.name}?`
-                                    : `Grant admin privileges to ${u.name}?`}
-                                </AlertDialogDescription>
-                              </AlertDialogHeader>
-                              <AlertDialogFooter>
-                                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                <AlertDialogAction
-                                  onClick={() =>
-                                    updateUser.mutate({
-                                      id: u.id,
-                                      data: {
-                                        role:
-                                          u.role === "ADMIN" ? "USER" : "ADMIN",
-                                      },
-                                    })
-                                  }
-                                >
-                                  Confirm
-                                </AlertDialogAction>
-                              </AlertDialogFooter>
-                            </AlertDialogContent>
-                          </AlertDialog>
-
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            title={u.verified ? "Unverify" : "Verify"}
-                            onClick={() =>
-                              updateUser.mutate({
-                                id: u.id,
-                                data: { verified: !u.verified },
-                              })
-                            }
-                          >
-                            {u.verified ? (
-                              <XCircle className="h-4 w-4 text-red-400" />
-                            ) : (
-                              <CheckCircle className="h-4 w-4 text-green-600" />
-                            )}
-                          </Button>
-                        </div>
+                      <TableCell className="text-right">
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              aria-label={`Actions for ${u.name}`}
+                            >
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end" className="w-48">
+                            <DropdownMenuItem
+                              disabled={u.id === user?.id}
+                              onSelect={() =>
+                                setPendingAction({
+                                  id: u.id,
+                                  title:
+                                    u.role === "ADMIN"
+                                      ? "Revoke admin access?"
+                                      : "Grant admin access?",
+                                  description:
+                                    u.role === "ADMIN"
+                                      ? `Remove admin privileges from ${u.name}?`
+                                      : `Grant admin privileges to ${u.name}?`,
+                                  confirmLabel:
+                                    u.role === "ADMIN"
+                                      ? "Revoke admin"
+                                      : "Make admin",
+                                  data: {
+                                    role:
+                                      u.role === "ADMIN" ? "USER" : "ADMIN",
+                                  },
+                                })
+                              }
+                            >
+                              {u.role === "ADMIN" ? <ShieldOff /> : <Shield />}
+                              {u.role === "ADMIN"
+                                ? "Revoke admin"
+                                : "Make admin"}
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              onSelect={() =>
+                                updateUser.mutate({
+                                  id: u.id,
+                                  data: { verified: !u.verified },
+                                })
+                              }
+                            >
+                              {u.verified ? <XCircle /> : <CheckCircle />}
+                              {u.verified ? "Remove verification" : "Verify user"}
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem
+                              variant={u.blocked ? "default" : "destructive"}
+                              disabled={u.id === user?.id}
+                              onSelect={() =>
+                                setPendingAction({
+                                  id: u.id,
+                                  title: u.blocked
+                                    ? `Unblock ${u.name}?`
+                                    : `Block ${u.name}?`,
+                                  description: u.blocked
+                                    ? "This restores account access. Their draft listings will remain unpublished."
+                                    : "This blocks account access and moves all non-deleted listings to drafts. Unblocking will not republish them.",
+                                  confirmLabel: u.blocked
+                                    ? "Unblock user"
+                                    : "Block user",
+                                  destructive: !u.blocked,
+                                  data: { blocked: !u.blocked },
+                                })
+                              }
+                            >
+                              {u.blocked ? <UserRoundCheck /> : <Ban />}
+                              {u.blocked ? "Unblock user" : "Block user"}
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                       </TableCell>
                     </TableRow>
                   ))}
@@ -257,6 +304,39 @@ export default function AdminUsersPage() {
           )}
         </CardContent>
       </Card>
+
+      <AlertDialog
+        open={pendingAction !== null}
+        onOpenChange={(open) => {
+          if (!open) setPendingAction(null);
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{pendingAction?.title}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {pendingAction?.description}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              variant={pendingAction?.destructive ? "destructive" : "default"}
+              disabled={updateUser.isPending}
+              onClick={() => {
+                if (!pendingAction) return;
+                updateUser.mutate({
+                  id: pendingAction.id,
+                  data: pendingAction.data,
+                });
+                setPendingAction(null);
+              }}
+            >
+              {pendingAction?.confirmLabel}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

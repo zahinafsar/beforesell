@@ -43,6 +43,7 @@ export async function GET(request: NextApiRequest<unknown, UsersQuery>) {
         avatar: true,
         role: true,
         verified: true,
+        blocked: true,
         createdAt: true,
         _count: { select: { listings: true } },
       },

@@ -6,6 +6,7 @@ import { prisma } from "@/lib/prisma";
 interface UpdateUserBody {
   role?: "USER" | "ADMIN";
   verified?: boolean;
+  blocked?: boolean;
 }
 
 export async function GET(
@@ -28,6 +29,7 @@ export async function GET(
       avatar: true,
       role: true,
       verified: true,
+      blocked: true,
       createdAt: true,
       _count: { select: { listings: true } },
     },
@@ -52,19 +54,42 @@ export async function PUT(
   const { id } = await params;
   const body = await request.json();
 
-  const user = await prisma.user.update({
-    where: { id },
-    data: {
-      ...(body.role !== undefined && { role: body.role }),
-      ...(body.verified !== undefined && { verified: body.verified }),
-    },
-    select: {
-      id: true,
-      name: true,
-      email: true,
-      role: true,
-      verified: true,
-    },
+  if (body.blocked === true && id === admin.id) {
+    return NextResponse.json(
+      { error: "You cannot block your own account" },
+      { status: 400 }
+    );
+  }
+
+  const user = await prisma.$transaction(async (transaction) => {
+    const updatedUser = await transaction.user.update({
+      where: { id },
+      data: {
+        ...(body.role !== undefined && { role: body.role }),
+        ...(body.verified !== undefined && { verified: body.verified }),
+        ...(body.blocked !== undefined && { blocked: body.blocked }),
+      },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+        verified: true,
+        blocked: true,
+      },
+    });
+
+    if (body.blocked === true) {
+      await transaction.listing.updateMany({
+        where: {
+          userId: id,
+          status: { not: "DELETED" },
+        },
+        data: { status: "DRAFT" },
+      });
+    }
+
+    return updatedUser;
   });
 
   return NextResponse.json({ user });
