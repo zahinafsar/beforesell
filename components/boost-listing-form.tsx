@@ -182,7 +182,7 @@ export function BoostListingForm({ listing, latestPromotion }: BoostListingFormP
     }
   }
 
-  if (!activePromotion) {
+  if (activePromotion) {
     const current = statusContent[activePromotion.status];
     return (
       <main className="container max-w-2xl px-4 py-8 sm:py-12">
