@@ -16,6 +16,12 @@ interface AdminListingsParams {
   userId?: string;
 }
 
+interface AdminPromotionsParams {
+  page?: number;
+  limit?: number;
+  status?: string;
+}
+
 function toQuery(params?: Record<string, unknown>) {
   if (!params) return {};
   const q: Record<string, string> = {};
@@ -70,6 +76,19 @@ export const adminQuery = (authKey?: string | null) => {
         queryKey: createKey(...query.all, "listings", params, authKey),
         queryFn: async () => {
           const res = await api("admin/listings", {
+            method: "GET",
+            query: toQuery(params as Record<string, unknown>),
+          });
+          return res.json();
+        },
+        enabled: !!authKey,
+      }),
+
+    promotions: (params?: AdminPromotionsParams) =>
+      queryOptions({
+        queryKey: createKey(...query.all, "promotions", params, authKey),
+        queryFn: async () => {
+          const res = await api("admin/promotions", {
             method: "GET",
             query: toQuery(params as Record<string, unknown>),
           });

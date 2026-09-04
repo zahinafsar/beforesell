@@ -1,6 +1,13 @@
 # BeforeSell Project Memory
 
 ## Recent Changes
+- Added end-to-end listing boost review workflow
+  - Owner-only animated `Boost` button on active listing details links to `/listings/[id]/boost`
+  - Boost studio configures smart/custom audience, location, age range, Gender select (Both/Male/Female), start date, duration, and daily budget with live listing preview and estimated daily views
+  - `ListingPromotion` model + `PromotionStatus` enum store requests as PENDING_REVIEW, PROCESSING, APPROVED, or REJECTED; migrations through `20260904153000_simplify_promotion_gender` are applied
+  - POST `/api/listings/[id]/promotions` validates ownership/details, blocks duplicate active requests, persists budget/reach estimates, and emails `BOOST_REVIEW_EMAIL` or `afsarzahin@gmail.com`
+  - Admin `/admin/promotions` queue shows full campaign details, reviewer notes, filters, and Processing/Approve/Reject controls backed by admin promotion APIs
+  - Ad creative and placement configuration was deliberately removed; preview copy and Message CTA are fixed. Billing/payment and ad delivery remain manual until provider integration.
 - Made categoryId optional on Listing model (schema + validation + API)
   - `categoryId String?` and `Category?` relation in schema
   - Validation: `z.string().optional().nullable()`

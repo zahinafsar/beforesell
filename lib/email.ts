@@ -29,6 +29,15 @@ function button(href: string, label: string) {
   `;
 }
 
+function escapeHtml(value: string) {
+  return value
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
 export async function sendVerificationEmail(
   email: string,
   name: string,
@@ -96,6 +105,41 @@ export async function sendNewMessageEmail(
         <p style="margin: 0; font-size: 14px; font-weight: 600; color: #111;">${listingTitle}</p>
       </div>
       ${button(conversationUrl, "View Conversation")}
+    `),
+  });
+}
+
+export async function sendPromotionReviewEmail({
+  promotionId,
+  listingTitle,
+  ownerName,
+  totalBudget,
+  durationDays,
+}: {
+  promotionId: string;
+  listingTitle: string;
+  ownerName: string;
+  totalBudget: number;
+  durationDays: number;
+}): Promise<void> {
+  const reviewUrl = `${APP_URL}/admin/promotions?promotion=${promotionId}`;
+  const reviewEmail = process.env.BOOST_REVIEW_EMAIL || "afsarzahin@gmail.com";
+
+  await resend.emails.send({
+    from: FROM_EMAIL,
+    to: reviewEmail,
+    subject: `Boost review requested: ${listingTitle}`,
+    html: emailLayout(`
+      <p style="margin: 0 0 8px; color: #2563eb; font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase;">New Boost Request</p>
+      <h1 style="margin: 0 0 12px; font-size: 22px; color: #111;">${escapeHtml(listingTitle)}</h1>
+      <p style="color: #6b7280; font-size: 14px; line-height: 1.6; margin: 0 0 20px;">
+        ${escapeHtml(ownerName)} submitted this listing for a ${durationDays}-day boost.
+      </p>
+      <div style="background: #f3f6fb; border-left: 4px solid #214f7c; padding: 14px 16px; margin-bottom: 24px;">
+        <p style="margin: 0; font-size: 13px; color: #6b7280;">Campaign budget</p>
+        <p style="margin: 4px 0 0; font-size: 22px; font-weight: 700; color: #173f67;">৳${totalBudget.toLocaleString("en-BD")}</p>
+      </div>
+      ${button(reviewUrl, "Review promotion")}
     `),
   });
 }

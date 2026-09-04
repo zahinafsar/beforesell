@@ -5,31 +5,34 @@ import type { PUT as PUT_3, DELETE as DELETE_3 } from '../app/api/admin/categori
 import type { GET as GET_4, POST as POST_4 } from '../app/api/admin/categories/route';
 import type { PUT as PUT_5, DELETE as DELETE_5 } from '../app/api/admin/listings/[id]/route';
 import type { GET as GET_6 } from '../app/api/admin/listings/route';
-import type { GET as GET_7 } from '../app/api/admin/stats/route';
-import type { GET as GET_8, PUT as PUT_8 } from '../app/api/admin/users/[id]/route';
-import type { GET as GET_9 } from '../app/api/admin/users/route';
-import type { POST as POST_10 } from '../app/api/agora/notify/route';
-import type { POST as POST_11 } from '../app/api/agora/token/route';
-import type { POST as POST_12 } from '../app/api/auth/forgot-password/route';
-import type { POST as POST_13 } from '../app/api/auth/login/route';
-import type { POST as POST_14 } from '../app/api/auth/logout/route';
-import type { GET as GET_15 } from '../app/api/auth/me/route';
-import type { POST as POST_16 } from '../app/api/auth/register/route';
-import type { POST as POST_17 } from '../app/api/auth/reset-password/route';
-import type { POST as POST_18 } from '../app/api/auth/verify-email/route';
-import type { GET as GET_19 } from '../app/api/categories/[id]/attributes/route';
-import type { POST as POST_20 } from '../app/api/chat/notify/route';
-import type { POST as POST_21 } from '../app/api/conversations/[id]/messages/route';
-import type { GET as GET_22 } from '../app/api/conversations/[id]/route';
-import type { GET as GET_23, POST as POST_23 } from '../app/api/conversations/route';
-import type { GET as GET_24 } from '../app/api/conversations/unread/route';
-import type { POST as POST_25, PUT as PUT_25, DELETE as DELETE_25 } from '../app/api/listings/[id]/images/route';
-import type { GET as GET_26, PUT as PUT_26, DELETE as DELETE_26 } from '../app/api/listings/[id]/route';
-import type { POST as POST_27, GET as GET_27 } from '../app/api/listings/route';
-import type { GET as GET_28, PUT as PUT_28 } from '../app/api/user/profile/route';
-import type { POST as POST_29 } from '../app/api/users/heartbeat/route';
-import type { POST as POST_30 } from '../app/api/users/push-token/route';
-import type { GET as GET_31 } from '../app/api/users/route';
+import type { PUT as PUT_7 } from '../app/api/admin/promotions/[id]/route';
+import type { GET as GET_8 } from '../app/api/admin/promotions/route';
+import type { GET as GET_9 } from '../app/api/admin/stats/route';
+import type { GET as GET_10, PUT as PUT_10 } from '../app/api/admin/users/[id]/route';
+import type { GET as GET_11 } from '../app/api/admin/users/route';
+import type { POST as POST_12 } from '../app/api/agora/notify/route';
+import type { POST as POST_13 } from '../app/api/agora/token/route';
+import type { POST as POST_14 } from '../app/api/auth/forgot-password/route';
+import type { POST as POST_15 } from '../app/api/auth/login/route';
+import type { POST as POST_16 } from '../app/api/auth/logout/route';
+import type { GET as GET_17 } from '../app/api/auth/me/route';
+import type { POST as POST_18 } from '../app/api/auth/register/route';
+import type { POST as POST_19 } from '../app/api/auth/reset-password/route';
+import type { POST as POST_20 } from '../app/api/auth/verify-email/route';
+import type { GET as GET_21 } from '../app/api/categories/[id]/attributes/route';
+import type { POST as POST_22 } from '../app/api/chat/notify/route';
+import type { POST as POST_23 } from '../app/api/conversations/[id]/messages/route';
+import type { GET as GET_24 } from '../app/api/conversations/[id]/route';
+import type { GET as GET_25, POST as POST_25 } from '../app/api/conversations/route';
+import type { GET as GET_26 } from '../app/api/conversations/unread/route';
+import type { POST as POST_27, PUT as PUT_27, DELETE as DELETE_27 } from '../app/api/listings/[id]/images/route';
+import type { POST as POST_28 } from '../app/api/listings/[id]/promotions/route';
+import type { GET as GET_29, PUT as PUT_29, DELETE as DELETE_29 } from '../app/api/listings/[id]/route';
+import type { POST as POST_30, GET as GET_30 } from '../app/api/listings/route';
+import type { GET as GET_31, PUT as PUT_31 } from '../app/api/user/profile/route';
+import type { POST as POST_32 } from '../app/api/users/heartbeat/route';
+import type { POST as POST_33 } from '../app/api/users/push-token/route';
+import type { GET as GET_34 } from '../app/api/users/route';
 
 export type ApiRoutes = {
   'admin/categories/[id]/attributes/[attrId]': {
@@ -104,50 +107,49 @@ export type ApiRoutes = {
       params: ExtractNextParams<typeof GET_6>
     },
   };
-  'admin/stats': {
-    GET: {
-      response: ExtractNextResponse<typeof GET_7>
-      query: ExtractNextQuery<typeof GET_7>
-      params: ExtractNextParams<typeof GET_7>
+  'admin/promotions/[id]': {
+    PUT: {
+      body: ExtractNextBody<typeof PUT_7>
+      response: ExtractNextResponse<typeof PUT_7>
+      query: ExtractNextQuery<typeof PUT_7>
+      params: ExtractNextParams<typeof PUT_7>
     },
   };
-  'admin/users/[id]': {
+  'admin/promotions': {
     GET: {
       response: ExtractNextResponse<typeof GET_8>
       query: ExtractNextQuery<typeof GET_8>
       params: ExtractNextParams<typeof GET_8>
     },
-    PUT: {
-      body: ExtractNextBody<typeof PUT_8>
-      response: ExtractNextResponse<typeof PUT_8>
-      query: ExtractNextQuery<typeof PUT_8>
-      params: ExtractNextParams<typeof PUT_8>
-    },
   };
-  'admin/users': {
+  'admin/stats': {
     GET: {
       response: ExtractNextResponse<typeof GET_9>
       query: ExtractNextQuery<typeof GET_9>
       params: ExtractNextParams<typeof GET_9>
     },
   };
+  'admin/users/[id]': {
+    GET: {
+      response: ExtractNextResponse<typeof GET_10>
+      query: ExtractNextQuery<typeof GET_10>
+      params: ExtractNextParams<typeof GET_10>
+    },
+    PUT: {
+      body: ExtractNextBody<typeof PUT_10>
+      response: ExtractNextResponse<typeof PUT_10>
+      query: ExtractNextQuery<typeof PUT_10>
+      params: ExtractNextParams<typeof PUT_10>
+    },
+  };
+  'admin/users': {
+    GET: {
+      response: ExtractNextResponse<typeof GET_11>
+      query: ExtractNextQuery<typeof GET_11>
+      params: ExtractNextParams<typeof GET_11>
+    },
+  };
   'agora/notify': {
-    POST: {
-      body: ExtractNextBody<typeof POST_10>
-      response: ExtractNextResponse<typeof POST_10>
-      query: ExtractNextQuery<typeof POST_10>
-      params: ExtractNextParams<typeof POST_10>
-    },
-  };
-  'agora/token': {
-    POST: {
-      body: ExtractNextBody<typeof POST_11>
-      response: ExtractNextResponse<typeof POST_11>
-      query: ExtractNextQuery<typeof POST_11>
-      params: ExtractNextParams<typeof POST_11>
-    },
-  };
-  'auth/forgot-password': {
     POST: {
       body: ExtractNextBody<typeof POST_12>
       response: ExtractNextResponse<typeof POST_12>
@@ -155,7 +157,7 @@ export type ApiRoutes = {
       params: ExtractNextParams<typeof POST_12>
     },
   };
-  'auth/login': {
+  'agora/token': {
     POST: {
       body: ExtractNextBody<typeof POST_13>
       response: ExtractNextResponse<typeof POST_13>
@@ -163,7 +165,7 @@ export type ApiRoutes = {
       params: ExtractNextParams<typeof POST_13>
     },
   };
-  'auth/logout': {
+  'auth/forgot-password': {
     POST: {
       body: ExtractNextBody<typeof POST_14>
       response: ExtractNextResponse<typeof POST_14>
@@ -171,14 +173,15 @@ export type ApiRoutes = {
       params: ExtractNextParams<typeof POST_14>
     },
   };
-  'auth/me': {
-    GET: {
-      response: ExtractNextResponse<typeof GET_15>
-      query: ExtractNextQuery<typeof GET_15>
-      params: ExtractNextParams<typeof GET_15>
+  'auth/login': {
+    POST: {
+      body: ExtractNextBody<typeof POST_15>
+      response: ExtractNextResponse<typeof POST_15>
+      query: ExtractNextQuery<typeof POST_15>
+      params: ExtractNextParams<typeof POST_15>
     },
   };
-  'auth/register': {
+  'auth/logout': {
     POST: {
       body: ExtractNextBody<typeof POST_16>
       response: ExtractNextResponse<typeof POST_16>
@@ -186,15 +189,14 @@ export type ApiRoutes = {
       params: ExtractNextParams<typeof POST_16>
     },
   };
-  'auth/reset-password': {
-    POST: {
-      body: ExtractNextBody<typeof POST_17>
-      response: ExtractNextResponse<typeof POST_17>
-      query: ExtractNextQuery<typeof POST_17>
-      params: ExtractNextParams<typeof POST_17>
+  'auth/me': {
+    GET: {
+      response: ExtractNextResponse<typeof GET_17>
+      query: ExtractNextQuery<typeof GET_17>
+      params: ExtractNextParams<typeof GET_17>
     },
   };
-  'auth/verify-email': {
+  'auth/register': {
     POST: {
       body: ExtractNextBody<typeof POST_18>
       response: ExtractNextResponse<typeof POST_18>
@@ -202,14 +204,15 @@ export type ApiRoutes = {
       params: ExtractNextParams<typeof POST_18>
     },
   };
-  'categories/[id]/attributes': {
-    GET: {
-      response: ExtractNextResponse<typeof GET_19>
-      query: ExtractNextQuery<typeof GET_19>
-      params: ExtractNextParams<typeof GET_19>
+  'auth/reset-password': {
+    POST: {
+      body: ExtractNextBody<typeof POST_19>
+      response: ExtractNextResponse<typeof POST_19>
+      query: ExtractNextQuery<typeof POST_19>
+      params: ExtractNextParams<typeof POST_19>
     },
   };
-  'chat/notify': {
+  'auth/verify-email': {
     POST: {
       body: ExtractNextBody<typeof POST_20>
       response: ExtractNextResponse<typeof POST_20>
@@ -217,27 +220,22 @@ export type ApiRoutes = {
       params: ExtractNextParams<typeof POST_20>
     },
   };
-  'conversations/[id]/messages': {
+  'categories/[id]/attributes': {
+    GET: {
+      response: ExtractNextResponse<typeof GET_21>
+      query: ExtractNextQuery<typeof GET_21>
+      params: ExtractNextParams<typeof GET_21>
+    },
+  };
+  'chat/notify': {
     POST: {
-      body: ExtractNextBody<typeof POST_21>
-      response: ExtractNextResponse<typeof POST_21>
-      query: ExtractNextQuery<typeof POST_21>
-      params: ExtractNextParams<typeof POST_21>
+      body: ExtractNextBody<typeof POST_22>
+      response: ExtractNextResponse<typeof POST_22>
+      query: ExtractNextQuery<typeof POST_22>
+      params: ExtractNextParams<typeof POST_22>
     },
   };
-  'conversations/[id]': {
-    GET: {
-      response: ExtractNextResponse<typeof GET_22>
-      query: ExtractNextQuery<typeof GET_22>
-      params: ExtractNextParams<typeof GET_22>
-    },
-  };
-  'conversations': {
-    GET: {
-      response: ExtractNextResponse<typeof GET_23>
-      query: ExtractNextQuery<typeof GET_23>
-      params: ExtractNextParams<typeof GET_23>
-    },
+  'conversations/[id]/messages': {
     POST: {
       body: ExtractNextBody<typeof POST_23>
       response: ExtractNextResponse<typeof POST_23>
@@ -245,97 +243,125 @@ export type ApiRoutes = {
       params: ExtractNextParams<typeof POST_23>
     },
   };
-  'conversations/unread': {
+  'conversations/[id]': {
     GET: {
       response: ExtractNextResponse<typeof GET_24>
       query: ExtractNextQuery<typeof GET_24>
       params: ExtractNextParams<typeof GET_24>
     },
   };
-  'listings/[id]/images': {
+  'conversations': {
+    GET: {
+      response: ExtractNextResponse<typeof GET_25>
+      query: ExtractNextQuery<typeof GET_25>
+      params: ExtractNextParams<typeof GET_25>
+    },
     POST: {
       body: ExtractNextBody<typeof POST_25>
       response: ExtractNextResponse<typeof POST_25>
       query: ExtractNextQuery<typeof POST_25>
       params: ExtractNextParams<typeof POST_25>
     },
-    PUT: {
-      body: ExtractNextBody<typeof PUT_25>
-      response: ExtractNextResponse<typeof PUT_25>
-      query: ExtractNextQuery<typeof PUT_25>
-      params: ExtractNextParams<typeof PUT_25>
-    },
-    DELETE: {
-      response: ExtractNextResponse<typeof DELETE_25>
-      query: ExtractNextQuery<typeof DELETE_25>
-      params: ExtractNextParams<typeof DELETE_25>
-    },
   };
-  'listings/[id]': {
+  'conversations/unread': {
     GET: {
       response: ExtractNextResponse<typeof GET_26>
       query: ExtractNextQuery<typeof GET_26>
       params: ExtractNextParams<typeof GET_26>
     },
-    PUT: {
-      body: ExtractNextBody<typeof PUT_26>
-      response: ExtractNextResponse<typeof PUT_26>
-      query: ExtractNextQuery<typeof PUT_26>
-      params: ExtractNextParams<typeof PUT_26>
-    },
-    DELETE: {
-      response: ExtractNextResponse<typeof DELETE_26>
-      query: ExtractNextQuery<typeof DELETE_26>
-      params: ExtractNextParams<typeof DELETE_26>
-    },
   };
-  'listings': {
+  'listings/[id]/images': {
     POST: {
       body: ExtractNextBody<typeof POST_27>
       response: ExtractNextResponse<typeof POST_27>
       query: ExtractNextQuery<typeof POST_27>
       params: ExtractNextParams<typeof POST_27>
     },
-    GET: {
-      response: ExtractNextResponse<typeof GET_27>
-      query: ExtractNextQuery<typeof GET_27>
-      params: ExtractNextParams<typeof GET_27>
+    PUT: {
+      body: ExtractNextBody<typeof PUT_27>
+      response: ExtractNextResponse<typeof PUT_27>
+      query: ExtractNextQuery<typeof PUT_27>
+      params: ExtractNextParams<typeof PUT_27>
+    },
+    DELETE: {
+      response: ExtractNextResponse<typeof DELETE_27>
+      query: ExtractNextQuery<typeof DELETE_27>
+      params: ExtractNextParams<typeof DELETE_27>
     },
   };
-  'user/profile': {
+  'listings/[id]/promotions': {
+    POST: {
+      body: ExtractNextBody<typeof POST_28>
+      response: ExtractNextResponse<typeof POST_28>
+      query: ExtractNextQuery<typeof POST_28>
+      params: ExtractNextParams<typeof POST_28>
+    },
+  };
+  'listings/[id]': {
     GET: {
-      response: ExtractNextResponse<typeof GET_28>
-      query: ExtractNextQuery<typeof GET_28>
-      params: ExtractNextParams<typeof GET_28>
+      response: ExtractNextResponse<typeof GET_29>
+      query: ExtractNextQuery<typeof GET_29>
+      params: ExtractNextParams<typeof GET_29>
     },
     PUT: {
-      body: ExtractNextBody<typeof PUT_28>
-      response: ExtractNextResponse<typeof PUT_28>
-      query: ExtractNextQuery<typeof PUT_28>
-      params: ExtractNextParams<typeof PUT_28>
+      body: ExtractNextBody<typeof PUT_29>
+      response: ExtractNextResponse<typeof PUT_29>
+      query: ExtractNextQuery<typeof PUT_29>
+      params: ExtractNextParams<typeof PUT_29>
+    },
+    DELETE: {
+      response: ExtractNextResponse<typeof DELETE_29>
+      query: ExtractNextQuery<typeof DELETE_29>
+      params: ExtractNextParams<typeof DELETE_29>
     },
   };
-  'users/heartbeat': {
-    POST: {
-      body: ExtractNextBody<typeof POST_29>
-      response: ExtractNextResponse<typeof POST_29>
-      query: ExtractNextQuery<typeof POST_29>
-      params: ExtractNextParams<typeof POST_29>
-    },
-  };
-  'users/push-token': {
+  'listings': {
     POST: {
       body: ExtractNextBody<typeof POST_30>
       response: ExtractNextResponse<typeof POST_30>
       query: ExtractNextQuery<typeof POST_30>
       params: ExtractNextParams<typeof POST_30>
     },
+    GET: {
+      response: ExtractNextResponse<typeof GET_30>
+      query: ExtractNextQuery<typeof GET_30>
+      params: ExtractNextParams<typeof GET_30>
+    },
   };
-  'users': {
+  'user/profile': {
     GET: {
       response: ExtractNextResponse<typeof GET_31>
       query: ExtractNextQuery<typeof GET_31>
       params: ExtractNextParams<typeof GET_31>
+    },
+    PUT: {
+      body: ExtractNextBody<typeof PUT_31>
+      response: ExtractNextResponse<typeof PUT_31>
+      query: ExtractNextQuery<typeof PUT_31>
+      params: ExtractNextParams<typeof PUT_31>
+    },
+  };
+  'users/heartbeat': {
+    POST: {
+      body: ExtractNextBody<typeof POST_32>
+      response: ExtractNextResponse<typeof POST_32>
+      query: ExtractNextQuery<typeof POST_32>
+      params: ExtractNextParams<typeof POST_32>
+    },
+  };
+  'users/push-token': {
+    POST: {
+      body: ExtractNextBody<typeof POST_33>
+      response: ExtractNextResponse<typeof POST_33>
+      query: ExtractNextQuery<typeof POST_33>
+      params: ExtractNextParams<typeof POST_33>
+    },
+  };
+  'users': {
+    GET: {
+      response: ExtractNextResponse<typeof GET_34>
+      query: ExtractNextQuery<typeof GET_34>
+      params: ExtractNextParams<typeof GET_34>
     },
   };
 };

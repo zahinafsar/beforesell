@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
-import { MapPin, Eye, Calendar, Phone, MessageCircle, Edit } from "lucide-react";
+import { MapPin, Eye, Calendar, Phone, MessageCircle, Edit, Sparkles } from "lucide-react";
 import { ListingImageGallery } from "@/components/listing-image-gallery";
 
 interface ListingPageProps {
@@ -228,12 +228,22 @@ export default async function ListingPage({ params }: ListingPageProps) {
               </Link>
 
               {isOwner ? (
-                <Button asChild className="w-full">
-                  <Link href={`/dashboard/listings/${listing.id}/edit`}>
-                    <Edit className="h-4 w-4 mr-2" />
-                    Edit Listing
-                  </Link>
-                </Button>
+                <div className="grid gap-2 sm:grid-cols-2">
+                  <Button asChild variant="outline" className="w-full">
+                    <Link href={`/dashboard/listings/${listing.id}/edit`}>
+                      <Edit className="h-4 w-4 mr-2" />
+                      Edit Listing
+                    </Link>
+                  </Button>
+                  {listing.status === "ACTIVE" ? (
+                    <Button asChild className="boost-button w-full text-white">
+                      <Link href={`/listings/${listing.id}/boost`}>
+                        <Sparkles className="h-4 w-4 mr-2" />
+                        Boost
+                      </Link>
+                    </Button>
+                  ) : null}
+                </div>
               ) : (
                 <div className="space-y-2">
                   {(listing.phone || listing.user.phone) && (

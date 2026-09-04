@@ -44,6 +44,22 @@ export const createConversationSchema = z.object({
   content: z.string().min(1, "Initial message required").max(5000, "Message too long"),
 });
 
+export const createPromotionSchema = z
+  .object({
+    audienceType: z.enum(["AUTOMATIC", "CUSTOM"]),
+    location: z.string().min(2).max(80),
+    minAge: z.number().int().min(18).max(65),
+    maxAge: z.number().int().min(18).max(65),
+    startDate: z.string().date(),
+    durationDays: z.number().int().min(1).max(30),
+    dailyBudget: z.number().min(100).max(5000),
+    gender: z.enum(["BOTH", "MALE", "FEMALE"]),
+  })
+  .refine((data) => data.maxAge >= data.minAge, {
+    message: "Maximum age must be greater than or equal to minimum age",
+    path: ["maxAge"],
+  });
+
 export type RegisterInput = z.infer<typeof registerSchema>;
 export type LoginInput = z.infer<typeof loginSchema>;
 export type ForgotPasswordInput = z.infer<typeof forgotPasswordSchema>;
@@ -52,3 +68,4 @@ export type CreateListingInput = z.infer<typeof createListingSchema>;
 export type UpdateListingInput = z.infer<typeof updateListingSchema>;
 export type SendMessageInput = z.infer<typeof sendMessageSchema>;
 export type CreateConversationInput = z.infer<typeof createConversationSchema>;
+export type CreatePromotionInput = z.infer<typeof createPromotionSchema>;

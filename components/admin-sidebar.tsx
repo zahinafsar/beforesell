@@ -14,6 +14,7 @@ import {
   LogOut,
   Menu,
   Shield,
+  Megaphone,
 } from "lucide-react";
 import { useAuth } from "@/providers/auth-provider";
 
@@ -21,6 +22,7 @@ const navItems = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
   { href: "/admin/users", label: "Users", icon: Users },
   { href: "/admin/listings", label: "Listings", icon: ShoppingBag },
+  { href: "/admin/promotions", label: "Promotions", icon: Megaphone },
   { href: "/admin/categories", label: "Categories", icon: FolderTree },
 ];
 
