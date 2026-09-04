@@ -117,7 +117,7 @@ export default async function UserProfilePage({ params }: UserProfilePageProps) 
               {user.listings.map((listing) => (
                 <Link
                   key={listing.id}
-                  href={`/listings/${listing.id}`}
+                  href={`/listings/${listing.slug}`}
                   className="group"
                 >
                   <Card className="overflow-hidden">

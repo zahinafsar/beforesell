@@ -34,7 +34,7 @@ export function ListingCard({ listing, showStatus }: ListingCardProps) {
 
   return (
     <Link
-      href={`/listings/${listing.id}`}
+      href={`/listings/${listing.slug}`}
       className="group relative block aspect-[3/4] overflow-hidden border bg-neutral-900"
     >
       <Image

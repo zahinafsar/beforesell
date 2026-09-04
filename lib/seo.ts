@@ -59,7 +59,7 @@ interface ListingMetadataOptions {
   price: number;
   image?: string;
   location: string;
-  listingId: string;
+  listingSlug: string;
   sellerName: string;
 }
 
@@ -69,10 +69,10 @@ export function generateListingMetadata({
   price,
   image,
   location,
-  listingId,
+  listingSlug,
   sellerName,
 }: ListingMetadataOptions): Metadata {
-  const url = `${SITE_URL}/listings/${listingId}`;
+  const url = `${SITE_URL}/listings/${listingSlug}`;
   const fullTitle = `${title} - ৳${price.toLocaleString()} | ${SITE_NAME}`;
   const metaDescription = `${description.slice(0, 150)}... Located in ${location}. Seller: ${sellerName}`;
 

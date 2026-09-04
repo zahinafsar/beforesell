@@ -33,6 +33,7 @@ export async function GET(request: NextApiRequest<unknown, PromotionsQuery>) {
         listing: {
           select: {
             id: true,
+            slug: true,
             title: true,
             price: true,
             images: { select: { url: true }, orderBy: { order: "asc" }, take: 1 },

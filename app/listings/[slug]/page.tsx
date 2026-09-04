@@ -13,13 +13,13 @@ import { MapPin, Eye, Calendar, Phone, MessageCircle, Edit, Sparkles } from "luc
 import { ListingImageGallery } from "@/components/listing-image-gallery";
 
 interface ListingPageProps {
-  params: Promise<{ id: string }>;
+  params: Promise<{ slug: string }>;
 }
 
 export async function generateMetadata({ params }: ListingPageProps): Promise<Metadata> {
-  const { id } = await params;
+  const { slug } = await params;
   const listing = await prisma.listing.findUnique({
-    where: { id },
+    where: { slug },
     include: {
       images: { orderBy: { order: "asc" }, take: 1 },
       location: true,
@@ -37,17 +37,17 @@ export async function generateMetadata({ params }: ListingPageProps): Promise<Me
     price: listing.price,
     image: listing.images[0]?.url,
     location: listing.location.address,
-    listingId: listing.id,
+    listingSlug: listing.slug,
     sellerName: listing.user.name,
   });
 }
 
 export default async function ListingPage({ params }: ListingPageProps) {
-  const { id } = await params;
+  const { slug } = await params;
   const user = await getCurrentUser();
 
   const listing = await prisma.listing.findUnique({
-    where: { id },
+    where: { slug },
     include: {
       category: { include: { parent: true } },
       location: true,
@@ -78,7 +78,7 @@ export default async function ListingPage({ params }: ListingPageProps) {
 
   // Increment view
   await prisma.listing.update({
-    where: { id },
+    where: { id: listing.id },
     data: { views: { increment: 1 } },
   });
 
@@ -109,7 +109,7 @@ export default async function ListingPage({ params }: ListingPageProps) {
       ? [{ name: listing.category.parent.name, url: `${baseUrl}/categories/${listing.category.parent.slug}` }]
       : []),
     { name: listing.category?.name || "Uncategorized", url: `${baseUrl}/categories/${listing.category?.slug}` },
-    { name: listing.title, url: `${baseUrl}/listings/${listing.id}` },
+    { name: listing.title, url: `${baseUrl}/listings/${listing.slug}` },
   ];
 
   const breadcrumbJsonLd = generateBreadcrumbJsonLd(breadcrumbItems);
@@ -236,8 +236,8 @@ export default async function ListingPage({ params }: ListingPageProps) {
                     </Link>
                   </Button>
                   {listing.status === "ACTIVE" ? (
-                    <Button asChild className="boost-button w-full text-white">
-                      <Link href={`/listings/${listing.id}/boost`}>
+                    <Button asChild className="w-full">
+                      <Link href={`/listings/${listing.slug}/boost`}>
                         <Sparkles className="h-4 w-4 mr-2" />
                         Boost
                       </Link>

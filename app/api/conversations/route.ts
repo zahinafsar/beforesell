@@ -20,6 +20,7 @@ export async function GET(request: NextApiRequest<unknown>) {
         listing: {
           select: {
             id: true,
+            slug: true,
             title: true,
             images: { take: 1, orderBy: { order: "asc" } },
           },

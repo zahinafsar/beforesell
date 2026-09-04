@@ -169,7 +169,7 @@ export default function AdminPromotionsPage() {
                         <span className="flex items-center gap-1"><CalendarDays className="h-3.5 w-3.5" />Submitted {new Date(promotion.submittedAt).toLocaleString("en-BD")}</span>
                       </div>
                     </div>
-                    <Button asChild variant="outline" size="sm" className="shrink-0"><Link href={`/listings/${promotion.listing.id}`} target="_blank">View listing <ExternalLink /></Link></Button>
+                    <Button asChild variant="outline" size="sm" className="shrink-0"><Link href={`/listings/${promotion.listing.slug}`} target="_blank">View listing <ExternalLink /></Link></Button>
                   </div>
 
                   <div className="grid divide-y divide-slate-100 sm:grid-cols-2 sm:divide-x sm:divide-y-0 xl:grid-cols-4">

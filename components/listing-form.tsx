@@ -40,6 +40,7 @@ export function ListingForm({
   }[];
   listing?: {
     id: string;
+    slug: string;
     title: string;
     description: string;
     price: number;
@@ -311,7 +312,7 @@ export function ListingForm({
           })
         : await api("listings", { method: "POST", body: payload });
 
-      let data: { listing?: { id: string }; error?: string };
+      let data: { listing?: { id: string; slug: string }; error?: string };
       try {
         data = await res.json();
       } catch {
@@ -340,13 +341,12 @@ export function ListingForm({
         }
       }
 
-      if (!isEditing) {
-        router.push(`/listings/${data.listing!.id}`);
-        router.refresh();
-      } else {
-        router.push(`/listings/${listing.id}`);
-        router.refresh();
+      if (!data.listing) {
+        throw new Error("Listing response is missing");
       }
+
+      router.push(`/listings/${data.listing.slug}`);
+      router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");
     } finally {

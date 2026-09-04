@@ -413,7 +413,7 @@ function MessagesContent() {
                 </div>
 
                 <Link
-                  href={`/listings/${selectedConv.listing.id}`}
+                  href={`/listings/${selectedConv.listing.slug}`}
                   className="flex items-center gap-2 rounded-lg bg-muted/50 p-1.5 transition-colors hover:bg-muted sm:p-2"
                 >
                   {selectedConv.listing.images[0] && (
@@ -447,7 +447,7 @@ function MessagesContent() {
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
                     <DropdownMenuItem asChild>
-                      <Link href={`/listings/${selectedConv.listing.id}`}>
+                      <Link href={`/listings/${selectedConv.listing.slug}`}>
                         View listing
                       </Link>
                     </DropdownMenuItem>

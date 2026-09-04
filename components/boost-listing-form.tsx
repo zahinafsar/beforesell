@@ -38,6 +38,7 @@ type Gender = "BOTH" | "MALE" | "FEMALE";
 interface BoostListingFormProps {
   listing: {
     id: string;
+    slug: string;
     title: string;
     price: number;
     category: string;
@@ -176,8 +177,8 @@ export function BoostListingForm({ listing, latestPromotion }: BoostListingFormP
     const current = statusContent[activePromotion.status];
     return (
       <main className="min-h-[calc(100vh-4rem)] bg-[#f4f7fb] px-4 py-10 sm:py-16">
-        <div className="mx-auto max-w-2xl border border-slate-200 bg-white shadow-[0_24px_80px_rgba(30,64,105,0.10)]">
-          <div className="h-1.5 bg-gradient-to-r from-[#163f68] via-[#2f83d8] to-[#6bbcf8]" />
+        <div className="mx-auto max-w-2xl border border-slate-200 bg-white">
+          {/* <div className="h-1.5 bg-gradient-to-r from-[#163f68] via-[#2f83d8] to-[#6bbcf8]" /> */}
           <div className="p-7 sm:p-12">
             <div className="mb-8 flex h-16 w-16 items-center justify-center bg-[#eaf4ff] text-[#1f67a9]">
               {activePromotion.status === "APPROVED" ? (
@@ -219,7 +220,7 @@ export function BoostListingForm({ listing, latestPromotion }: BoostListingFormP
 
             <div className="mt-9 flex flex-col gap-3 sm:flex-row">
               <Button asChild size="lg">
-                <Link href={`/listings/${listing.id}`}>Back to listing</Link>
+                <Link href={`/listings/${listing.slug}`}>Back to listing</Link>
               </Button>
               <Button asChild variant="outline" size="lg">
                 <Link href="/dashboard/listings">My listings</Link>
@@ -237,7 +238,7 @@ export function BoostListingForm({ listing, latestPromotion }: BoostListingFormP
         <div className="container flex items-center justify-between px-4 py-5">
           <div className="flex items-center gap-4">
             <Button asChild variant="ghost" size="icon" aria-label="Back to listing">
-              <Link href={`/listings/${listing.id}`}><ArrowLeft /></Link>
+              <Link href={`/listings/${listing.slug}`}><ArrowLeft /></Link>
             </Button>
             <div>
               <div className="flex items-center gap-2">

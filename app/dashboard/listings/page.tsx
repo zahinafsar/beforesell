@@ -127,7 +127,7 @@ export default async function MyListingsPage() {
                   <div className="flex items-center gap-2 mb-1">
                     <h3 className="font-medium truncate">
                       <Link
-                        href={`/listings/${listing.id}`}
+                        href={`/listings/${listing.slug}`}
                         className="hover:underline"
                       >
                         {listing.title}
