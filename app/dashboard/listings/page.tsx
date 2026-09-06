@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import Image from "next/image";
-import { Plus, Eye, Edit } from "lucide-react";
+import { Plus, Eye, Edit, Sparkles } from "lucide-react";
 
 export default async function MyListingsPage() {
   const user = await getCurrentUser();
@@ -159,11 +159,21 @@ export default async function MyListingsPage() {
                   </div>
                 </div>
 
-                <Button variant="outline" size="sm" asChild>
-                  <Link href={`/dashboard/listings/${listing.id}/edit`}>
-                    <Edit className="h-4 w-4" />
-                  </Link>
-                </Button>
+                <div className="flex shrink-0 items-center gap-2">
+                  {listing.status === "ACTIVE" ? (
+                    <Button size="sm" asChild>
+                      <Link href={`/listings/${listing.slug}/boost`}>
+                        <Sparkles className="h-4 w-4" />
+                        Boost
+                      </Link>
+                    </Button>
+                  ) : null}
+                  <Button variant="outline" size="sm" asChild>
+                    <Link href={`/dashboard/listings/${listing.id}/edit`} aria-label={`Edit ${listing.title}`}>
+                      <Edit className="h-4 w-4" />
+                    </Link>
+                  </Button>
+                </div>
               </CardContent>
             </Card>
           ))}

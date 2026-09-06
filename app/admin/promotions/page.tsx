@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import {
   BadgeCheck,
   Clock3,
+  CreditCard,
   Eye,
   ExternalLink,
   Loader2,
@@ -150,12 +151,11 @@ export default function AdminPromotionsPage() {
               <TableHeader>
                 <TableRow>
                   <TableHead>Listing</TableHead>
-                  <TableHead>Seller</TableHead>
-                  <TableHead>Audience</TableHead>
-                  <TableHead>Schedule</TableHead>
-                  <TableHead>Budget</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Submitted</TableHead>
+                  <TableHead>User Name</TableHead>
+                  <TableHead>Phone Number</TableHead>
+                  <TableHead>Email</TableHead>
+                  <TableHead>Payment Status</TableHead>
+                  <TableHead>Promotion Status</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
@@ -171,31 +171,38 @@ export default function AdminPromotionsPage() {
                         </div>
                         <div className="min-w-0">
                           <p className="max-w-48 truncate font-medium">{promotion.listing.title}</p>
-                          <p className="text-xs text-muted-foreground">{promotion.listing.category?.name ?? "Marketplace"}</p>
                         </div>
                       </div>
                     </TableCell>
-                    <TableCell>
-                      <p className="font-medium">{promotion.user.name}</p>
-                      <p className="text-xs text-muted-foreground">{promotion.user.email}</p>
+                    <TableCell className="whitespace-nowrap font-medium">
+                      {promotion.user.name}
+                    </TableCell>
+                    <TableCell className="whitespace-nowrap text-muted-foreground">
+                      {promotion.user.phone ?? "Not provided"}
+                    </TableCell>
+                    <TableCell className="whitespace-nowrap text-muted-foreground">
+                      {promotion.user.email}
                     </TableCell>
                     <TableCell>
-                      <p>{promotion.audienceType === "AUTOMATIC" ? "Smart" : `${promotion.minAge}–${promotion.maxAge}`}</p>
-                      <p className="text-xs text-muted-foreground">{promotion.location}</p>
-                    </TableCell>
-                    <TableCell>
-                      <p>{promotion.durationDays} days</p>
-                      <p className="text-xs text-muted-foreground">{new Date(promotion.startDate).toLocaleDateString("en-BD")}</p>
-                    </TableCell>
-                    <TableCell>
-                      <p className="font-medium">৳{formatNumber(promotion.totalBudget)}</p>
-                      <p className="text-xs text-muted-foreground">৳{formatNumber(promotion.dailyBudget)}/day</p>
+                      {promotion.payment ? (
+                        <div className="flex items-center whitespace-nowrap">
+                          <Badge variant="outline" className={cn(
+                            "border",
+                            promotion.payment.status === "APPROVED"
+                              ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-700"
+                              : promotion.payment.status === "SUBMITTED"
+                                ? "border-primary/30 bg-primary/10 text-primary"
+                                : "border-amber-500/30 bg-amber-500/10 text-amber-700",
+                          )}>
+                            {promotion.payment.status === "SUBMITTED" ? "Submitted" : promotion.payment.status === "APPROVED" ? "Approved" : "Pending"}
+                          </Badge>
+                        </div>
+                      ) : (
+                        <span className="text-xs text-muted-foreground">Not created</span>
+                      )}
                     </TableCell>
                     <TableCell>
                       <Badge className={cn("border", statusStyles[promotion.status])} variant="outline">{formatStatus(promotion.status)}</Badge>
-                    </TableCell>
-                    <TableCell className="text-sm text-muted-foreground">
-                      {new Date(promotion.submittedAt).toLocaleDateString("en-BD")}
                     </TableCell>
                     <TableCell>
                       <div className="flex justify-end gap-1">
@@ -210,7 +217,7 @@ export default function AdminPromotionsPage() {
                             <DialogHeader>
                               <DialogTitle>{promotion.listing.title}</DialogTitle>
                               <DialogDescription>
-                                Submitted by {promotion.user.name} on {new Date(promotion.submittedAt).toLocaleString("en-BD")}
+                                Submitted by {promotion.user.name} ({promotion.user.email}{promotion.user.phone ? ` · ${promotion.user.phone}` : ""}) on {new Date(promotion.submittedAt).toLocaleString("en-BD")}
                               </DialogDescription>
                             </DialogHeader>
 
@@ -221,25 +228,41 @@ export default function AdminPromotionsPage() {
                               <div><p className="text-xs text-muted-foreground">Estimated daily views</p><p className="mt-1 text-sm font-medium">{formatNumber(promotion.estimatedMinReach)}–{formatNumber(promotion.estimatedMaxReach)}</p></div>
                             </div>
 
+                            <div className="border border-primary/20 bg-primary/5 p-4">
+                              <div className="flex items-center gap-2"><CreditCard className="h-4 w-4 text-primary" /><p className="text-sm font-semibold">bKash payment</p></div>
+                              <div className="mt-3 grid gap-3 text-sm sm:grid-cols-3">
+                                <div><p className="text-xs text-muted-foreground">Amount</p><p className="mt-1 font-semibold">৳{formatNumber(promotion.payment?.amount ?? promotion.totalBudget)}</p></div>
+                                <div><p className="text-xs text-muted-foreground">Transaction ID</p><p className="mt-1 font-mono font-semibold">{promotion.payment?.transactionId ?? "Not submitted"}</p></div>
+                                <div><p className="text-xs text-muted-foreground">Payment status</p><p className="mt-1 font-semibold">{promotion.payment?.status === "SUBMITTED" ? "Ready for verification" : promotion.payment?.status === "APPROVED" ? "Approved" : "Waiting for payment"}</p></div>
+                              </div>
+                            </div>
+
                             <Textarea
                               aria-label={`Review note for ${promotion.listing.title}`}
                               placeholder="Optional review note..."
                               rows={4}
                               value={notes[promotion.id] ?? promotion.reviewNote ?? ""}
                               onChange={(event) => setNotes((current) => ({ ...current, [promotion.id]: event.target.value }))}
+                              disabled={promotion.status === "APPROVED"}
                             />
 
                             {promotion.reviewedBy ? (
                               <p className="text-xs text-muted-foreground">Last reviewed by {promotion.reviewedBy.name}{promotion.reviewedAt ? ` on ${new Date(promotion.reviewedAt).toLocaleString("en-BD")}` : ""}</p>
                             ) : null}
 
-                            <DialogFooter className="sm:justify-between">
-                              <Button type="button" variant="outline" className="border-destructive/30 text-destructive hover:bg-destructive/10 hover:text-destructive" disabled={updatePromotion.isPending} onClick={() => updatePromotion.mutate({ id: promotion.id, nextStatus: "REJECTED" })}><XCircle />Reject</Button>
-                              <div className="flex gap-2">
-                                <Button type="button" variant="secondary" disabled={updatePromotion.isPending} onClick={() => updatePromotion.mutate({ id: promotion.id, nextStatus: "PROCESSING" })}><Clock3 />Processing</Button>
-                                <Button type="button" disabled={updatePromotion.isPending} onClick={() => updatePromotion.mutate({ id: promotion.id, nextStatus: "APPROVED" })}><BadgeCheck />Approve</Button>
+                            {promotion.status === "APPROVED" ? (
+                              <div className="flex items-center gap-2 border border-emerald-500/30 bg-emerald-500/10 p-3 text-sm font-medium text-emerald-800">
+                                <BadgeCheck className="h-5 w-5" />Approved promotions are locked and cannot be edited.
                               </div>
-                            </DialogFooter>
+                            ) : (
+                              <DialogFooter className="sm:justify-between">
+                                <Button type="button" variant="outline" className="border-destructive/30 text-destructive hover:bg-destructive/10 hover:text-destructive" disabled={updatePromotion.isPending} onClick={() => updatePromotion.mutate({ id: promotion.id, nextStatus: "REJECTED" })}><XCircle />Reject</Button>
+                                <div className="flex gap-2">
+                                  <Button type="button" variant="secondary" disabled={updatePromotion.isPending} onClick={() => updatePromotion.mutate({ id: promotion.id, nextStatus: "PROCESSING" })}><Clock3 />Processing</Button>
+                                  <Button type="button" disabled={updatePromotion.isPending || promotion.payment?.status !== "SUBMITTED"} title={promotion.payment?.status !== "SUBMITTED" ? "A transaction ID must be submitted first" : undefined} onClick={() => updatePromotion.mutate({ id: promotion.id, nextStatus: "APPROVED" })}><BadgeCheck />Approve</Button>
+                                </div>
+                              </DialogFooter>
+                            )}
                           </DialogContent>
                         </Dialog>
                       </div>
@@ -259,10 +282,10 @@ export default function AdminPromotionsPage() {
         </CardContent>
       </Card>
 
-      <div className="flex items-start gap-3 border border-primary/20 bg-primary/5 p-4 text-sm leading-6">
+      {/* <div className="flex items-start gap-3 border border-primary/20 bg-primary/5 p-4 text-sm leading-6">
         <ShieldAlert className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
-        Approval changes the campaign workflow status. Billing and campaign delivery remain manual until a payment provider and ad-delivery service are connected.
-      </div>
+        Verify the submitted bKash transaction ID before approval. Approval locks the payment and promotion against further changes.
+      </div> */}
     </div>
   );
 }

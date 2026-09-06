@@ -35,6 +35,7 @@ export async function PUT(
     select: {
       id: true,
       status: true,
+      payment: { select: { id: true, status: true, transactionId: true } },
       user: { select: { email: true, name: true } },
       listing: { select: { title: true, slug: true } },
     },
@@ -42,15 +43,38 @@ export async function PUT(
   if (!existing) {
     return NextResponse.json({ error: "Promotion not found" }, { status: 404 });
   }
+  if (existing.status === "APPROVED") {
+    return NextResponse.json({ error: "Approved promotions cannot be edited" }, { status: 409 });
+  }
+  if (
+    parsed.data.status === "APPROVED" &&
+    (!existing.payment?.transactionId || existing.payment.status !== "SUBMITTED")
+  ) {
+    return NextResponse.json(
+      { error: "A submitted payment transaction is required before approval" },
+      { status: 400 },
+    );
+  }
 
-  const promotion = await prisma.listingPromotion.update({
-    where: { id },
-    data: {
-      status: parsed.data.status,
-      reviewNote: parsed.data.reviewNote?.trim() || null,
-      reviewedAt: new Date(),
-      reviewedById: admin.id,
-    },
+  const reviewedAt = new Date();
+  const promotion = await prisma.$transaction(async (tx) => {
+    if (parsed.data.status === "APPROVED" && existing.payment) {
+      await tx.promotionPayment.update({
+        where: { id: existing.payment.id },
+        data: { status: "APPROVED", approvedAt: reviewedAt },
+      });
+    }
+
+    return tx.listingPromotion.update({
+      where: { id },
+      data: {
+        status: parsed.data.status,
+        reviewNote: parsed.data.reviewNote?.trim() || null,
+        reviewedAt,
+        reviewedById: admin.id,
+      },
+      include: { payment: true },
+    });
   });
 
   if (existing.status !== promotion.status) {

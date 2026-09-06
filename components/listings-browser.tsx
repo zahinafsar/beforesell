@@ -21,7 +21,7 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
+import { ListingsGridSkeleton } from "@/components/listings-grid-skeleton";
 import { ListingCard } from "@/components/listing-card";
 import { CategoryIcon } from "@/components/category-icon";
 import { listingsQuery } from "@/lib/queries";
@@ -478,15 +478,7 @@ export function ListingsBrowser({ categories, locations, initialParams }: Listin
           </div>
 
           {isLoading ? (
-            <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
-              {Array.from({ length: 8 }).map((_, i) => (
-                <div key={i} className="space-y-3">
-                  <Skeleton className="aspect-[4/3] rounded-lg" />
-                  <Skeleton className="h-4 w-2/3" />
-                  <Skeleton className="h-4 w-full" />
-                </div>
-              ))}
-            </div>
+            <ListingsGridSkeleton />
           ) : error ? (
             <div className="text-center py-12">
               <p className="text-destructive mb-4">Failed to load listings.</p>
@@ -500,7 +492,7 @@ export function ListingsBrowser({ categories, locations, initialParams }: Listin
               )}
             </div>
           ) : (
-            <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
               {listings.map((listing) => (
                 <ListingCard key={listing.id} listing={listing} />
               ))}

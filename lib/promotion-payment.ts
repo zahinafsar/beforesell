@@ -1,0 +1,1 @@
+export const BKASH_PAYMENT_NUMBER = "01534792218";

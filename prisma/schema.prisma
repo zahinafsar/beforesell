@@ -81,6 +81,12 @@ enum PromotionStatus {
   REJECTED
 }
 
+enum PromotionPaymentStatus {
+  PENDING
+  SUBMITTED
+  APPROVED
+}
+
 enum AttributeType {
   SELECT
   MULTI_SELECT
@@ -154,11 +160,33 @@ model ListingPromotion {
   reviewedById String?
   reviewedBy   User?   @relation("PromotionReviewer", fields: [reviewedById], references: [id], onDelete: SetNull)
 
+  payment PromotionPayment?
+
   @@index([listingId])
   @@index([userId])
   @@index([status])
   @@index([submittedAt])
   @@map("listing_promotions")
+}
+
+model PromotionPayment {
+  id              String                 @id @default(cuid())
+  status          PromotionPaymentStatus @default(PENDING)
+  provider        String                 @default("BKASH")
+  recipientNumber String
+  amount          Float
+  transactionId   String?                @unique
+  submittedAt     DateTime?
+  approvedAt      DateTime?
+  createdAt       DateTime               @default(now())
+  updatedAt       DateTime               @updatedAt
+
+  promotionId String           @unique
+  promotion   ListingPromotion @relation(fields: [promotionId], references: [id], onDelete: Cascade)
+
+  @@index([status])
+  @@index([createdAt])
+  @@map("promotion_payments")
 }
 
 model ListingImage {

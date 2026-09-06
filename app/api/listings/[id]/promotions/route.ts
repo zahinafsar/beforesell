@@ -3,7 +3,7 @@ import { NextApiRequest } from "next-ts-api";
 import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { createPromotionSchema, type CreatePromotionInput } from "@/lib/validations";
-import { sendPromotionReviewEmail } from "@/lib/email";
+import { BKASH_PAYMENT_NUMBER } from "@/lib/promotion-payment";
 
 export async function POST(
   request: NextApiRequest<CreatePromotionInput>,
@@ -19,7 +19,6 @@ export async function POST(
     where: { id: listingId },
     select: {
       id: true,
-      title: true,
       userId: true,
       status: true,
       promotions: {
@@ -77,22 +76,15 @@ export async function POST(
       gender: parsed.data.gender,
       estimatedMinReach: Math.round(parsed.data.dailyBudget * 6.5),
       estimatedMaxReach: Math.round(parsed.data.dailyBudget * 20),
+      payment: {
+        create: {
+          recipientNumber: BKASH_PAYMENT_NUMBER,
+          amount: totalBudget,
+        },
+      },
     },
+    include: { payment: true },
   });
 
-  let emailSent = true;
-  try {
-    await sendPromotionReviewEmail({
-      promotionId: promotion.id,
-      listingTitle: listing.title,
-      ownerName: user.name,
-      totalBudget,
-      durationDays: parsed.data.durationDays,
-    });
-  } catch (error) {
-    emailSent = false;
-    console.error("Failed to send promotion review email", error);
-  }
-
-  return NextResponse.json({ promotion, emailSent }, { status: 201 });
+  return NextResponse.json({ promotion }, { status: 201 });
 }

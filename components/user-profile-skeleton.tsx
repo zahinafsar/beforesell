@@ -32,7 +32,7 @@ export function UserProfileSkeleton() {
           <div className="flex items-center justify-between mb-6">
             <Skeleton className="h-7 w-48" />
           </div>
-          <ListingsGridSkeleton count={8} />
+          <ListingsGridSkeleton count={10} />
         </div>
       </div>
     </div>

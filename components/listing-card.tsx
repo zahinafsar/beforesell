@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { Package } from "lucide-react";
 
 interface ListingImage {
   url: string;
@@ -13,7 +14,6 @@ interface Listing {
   id: string;
   title: string;
   slug: string;
-  description?: string | null;
   price: number;
   negotiable: boolean;
   status: string;
@@ -29,65 +29,41 @@ interface ListingCardProps {
 }
 
 export function ListingCard({ listing, showStatus }: ListingCardProps) {
-  const imageUrl = listing.images[0]?.url || "/placeholder.png";
+  const imageUrl = listing.images[0]?.url;
   const showStatusBadge = showStatus && listing.status !== "ACTIVE";
 
   return (
     <Link
       href={`/listings/${listing.slug}`}
-      className="group relative block aspect-[3/4] overflow-hidden border bg-neutral-900"
+      className="group flex aspect-square min-w-0 flex-col overflow-hidden border border-[#014069]/15 bg-white transition-colors hover:border-[#014069] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#014069]"
     >
-      <Image
-        src={imageUrl}
-        alt={listing.title}
-        fill
-        sizes="(min-width: 1024px) 25vw, (min-width: 768px) 33vw, 50vw"
-        className="object-cover"
-      />
-
-      <span className="absolute top-2 left-2 md:top-3 md:left-3 z-10 bg-black/60 backdrop-blur px-2 py-1 md:px-3 md:py-1.5 text-[10px] md:text-xs font-bold text-white whitespace-nowrap">
-        ৳{listing.price.toLocaleString()}
-        {listing.negotiable && (
-          <span className="ml-1 font-normal text-white/70 hidden md:inline">· Nego</span>
+      <div className="relative min-h-0 flex-1 bg-white">
+        {imageUrl ? (
+          <Image
+            src={imageUrl}
+            alt={listing.title}
+            fill
+            sizes="(min-width: 1024px) 20vw, (min-width: 768px) 33vw, 50vw"
+            className="object-cover"
+          />
+        ) : (
+          <div className="flex h-full items-center justify-center text-[#014069]/40" aria-hidden="true">
+            <Package className="h-10 w-10" strokeWidth={1.5} />
+          </div>
         )}
-      </span>
-
-      <div className="absolute top-2 right-2 md:top-3 md:right-3 z-10 flex flex-col items-end gap-1 md:gap-1.5 max-w-[45%]">
         {showStatusBadge && (
-          <span className="bg-black/70 backdrop-blur px-1.5 py-0.5 md:px-2 md:py-1 text-[9px] md:text-[10px] font-semibold uppercase tracking-wide text-white">
+          <span className="absolute left-2 top-2 border border-[#014069]/15 bg-white px-2 py-1 text-[10px] font-semibold uppercase tracking-wide text-[#014069]">
             {listing.status}
           </span>
         )}
-        <span className="bg-white/20 backdrop-blur px-1.5 py-0.5 md:px-2.5 md:py-1 text-[9px] md:text-[10px] font-medium text-white truncate max-w-full">
-          {listing.location.address}
-        </span>
       </div>
-
-      <div className="absolute inset-x-0 bottom-0 overflow-hidden">
-        <div className="absolute inset-0 scale-110">
-          <Image
-            src={imageUrl}
-            alt=""
-            fill
-            sizes="(min-width: 1024px) 25vw, (min-width: 768px) 33vw, 50vw"
-            className="object-cover blur-2xl"
-            aria-hidden
-          />
-        </div>
-        <div className="absolute inset-0 bg-black/45" />
-
-        <div className="relative flex flex-col gap-2 p-3 md:p-4 text-white">
-          <h3 className="font-bold text-xs md:text-base leading-tight line-clamp-2">
-            {listing.title}
-          </h3>
-          {listing.description && (
-            <div className="hidden md:grid grid-rows-[0fr] group-hover:grid-rows-[1fr] transition-[grid-template-rows] duration-300 ease-out">
-              <p className="text-xs text-white/80 leading-snug overflow-hidden line-clamp-4">
-                {listing.description}
-              </p>
-            </div>
-          )}
-        </div>
+      <div className="flex min-h-16 shrink-0 flex-col justify-center gap-1 border-t border-[#014069]/10 bg-[#f5f8fa] px-3 py-2.5">
+        <h3 className="line-clamp-1 text-sm font-semibold leading-tight text-[#014069]">{listing.title}</h3>
+        <p className="truncate text-xs text-[#014069]/65">
+          <span className="font-semibold text-[#014069]">৳{listing.price.toLocaleString()}</span>
+          {" · "}
+          {listing.location.address}
+        </p>
       </div>
     </Link>
   );

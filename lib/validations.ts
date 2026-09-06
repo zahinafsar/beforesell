@@ -60,6 +60,15 @@ export const createPromotionSchema = z
     path: ["maxAge"],
   });
 
+export const submitPromotionPaymentSchema = z.object({
+  transactionId: z
+    .string()
+    .trim()
+    .min(6, "Transaction ID must be at least 6 characters")
+    .max(32, "Transaction ID must be 32 characters or fewer")
+    .regex(/^[A-Za-z0-9]+$/, "Transaction ID can only contain letters and numbers"),
+});
+
 export type RegisterInput = z.infer<typeof registerSchema>;
 export type LoginInput = z.infer<typeof loginSchema>;
 export type ForgotPasswordInput = z.infer<typeof forgotPasswordSchema>;
@@ -69,3 +78,4 @@ export type UpdateListingInput = z.infer<typeof updateListingSchema>;
 export type SendMessageInput = z.infer<typeof sendMessageSchema>;
 export type CreateConversationInput = z.infer<typeof createConversationSchema>;
 export type CreatePromotionInput = z.infer<typeof createPromotionSchema>;
+export type SubmitPromotionPaymentInput = z.infer<typeof submitPromotionPaymentSchema>;

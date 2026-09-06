@@ -1,14 +1,13 @@
 export const dynamic = "force-dynamic";
 
 import Link from "next/link";
-import Image from "next/image";
 import { ArrowRight, Search, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { prisma } from "@/lib/prisma";
 import { ListingCard } from "@/components/listing-card";
-import { CategoryIcon } from "@/components/category-icon";
-import { HeroCollage } from "@/components/hero-collage";
+import { CategoryIllustration } from "@/components/category-illustration";
+import { HeroIllustration } from "@/components/hero-illustration";
 
 export default async function HomePage() {
   const [categoriesRaw, featuredListings, recentListings, stats] = await Promise.all([
@@ -26,7 +25,7 @@ export default async function HomePage() {
         location: true,
       },
       orderBy: { createdAt: "desc" },
-      take: 8,
+      take: 10,
     }),
     prisma.listing.findMany({
       where: { status: "ACTIVE" },
@@ -35,7 +34,7 @@ export default async function HomePage() {
         location: true,
       },
       orderBy: { createdAt: "desc" },
-      take: 8,
+      take: 10,
     }),
     Promise.all([
       prisma.listing.count({ where: { status: "ACTIVE" } }),
@@ -114,8 +113,7 @@ export default async function HomePage() {
               </div>
             </div>
 
-            {/* Right collage */}
-            <HeroCollage />
+            <HeroIllustration />
           </div>
         </div>
       </section>
@@ -131,26 +129,12 @@ export default async function HomePage() {
               <Link
                 key={category.id}
                 href={`/search?categoryId=${category.id}`}
-                className="relative overflow-hidden border bg-card aspect-square group hover:border-primary transition-colors"
+                className="group flex aspect-square flex-col overflow-hidden border border-[#014069]/15 bg-white transition-colors hover:border-[#014069] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#014069]"
               >
-                {category.image && (
-                  <Image
-                    src={category.image}
-                    alt={category.name}
-                    fill
-                    sizes="(min-width: 1280px) 16vw, (min-width: 1024px) 20vw, (min-width: 768px) 25vw, (min-width: 640px) 33vw, 50vw"
-                    className="object-cover"
-                  />
-                )}
-                <div className="absolute inset-x-0 bottom-0 h-1/4 backdrop-blur-md bg-black/30" />
-                <div className="absolute inset-0 p-3 flex flex-col justify-between text-white">
-                  <div className="h-9 w-9 bg-white/15 backdrop-blur flex items-center justify-center">
-                    <CategoryIcon iconName={category.icon} className="h-5 w-5 text-white" />
-                  </div>
-                  <div>
-                    <p className="font-semibold text-sm leading-tight">{category.name}</p>
-                    <p className="text-xs text-white/80">{category.listingCount} ads</p>
-                  </div>
+                <CategoryIllustration slug={category.slug} iconName={category.icon} />
+                <div className="flex min-h-16 shrink-0 flex-col justify-center gap-1 border-t border-[#014069]/10 bg-[#f5f8fa] px-3 py-2.5">
+                  <p className="text-sm font-semibold leading-tight text-[#014069]">{category.name}</p>
+                  <p className="text-xs text-[#014069]/65">{category.listingCount} ads</p>
                 </div>
               </Link>
             ))}
@@ -170,7 +154,7 @@ export default async function HomePage() {
                 </Link>
               </Button>
             </div>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
               {featuredListings.map((listing) => (
                 <ListingCard key={listing.id} listing={listing} />
               ))}
@@ -190,7 +174,7 @@ export default async function HomePage() {
               </Link>
             </Button>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
             {recentListings.map((listing) => (
               <ListingCard key={listing.id} listing={listing} />
             ))}

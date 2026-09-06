@@ -43,6 +43,7 @@ export default async function BoostListingPage({ params }: BoostPageProps) {
           submittedAt: true,
           reviewedAt: true,
           reviewNote: true,
+          payment: { select: { status: true } },
         },
       },
     },

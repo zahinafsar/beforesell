@@ -246,3 +246,8 @@ Next.js adds `.next/types/**/*.ts` to includes. Add `.next` to excludes to avoid
   sorting in JS (convo counts per user are small). Old chats (pre-change) won't appear until a NEW message is
   sent (stamps the metadata). onSnapshot error cb gets null snapshot — guard `if(snap)`. New-chat-with-
   stranger entry point NOT built (future: + button → old /api/users directory).
+- LISTING CARD SIMPLIFIED (matches category card style on home): `components/listing-card.tsx` footer is now
+  2 lines only (title line-clamp-1 + "৳price · location" in one muted line), `min-h-16` band on #f5f8fa,
+  no MapPin icon, no Negotiable badge. Skeleton (`listing-card-skeleton.tsx`) mirrors 2 lines. Grids already
+  `grid-cols-2 md:grid-cols-3 lg:grid-cols-5` in app/page.tsx, listings-browser.tsx, app/user/[id]/page.tsx,
+  listings-grid-skeleton.tsx.

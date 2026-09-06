@@ -1,13 +1,11 @@
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
-import Link from "next/link";
-import Image from "next/image";
+import { ListingCard } from "@/components/listing-card";
 import { prisma } from "@/lib/prisma";
 import { generateUserMetadata } from "@/lib/seo";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
-import { Calendar, MapPin, Package, Eye } from "lucide-react";
+import { Calendar, Package } from "lucide-react";
 
 interface UserProfilePageProps {
   params: Promise<{ id: string }>;
@@ -113,53 +111,9 @@ export default async function UserProfilePage({ params }: UserProfilePageProps) 
               No active listings at the moment
             </p>
           ) : (
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-5">
               {user.listings.map((listing) => (
-                <Link
-                  key={listing.id}
-                  href={`/listings/${listing.slug}`}
-                  className="group"
-                >
-                  <Card className="overflow-hidden">
-                    <div className="relative aspect-[4/3] bg-gray-100">
-                      {listing.images[0] ? (
-                        <Image
-                          src={listing.images[0].url}
-                          alt={listing.title}
-                          fill
-                          className="object-cover group-hover:scale-105 transition-transform"
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center text-muted-foreground">
-                          No image
-                        </div>
-                      )}
-                    </div>
-                    <CardContent className="p-4">
-                      <p className="text-lg font-bold text-primary">
-                        ৳ {listing.price.toLocaleString()}
-                        {listing.negotiable && (
-                          <span className="text-xs font-normal text-muted-foreground ml-1">
-                            (Nego)
-                          </span>
-                        )}
-                      </p>
-                      <h3 className="font-medium line-clamp-2 text-sm mb-2">
-                        {listing.title}
-                      </h3>
-                      <div className="flex items-center justify-between text-xs text-muted-foreground">
-                        <span className="flex items-center gap-1">
-                          <MapPin className="h-3 w-3" />
-                          {listing.location.address}
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <Eye className="h-3 w-3" />
-                          {listing.views}
-                        </span>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </Link>
+                <ListingCard key={listing.id} listing={listing} />
               ))}
             </div>
           )}
