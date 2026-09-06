@@ -23,7 +23,6 @@ interface ListingsResponse {
     price: number;
     negotiable: boolean;
     status: string;
-    views: number;
     createdAt: Date;
     images: { url: string }[];
     location: { address: string };

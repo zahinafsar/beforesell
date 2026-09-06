@@ -27,7 +27,7 @@ export async function GET(request: NextApiRequest<unknown>) {
     prisma.user.count({ where: { createdAt: { gte: thirtyDaysAgo } } }),
     prisma.listing.count(),
     prisma.listing.count({ where: { status: "ACTIVE" } }),
-    prisma.listing.aggregate({ _sum: { views: true } }),
+    prisma.listingViewEvent.count(),
     prisma.conversation.count(),
     prisma.listing.groupBy({
       by: ["status"],
@@ -67,7 +67,7 @@ export async function GET(request: NextApiRequest<unknown>) {
       newUsers,
       totalListings,
       activeListings,
-      totalViews: totalViews._sum.views ?? 0,
+      totalViews,
       totalConversations,
       statusCounts,
     },

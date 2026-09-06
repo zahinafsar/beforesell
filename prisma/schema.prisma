@@ -30,6 +30,7 @@ model User {
   conversations      ConversationParticipant[]
   promotions         ListingPromotion[]        @relation("PromotionOwner")
   reviewedPromotions ListingPromotion[]        @relation("PromotionReviewer")
+  listingViews       ListingViewEvent[]         @relation("ListingViewers")
 
   @@map("users")
 }
@@ -104,7 +105,6 @@ model Listing {
   negotiable  Boolean       @default(true)
   phone       String?
   status      ListingStatus @default(ACTIVE)
-  views       Int           @default(0)
   featured    Boolean       @default(false)
 
   userId String
@@ -120,6 +120,7 @@ model Listing {
   conversations   Conversation[]
   attributeValues ListingAttributeValue[]
   promotions      ListingPromotion[]
+  viewEvents      ListingViewEvent[]
 
   expiresAt DateTime?
   createdAt DateTime  @default(now())
@@ -130,6 +131,40 @@ model Listing {
   @@index([locationId])
   @@index([status])
   @@map("listings")
+}
+
+model ListingViewEvent {
+  id              String   @id @default(cuid())
+  visitId         String   @unique
+  deviceId        String
+  viewerKey       String
+  source          String
+  referrer        String?
+  landingUrl      String
+  utmSource       String?
+  utmMedium       String?
+  utmCampaign     String?
+  utmTerm         String?
+  utmContent      String?
+  gclid           String?
+  fbclid          String?
+  deviceType      String
+  browser         String
+  operatingSystem String
+  createdAt       DateTime @default(now())
+
+  listingId String
+  listing   Listing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+
+  viewerUserId String?
+  viewerUser   User?   @relation("ListingViewers", fields: [viewerUserId], references: [id], onDelete: SetNull)
+
+  @@index([listingId, createdAt])
+  @@index([listingId, viewerKey])
+  @@unique([listingId, viewerKey])
+  @@index([source])
+  @@index([utmSource])
+  @@map("listing_view_events")
 }
 
 model ListingPromotion {

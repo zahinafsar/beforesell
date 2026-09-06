@@ -268,7 +268,6 @@ async function main() {
           price,
           negotiable: Math.random() > 0.3,
           status: Math.random() > 0.1 ? "ACTIVE" : getRandomElement(["SOLD", "EXPIRED"]),
-          views: getRandomInt(0, 500),
           featured: Math.random() > 0.95,
           userId: user.id,
           categoryId: category.id,

@@ -49,6 +49,7 @@ export async function GET(request: NextApiRequest<unknown, ListingsQuery>) {
         category: { select: { name: true } },
         location: { select: { address: true } },
         images: { select: { url: true }, take: 1 },
+        _count: { select: { viewEvents: true } },
       },
     }),
     prisma.listing.count({ where }),

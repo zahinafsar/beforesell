@@ -221,7 +221,7 @@ export default function AdminListingsPage() {
                         <TableCell className="text-sm">
                           ৳{l.price.toLocaleString()}
                         </TableCell>
-                        <TableCell className="text-sm">{l.views}</TableCell>
+                        <TableCell className="text-sm">{l._count.viewEvents}</TableCell>
                         <TableCell>
                           <Button
                             variant="ghost"

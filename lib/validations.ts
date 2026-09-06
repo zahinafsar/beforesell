@@ -69,6 +69,19 @@ export const submitPromotionPaymentSchema = z.object({
     .regex(/^[A-Za-z0-9]+$/, "Transaction ID can only contain letters and numbers"),
 });
 
+export const trackListingViewSchema = z.object({
+  visitId: z.string().uuid(),
+  landingUrl: z.string().url().max(2048),
+  referrer: z.string().url().max(2048).nullable(),
+  utmSource: z.string().max(200).nullable(),
+  utmMedium: z.string().max(200).nullable(),
+  utmCampaign: z.string().max(300).nullable(),
+  utmTerm: z.string().max(300).nullable(),
+  utmContent: z.string().max(300).nullable(),
+  gclid: z.string().max(500).nullable(),
+  fbclid: z.string().max(500).nullable(),
+});
+
 export type RegisterInput = z.infer<typeof registerSchema>;
 export type LoginInput = z.infer<typeof loginSchema>;
 export type ForgotPasswordInput = z.infer<typeof forgotPasswordSchema>;
@@ -79,3 +92,4 @@ export type SendMessageInput = z.infer<typeof sendMessageSchema>;
 export type CreateConversationInput = z.infer<typeof createConversationSchema>;
 export type CreatePromotionInput = z.infer<typeof createPromotionSchema>;
 export type SubmitPromotionPaymentInput = z.infer<typeof submitPromotionPaymentSchema>;
+export type TrackListingViewInput = z.infer<typeof trackListingViewSchema>;

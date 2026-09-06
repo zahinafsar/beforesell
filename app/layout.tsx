@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import QueryProvider from "@/providers/query-provider";
@@ -8,6 +9,7 @@ import { Footer } from "@/components/footer";
 import { headers } from "next/headers";
 import { Toaster } from "sonner";
 import { getBaseUrl, generateOrganizationJsonLd, generateWebsiteJsonLd } from "@/lib/seo";
+import { AttributionTracker } from "@/components/attribution-tracker";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -116,6 +118,9 @@ export default async function RootLayout({
       >
         <QueryProvider>
           <AuthProvider>
+            <Suspense fallback={null}>
+              <AttributionTracker />
+            </Suspense>
             {!isAdmin && <Header />}
             <main className="flex-1">{children}</main>
             {!isAdmin && <Footer />}

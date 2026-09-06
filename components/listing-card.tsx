@@ -17,7 +17,6 @@ interface Listing {
   price: number;
   negotiable: boolean;
   status: string;
-  views: number;
   createdAt: Date;
   images: ListingImage[];
   location: Location;

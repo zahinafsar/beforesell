@@ -33,13 +33,7 @@ export async function GET(
       return NextResponse.json({ error: "Listing not found" }, { status: 404 });
     }
 
-    // Increment view count
-    await prisma.listing.update({
-      where: { id },
-      data: { views: { increment: 1 } },
-    });
-
-    return NextResponse.json({ listing: { ...listing, views: listing.views + 1 } });
+    return NextResponse.json({ listing });
   } catch (error) {
     console.error("Get listing error:", error);
     return NextResponse.json(

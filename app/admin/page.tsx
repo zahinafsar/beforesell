@@ -34,7 +34,7 @@ export default async function AdminDashboard() {
     prisma.user.count({ where: { createdAt: { gte: thirtyDaysAgo } } }),
     prisma.listing.count(),
     prisma.listing.count({ where: { status: "ACTIVE" } }),
-    prisma.listing.aggregate({ _sum: { views: true } }),
+    prisma.listingViewEvent.count(),
     prisma.conversation.count(),
     prisma.listing.findMany({
       take: 10,
@@ -74,7 +74,7 @@ export default async function AdminDashboard() {
     },
     {
       label: "Total Views",
-      value: totalViews._sum.views ?? 0,
+      value: totalViews,
       sub: "All time",
       icon: Eye,
     },

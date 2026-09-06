@@ -1,4 +1,5 @@
 import { Metadata } from "next";
+import { randomUUID } from "node:crypto";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
@@ -9,8 +10,9 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
-import { MapPin, Eye, Calendar, Phone, MessageCircle, Edit, Sparkles } from "lucide-react";
+import { MapPin, Eye, Calendar, Phone, MessageCircle, Edit, Sparkles, ChartNoAxesCombined } from "lucide-react";
 import { ListingImageGallery } from "@/components/listing-image-gallery";
+import { ListingViewTracker } from "@/components/listing-view-tracker";
 
 interface ListingPageProps {
   params: Promise<{ slug: string }>;
@@ -76,12 +78,6 @@ export default async function ListingPage({ params }: ListingPageProps) {
     notFound();
   }
 
-  // Increment view
-  await prisma.listing.update({
-    where: { id: listing.id },
-    data: { views: { increment: 1 } },
-  });
-
   const isOwner = user?.id === listing.userId;
   const categoryPath = listing.category?.parent
     ? `${listing.category.parent.name} > ${listing.category.name}`
@@ -113,9 +109,13 @@ export default async function ListingPage({ params }: ListingPageProps) {
   ];
 
   const breadcrumbJsonLd = generateBreadcrumbJsonLd(breadcrumbItems);
+  const uniqueVisitorCount = await prisma.listingViewEvent.count({
+    where: { listingId: listing.id },
+  });
 
   return (
     <>
+      <ListingViewTracker listingId={listing.id} visitId={randomUUID()} />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(listingJsonLd) }}
@@ -156,7 +156,7 @@ export default async function ListingPage({ params }: ListingPageProps) {
                 </span>
                 <span className="flex items-center gap-1">
                   <Eye className="h-4 w-4" />
-                  {listing.views + 1} views
+                  {uniqueVisitorCount} unique views
                 </span>
                 <span className="flex items-center gap-1">
                   <Calendar className="h-4 w-4" />
@@ -228,11 +228,17 @@ export default async function ListingPage({ params }: ListingPageProps) {
               </Link>
 
               {isOwner ? (
-                <div className="grid gap-2 sm:grid-cols-2">
+                <div className="grid gap-2 sm:grid-cols-3">
                   <Button asChild variant="outline" className="w-full">
                     <Link href={`/dashboard/listings/${listing.id}/edit`}>
                       <Edit className="h-4 w-4 mr-2" />
                       Edit Listing
+                    </Link>
+                  </Button>
+                  <Button asChild variant="outline" className="w-full">
+                    <Link href={`/dashboard/listings/${listing.id}/metrics`}>
+                      <ChartNoAxesCombined className="h-4 w-4 mr-2" />
+                      Metrics
                     </Link>
                   </Button>
                   {listing.status === "ACTIVE" ? (

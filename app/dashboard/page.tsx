@@ -14,14 +14,13 @@ export default async function DashboardPage() {
     redirect("/login");
   }
 
-  const [listings, totalViews] = await Promise.all([
+  const [listings, uniqueViews] = await Promise.all([
     prisma.listing.findMany({
       where: { userId: user.id, status: { not: "DELETED" } },
-      select: { status: true, views: true },
+      select: { status: true },
     }),
-    prisma.listing.aggregate({
-      where: { userId: user.id },
-      _sum: { views: true },
+    prisma.listingViewEvent.count({
+      where: { listing: { userId: user.id, status: { not: "DELETED" } } },
     }),
   ]);
 
@@ -29,7 +28,7 @@ export default async function DashboardPage() {
     totalListings: listings.length,
     activeListings: listings.filter((l) => l.status === "ACTIVE").length,
     soldListings: listings.filter((l) => l.status === "SOLD").length,
-    totalViews: totalViews._sum.views || 0,
+    totalViews: uniqueViews,
   };
 
   return (
@@ -63,7 +62,7 @@ export default async function DashboardPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
-              Total Views
+              Unique Views
             </CardTitle>
             <Eye className="h-4 w-4 text-muted-foreground" />
           </CardHeader>

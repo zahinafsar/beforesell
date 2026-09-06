@@ -3,6 +3,7 @@ import { NextApiRequest } from "next-ts-api";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth";
 import { createListingSchema } from "@/lib/validations";
+import { Prisma } from "@prisma/client";
 
 function generateSlug(title: string): string {
   return title
@@ -240,7 +241,7 @@ export async function GET(request: NextApiRequest<unknown, ListingsQuery>) {
       where.AND = andConditions;
     }
 
-    let orderBy: Record<string, string> = { createdAt: "desc" };
+    let orderBy: Prisma.ListingOrderByWithRelationInput = { createdAt: "desc" };
     switch (sort) {
       case "price_asc":
         orderBy = { price: "asc" };
@@ -249,7 +250,7 @@ export async function GET(request: NextApiRequest<unknown, ListingsQuery>) {
         orderBy = { price: "desc" };
         break;
       case "popular":
-        orderBy = { views: "desc" };
+        orderBy = { viewEvents: { _count: "desc" } };
         break;
       case "newest":
       default:

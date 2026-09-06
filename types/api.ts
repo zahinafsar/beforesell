@@ -28,12 +28,13 @@ import type { GET as GET_26 } from '../app/api/conversations/unread/route';
 import type { POST as POST_27, PUT as PUT_27, DELETE as DELETE_27 } from '../app/api/listings/[id]/images/route';
 import type { POST as POST_28 } from '../app/api/listings/[id]/promotions/route';
 import type { GET as GET_29, PUT as PUT_29, DELETE as DELETE_29 } from '../app/api/listings/[id]/route';
-import type { POST as POST_30, GET as GET_30 } from '../app/api/listings/route';
-import type { PUT as PUT_31 } from '../app/api/promotions/[id]/payment/route';
-import type { GET as GET_32, PUT as PUT_32 } from '../app/api/user/profile/route';
-import type { POST as POST_33 } from '../app/api/users/heartbeat/route';
-import type { POST as POST_34 } from '../app/api/users/push-token/route';
-import type { GET as GET_35 } from '../app/api/users/route';
+import type { POST as POST_30 } from '../app/api/listings/[id]/views/route';
+import type { POST as POST_31, GET as GET_31 } from '../app/api/listings/route';
+import type { PUT as PUT_32 } from '../app/api/promotions/[id]/payment/route';
+import type { GET as GET_33, PUT as PUT_33 } from '../app/api/user/profile/route';
+import type { POST as POST_34 } from '../app/api/users/heartbeat/route';
+import type { POST as POST_35 } from '../app/api/users/push-token/route';
+import type { GET as GET_36 } from '../app/api/users/route';
 
 export type ApiRoutes = {
   'admin/categories/[id]/attributes/[attrId]': {
@@ -316,33 +317,28 @@ export type ApiRoutes = {
       params: ExtractNextParams<typeof DELETE_29>
     },
   };
-  'listings': {
+  'listings/[id]/views': {
     POST: {
       body: ExtractNextBody<typeof POST_30>
       response: ExtractNextResponse<typeof POST_30>
       query: ExtractNextQuery<typeof POST_30>
       params: ExtractNextParams<typeof POST_30>
     },
+  };
+  'listings': {
+    POST: {
+      body: ExtractNextBody<typeof POST_31>
+      response: ExtractNextResponse<typeof POST_31>
+      query: ExtractNextQuery<typeof POST_31>
+      params: ExtractNextParams<typeof POST_31>
+    },
     GET: {
-      response: ExtractNextResponse<typeof GET_30>
-      query: ExtractNextQuery<typeof GET_30>
-      params: ExtractNextParams<typeof GET_30>
+      response: ExtractNextResponse<typeof GET_31>
+      query: ExtractNextQuery<typeof GET_31>
+      params: ExtractNextParams<typeof GET_31>
     },
   };
   'promotions/[id]/payment': {
-    PUT: {
-      body: ExtractNextBody<typeof PUT_31>
-      response: ExtractNextResponse<typeof PUT_31>
-      query: ExtractNextQuery<typeof PUT_31>
-      params: ExtractNextParams<typeof PUT_31>
-    },
-  };
-  'user/profile': {
-    GET: {
-      response: ExtractNextResponse<typeof GET_32>
-      query: ExtractNextQuery<typeof GET_32>
-      params: ExtractNextParams<typeof GET_32>
-    },
     PUT: {
       body: ExtractNextBody<typeof PUT_32>
       response: ExtractNextResponse<typeof PUT_32>
@@ -350,15 +346,20 @@ export type ApiRoutes = {
       params: ExtractNextParams<typeof PUT_32>
     },
   };
-  'users/heartbeat': {
-    POST: {
-      body: ExtractNextBody<typeof POST_33>
-      response: ExtractNextResponse<typeof POST_33>
-      query: ExtractNextQuery<typeof POST_33>
-      params: ExtractNextParams<typeof POST_33>
+  'user/profile': {
+    GET: {
+      response: ExtractNextResponse<typeof GET_33>
+      query: ExtractNextQuery<typeof GET_33>
+      params: ExtractNextParams<typeof GET_33>
+    },
+    PUT: {
+      body: ExtractNextBody<typeof PUT_33>
+      response: ExtractNextResponse<typeof PUT_33>
+      query: ExtractNextQuery<typeof PUT_33>
+      params: ExtractNextParams<typeof PUT_33>
     },
   };
-  'users/push-token': {
+  'users/heartbeat': {
     POST: {
       body: ExtractNextBody<typeof POST_34>
       response: ExtractNextResponse<typeof POST_34>
@@ -366,11 +367,19 @@ export type ApiRoutes = {
       params: ExtractNextParams<typeof POST_34>
     },
   };
+  'users/push-token': {
+    POST: {
+      body: ExtractNextBody<typeof POST_35>
+      response: ExtractNextResponse<typeof POST_35>
+      query: ExtractNextQuery<typeof POST_35>
+      params: ExtractNextParams<typeof POST_35>
+    },
+  };
   'users': {
     GET: {
-      response: ExtractNextResponse<typeof GET_35>
-      query: ExtractNextQuery<typeof GET_35>
-      params: ExtractNextParams<typeof GET_35>
+      response: ExtractNextResponse<typeof GET_36>
+      query: ExtractNextQuery<typeof GET_36>
+      params: ExtractNextParams<typeof GET_36>
     },
   };
 };

@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import Image from "next/image";
-import { Plus, Eye, Edit, Sparkles } from "lucide-react";
+import { Plus, Eye, Edit, Sparkles, ChartNoAxesCombined } from "lucide-react";
 
 export default async function MyListingsPage() {
   const user = await getCurrentUser();
@@ -27,11 +27,22 @@ export default async function MyListingsPage() {
     orderBy: { createdAt: "desc" },
   });
 
+  const viewEvents = listings.length
+    ? await prisma.listingViewEvent.findMany({
+        where: { listingId: { in: listings.map((listing) => listing.id) } },
+        select: { listingId: true },
+      })
+    : [];
+  const uniqueViewsByListing = new Map<string, number>();
+  for (const event of viewEvents) {
+    uniqueViewsByListing.set(event.listingId, (uniqueViewsByListing.get(event.listingId) ?? 0) + 1);
+  }
+
   const stats = {
     total: listings.length,
     active: listings.filter((l) => l.status === "ACTIVE").length,
     sold: listings.filter((l) => l.status === "SOLD").length,
-    views: listings.reduce((sum, l) => sum + l.views, 0),
+    views: viewEvents.length,
   };
 
   return (
@@ -80,7 +91,7 @@ export default async function MyListingsPage() {
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
-              Total Views
+              Unique Views
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -151,7 +162,7 @@ export default async function MyListingsPage() {
                   <div className="flex items-center gap-4 text-sm text-muted-foreground mt-1">
                     <span className="flex items-center gap-1">
                       <Eye className="h-3 w-3" />
-                      {listing.views} views
+                      {uniqueViewsByListing.get(listing.id) ?? 0} unique views
                     </span>
                     <span>
                       {listing.location.address}
@@ -159,7 +170,13 @@ export default async function MyListingsPage() {
                   </div>
                 </div>
 
-                <div className="flex shrink-0 items-center gap-2">
+                <div className="flex shrink-0 flex-wrap items-center justify-end gap-2">
+                  <Button variant="outline" size="sm" asChild>
+                    <Link href={`/dashboard/listings/${listing.id}/metrics`}>
+                      <ChartNoAxesCombined className="h-4 w-4" />
+                      Metrics
+                    </Link>
+                  </Button>
                   {listing.status === "ACTIVE" ? (
                     <Button size="sm" asChild>
                       <Link href={`/listings/${listing.slug}/boost`}>
