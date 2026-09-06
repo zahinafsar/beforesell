@@ -156,7 +156,7 @@ export default async function ListingPage({ params }: ListingPageProps) {
                 </span>
                 <span className="flex items-center gap-1">
                   <Eye className="h-4 w-4" />
-                  {uniqueVisitorCount} unique views
+                  {uniqueVisitorCount} views
                 </span>
                 <span className="flex items-center gap-1">
                   <Calendar className="h-4 w-4" />

@@ -91,7 +91,7 @@ export default async function MyListingsPage() {
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
-              Unique Views
+              Views
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -162,7 +162,7 @@ export default async function MyListingsPage() {
                   <div className="flex items-center gap-4 text-sm text-muted-foreground mt-1">
                     <span className="flex items-center gap-1">
                       <Eye className="h-3 w-3" />
-                      {uniqueViewsByListing.get(listing.id) ?? 0} unique views
+                      {uniqueViewsByListing.get(listing.id) ?? 0} views
                     </span>
                     <span>
                       {listing.location.address}
