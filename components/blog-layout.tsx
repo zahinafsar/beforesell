@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { ChevronRight } from "lucide-react";
 import {
   type BlogPost,
@@ -83,6 +84,30 @@ export function BlogLayout({ post, lang, children }: BlogLayoutProps) {
           </Link>
         </div>
       </header>
+
+      {post.cover && (
+        <figure className="mb-10">
+          <div className="relative aspect-video overflow-hidden bg-muted">
+            <Image
+              src={post.cover}
+              alt={content.title}
+              fill
+              priority
+              sizes="(max-width: 768px) 100vw, 768px"
+              className="object-cover"
+            />
+          </div>
+          {post.coverCredit && (
+            <figcaption className="mt-2 text-xs text-muted-foreground">
+              Photo by{" "}
+              <a href={post.coverCredit.url} target="_blank" rel="noopener noreferrer">
+                {post.coverCredit.name}
+              </a>{" "}
+              on Pexels
+            </figcaption>
+          )}
+        </figure>
+      )}
 
       <div
         className={[

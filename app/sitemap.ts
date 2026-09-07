@@ -3,25 +3,20 @@ import { prisma } from "@/lib/prisma";
 import { getBaseUrl } from "@/lib/seo";
 import { BLOG_POSTS } from "@/lib/blog";
 
+export const revalidate = 300;
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = getBaseUrl();
 
-  const [listings, categories, users] = await Promise.all([
+  const [listings, categories] = await Promise.all([
     prisma.listing.findMany({
       where: { status: "ACTIVE" },
       select: { slug: true, updatedAt: true },
       orderBy: { updatedAt: "desc" },
-      take: 50000,
+      take: 45000,
     }),
     prisma.category.findMany({
       select: { slug: true, updatedAt: true },
-    }),
-    prisma.user.findMany({
-      where: {
-        listings: { some: { status: "ACTIVE" } },
-      },
-      select: { id: true, updatedAt: true },
-      take: 10000,
     }),
   ]);
 
@@ -82,12 +77,5 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.8,
   }));
 
-  const userPages: MetadataRoute.Sitemap = users.map((user) => ({
-    url: `${baseUrl}/user/${user.id}`,
-    lastModified: user.updatedAt,
-    changeFrequency: "weekly" as const,
-    priority: 0.5,
-  }));
-
-  return [...staticPages, ...blogPages, ...categoryPages, ...listingPages, ...userPages];
+  return [...staticPages, ...blogPages, ...categoryPages, ...listingPages];
 }
