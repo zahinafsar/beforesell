@@ -168,13 +168,13 @@ export default async function ListingPage({ params }: ListingPageProps) {
                 <>
                   <Separator className="my-6" />
                   <h2 className="text-lg font-semibold mb-3">Specifications</h2>
-                  <div className="grid grid-cols-2 gap-x-8 gap-y-3">
+                  <div className="grid grid-cols-1 gap-x-8 gap-y-3 sm:grid-cols-2">
                     {listing.attributeValues
                       .sort((a, b) => a.attribute.order - b.attribute.order)
                       .map((av) => (
-                        <div key={av.attribute.slug} className="flex justify-between">
-                          <span className="text-muted-foreground">{av.attribute.name}</span>
-                          <span className="font-medium">
+                        <div key={av.attribute.slug} className="flex items-start justify-between gap-4">
+                          <span className="min-w-0 text-muted-foreground">{av.attribute.name}</span>
+                          <span className="min-w-0 text-right font-medium break-words">
                             {av.attribute.type === "BOOLEAN"
                               ? av.value === "true"
                                 ? "Yes"

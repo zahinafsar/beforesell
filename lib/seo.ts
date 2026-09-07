@@ -2,9 +2,8 @@ import { Metadata } from "next";
 import type { BlogPost, BlogLang } from "@/lib/blog";
 
 const SITE_NAME = "BeforeSell";
-const SITE_URL = process.env.NEXT_PUBLIC_URL || "https://beforesell.com";
-const DEFAULT_DESCRIPTION =
-  "Bangladesh's trusted marketplace for buying and selling. Post free ads and find great deals on electronics, vehicles, property, and more.";
+const SITE_URL = process.env.NEXT_PUBLIC_APP_URL || "https://www.beforesell.com";
+const DEFAULT_DESCRIPTION = "Bangladesh's trusted marketplace for buying and selling. Post free ads and find great deals on electronics, vehicles, property, and more.";
 
 export function getBaseUrl(): string {
   return SITE_URL;
