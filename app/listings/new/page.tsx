@@ -1,7 +1,10 @@
 import { redirect } from "next/navigation";
+import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
 import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { ListingForm } from "@/components/listing-form";
+import { Button } from "@/components/ui/button";
 
 interface NewListingPageProps {
   searchParams: Promise<{ id?: string }>;
@@ -42,9 +45,16 @@ export default async function NewListingPage({ searchParams }: NewListingPagePro
 
   return (
     <div className="container px-4 py-8 max-w-3xl">
-      <h1 className="text-3xl font-bold mb-6">
-        {listing ? "Edit Listing" : "Post a New Ad"}
-      </h1>
+      <div className="mb-6 flex items-center gap-4">
+        <Button asChild variant="outline" size="icon" aria-label="Back to my listings">
+          <Link href="/dashboard/listings"><ArrowLeft /></Link>
+        </Button>
+        <div>
+          <h1 className="text-3xl font-bold">
+            {listing ? "Edit Listing" : "Post a New Ad"}
+          </h1>
+        </div>
+      </div>
       <ListingForm
         categories={categories}
         locations={locations}
