@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono, Noto_Sans_Bengali } from "next/font/google";
 import "./globals.css";
 import QueryProvider from "@/providers/query-provider";
 import AuthProvider from "@/providers/auth-provider";
@@ -10,6 +10,7 @@ import { headers } from "next/headers";
 import { Toaster } from "sonner";
 import { getBaseUrl, generateOrganizationJsonLd, generateWebsiteJsonLd } from "@/lib/seo";
 import { AttributionTracker } from "@/components/attribution-tracker";
+import { FirstVisitPromotionDialog } from "@/components/first-visit-promotion-dialog";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -19,6 +20,11 @@ const geistSans = Geist({
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
+});
+
+const notoSansBengali = Noto_Sans_Bengali({
+  variable: "--font-noto-sans-bengali",
+  subsets: ["bengali"],
 });
 
 const siteUrl = getBaseUrl();
@@ -114,13 +120,14 @@ export default async function RootLayout({
         />
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col`}
+        className={`${geistSans.variable} ${geistMono.variable} ${notoSansBengali.variable} antialiased min-h-screen flex flex-col`}
       >
         <QueryProvider>
           <AuthProvider>
             <Suspense fallback={null}>
               <AttributionTracker />
             </Suspense>
+            {!isAdmin && <FirstVisitPromotionDialog />}
             {!isAdmin && <Header />}
             <main className="flex-1">{children}</main>
             {!isAdmin && <Footer />}
