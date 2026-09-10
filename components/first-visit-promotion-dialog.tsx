@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ArrowRight, MapPin, Megaphone, ShieldCheck, Users } from "lucide-react";
+import { ArrowRight, Megaphone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -15,12 +15,6 @@ import {
 } from "@/components/ui/dialog";
 
 const promotionDialogStorageKey = "beforesell-promotion-dialog-seen";
-
-const audienceSignals = [
-  { icon: Users, label: "সঠিক বয়স" },
-  { icon: MapPin, label: "সঠিক এলাকা" },
-  { icon: ShieldCheck, label: "সঠিক ক্রেতা" },
-];
 
 export function FirstVisitPromotionDialog() {
   const [open, setOpen] = useState(false);
@@ -38,6 +32,7 @@ export function FirstVisitPromotionDialog() {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent
         lang="bn"
+        triggerClassname="text-white"
         className="overflow-hidden border-0 bg-[#f7f2e8] p-0 shadow-2xl sm:max-w-[580px]"
       >
         <div className="relative bg-[#014069] px-6 pb-8 pt-10 text-white sm:px-10 sm:pb-10">
@@ -56,9 +51,9 @@ export function FirstVisitPromotionDialog() {
 
         <div className="space-y-6 px-6 pb-6 pt-6 sm:px-10 sm:pb-9">
           <DialogDescription asChild>
-            <div className="font-bengali space-y-4 text-base leading-8 text-[#263640]">
+            <div className="font-bengali space-y-4 text-base text-[#263640]">
               <p>
-                আমরা সেটি ফেসবুক বিজ্ঞাপনের মাধ্যমে প্রচার করব। ফেসবুক জানে আপনার
+                আমরা আপনার পণ্যটি ফেসবুক বিজ্ঞাপনের মাধ্যমে প্রচার করব। ফেসবুক জানে আপনার
                 পণ্যটি কার প্রয়োজন, কোন বয়সের মানুষের প্রয়োজন এবং কোন এলাকার
                 মানুষের প্রয়োজন। তাই এখনই আমাদের এখানে বিজ্ঞাপন দিন আর নিশ্চিন্ত থাকুন। অপ্রয়োজনীয়
                 কল থেকে দূরে থাকুন।
