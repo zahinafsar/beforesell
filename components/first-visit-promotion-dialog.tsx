@@ -47,10 +47,7 @@ export function FirstVisitPromotionDialog() {
             <Megaphone className="h-6 w-6" aria-hidden="true" />
           </div>
           <DialogHeader className="relative mt-6 text-left">
-            <p className="text-sm font-semibold tracking-wide text-[#f4b942]">
-              ফেসবুক বিজ্ঞাপনে আরও বেশি মানুষের কাছে পৌঁছান
-            </p>
-            <DialogTitle className="font-bengali text-3xl font-bold leading-[1.25] sm:text-4xl">
+            <DialogTitle className="font-bengali text-2xl font-bold leading-[1.25] sm:text-3xl">
               আমরাই একমাত্র আপনার বিজ্ঞাপন ফেসবুকের মাধ্যমে প্রচার করি, যা আপনার
               সঠিক ক্রেতা পাওয়ার সম্ভাবনা ১০০ গুণ বাড়িয়ে দেয়
             </DialogTitle>
@@ -69,7 +66,7 @@ export function FirstVisitPromotionDialog() {
             </div>
           </DialogDescription>
 
-          <div className="grid grid-cols-3 border-y border-[#014069]/15 py-4">
+          {/* <div className="grid grid-cols-3 border-y border-[#014069]/15 py-4">
             {audienceSignals.map(({ icon: Icon, label }) => (
               <div
                 key={label}
@@ -79,7 +76,7 @@ export function FirstVisitPromotionDialog() {
                 <span>{label}</span>
               </div>
             ))}
-          </div>
+          </div> */}
 
           <DialogFooter className="font-bengali flex-col-reverse sm:flex-row sm:justify-between">
             <DialogClose asChild>
