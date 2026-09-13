@@ -3,6 +3,11 @@
 import { useState } from "react";
 import Image from "next/image";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import Lightbox from "yet-another-react-lightbox";
+import Zoom from "yet-another-react-lightbox/plugins/zoom";
+import Counter from "yet-another-react-lightbox/plugins/counter";
+import "yet-another-react-lightbox/styles.css";
+import "yet-another-react-lightbox/plugins/counter.css";
 import { Button } from "@/components/ui/button";
 
 interface ListingImage {
@@ -18,6 +23,7 @@ interface ListingImageGalleryProps {
 
 export function ListingImageGallery({ images, title }: ListingImageGalleryProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
 
   if (images.length === 0) {
     return (
@@ -38,13 +44,20 @@ export function ListingImageGallery({ images, title }: ListingImageGalleryProps)
   return (
     <div className="space-y-4">
       <div className="relative aspect-video bg-gray-100 rounded-lg overflow-hidden">
-        <Image
-          src={images[currentIndex].url}
-          alt={`${title} - Image ${currentIndex + 1}`}
-          fill
-          className="object-contain"
-          priority
-        />
+        <button
+          type="button"
+          onClick={() => setLightboxOpen(true)}
+          className="absolute inset-0 cursor-zoom-in"
+          aria-label="View full size image"
+        >
+          <Image
+            src={images[currentIndex].url}
+            alt={`${title} - Image ${currentIndex + 1}`}
+            fill
+            className="object-contain"
+            priority
+          />
+        </button>
 
         {images.length > 1 && (
           <>
@@ -93,6 +106,25 @@ export function ListingImageGallery({ images, title }: ListingImageGalleryProps)
           ))}
         </div>
       )}
+
+      <Lightbox
+        open={lightboxOpen}
+        close={() => setLightboxOpen(false)}
+        index={currentIndex}
+        slides={images.map((image, index) => ({
+          src: image.url,
+          alt: `${title} - Image ${index + 1}`,
+        }))}
+        plugins={images.length > 1 ? [Zoom, Counter] : [Zoom]}
+        on={{ view: ({ index }) => setCurrentIndex(index) }}
+        zoom={{ maxZoomPixelRatio: 3, scrollToZoom: true }}
+        carousel={{ finite: images.length <= 1 }}
+        render={
+          images.length <= 1
+            ? { buttonPrev: () => null, buttonNext: () => null }
+            : undefined
+        }
+      />
     </div>
   );
 }

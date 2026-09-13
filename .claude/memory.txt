@@ -1,6 +1,7 @@
 # BeforeSell Project Memory
 
 ## Recent Changes
+- Listing detail images open in a zoomable lightbox on click (`yet-another-react-lightbox` with Zoom + Counter plugins) in `components/listing-image-gallery.tsx`; lightbox navigation syncs the gallery index
 - Added end-to-end listing boost review workflow
   - Owner-only animated `Boost` button on active listing details links to `/listings/[slug]/boost`
   - Boost studio configures smart/custom audience, location, age range, Gender select (Both/Male/Female), start date, duration, and daily budget with live listing preview and estimated daily views
