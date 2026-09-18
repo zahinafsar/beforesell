@@ -27,7 +27,7 @@ export default function SellUsedProductsPage() {
     <article className="container px-4 py-12 max-w-4xl mx-auto space-y-10">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: serializeJsonLd(breadcrumbs) }} />
       <header className="space-y-5">
-        <Link href="/" className="text-sm text-primary hover:underline">BeforeSell Home</Link>
+        {/* <Link href="/" className="text-sm text-primary hover:underline">BeforeSell Home</Link> */}
         <h1 className="text-3xl md:text-5xl font-bold tracking-tight text-primary">Sell Used Products in Bangladesh on BeforeSell</h1>
         <p className="text-lg text-muted-foreground">Have a phone, laptop, piece of furniture or another item you no longer use? BeforeSell lets you post a basic ad for free and connect directly with interested buyers in Bangladesh.</p>
         <div className="flex flex-wrap gap-3">
