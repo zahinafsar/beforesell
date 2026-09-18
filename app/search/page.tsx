@@ -11,6 +11,8 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
   const params = await searchParams;
   const searchTerm = params.search;
   const categoryId = params.categoryId;
+  const query = new URLSearchParams(Object.entries(params).filter((entry): entry is [string, string] => typeof entry[1] === "string"));
+  const path = `/search${query.size > 0 ? `?${query.toString()}` : ""}`;
 
   if (categoryId) {
     const category = await prisma.category.findUnique({
@@ -26,7 +28,8 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
       return generatePageMetadata({
         title: categoryName,
         description: `Browse ${category.name} listings on BeforeSell. Find the best deals in Bangladesh.`,
-        path: `/search?categoryId=${categoryId}`,
+        path,
+        noIndex: true,
       });
     }
   }
@@ -35,14 +38,16 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
     return generatePageMetadata({
       title: `Search results for "${searchTerm}"`,
       description: `Find ${searchTerm} on BeforeSell. Browse listings in Bangladesh's trusted marketplace.`,
-      path: `/search?search=${encodeURIComponent(searchTerm)}`,
+      path,
+      noIndex: true,
     });
   }
 
   return generatePageMetadata({
     title: "Search Listings",
-    description: "Search and browse thousands of listings on BeforeSell. Find electronics, vehicles, property, and more in Bangladesh.",
-    path: "/search",
+    description: "Search new and second-hand listings on BeforeSell. Find electronics, vehicles, furniture, property and more in Bangladesh.",
+    path,
+    noIndex: true,
   });
 }
 

@@ -1,4 +1,5 @@
 import { Metadata } from "next";
+import { generatePageMetadata } from "@/lib/seo";
 import {
   ShieldCheck,
   MapPin,
@@ -8,10 +9,11 @@ import {
   AlertTriangle,
 } from "lucide-react";
 
-export const metadata: Metadata = {
-  title: "Safety Tips - BeforeSell",
-  description: "Stay safe while buying and selling on BeforeSell. Follow these tips for a secure experience.",
-};
+export const metadata: Metadata = generatePageMetadata({
+  title: "Buying and Selling Safety Tips",
+  description: "Practical safety tips for buying and selling second-hand products in Bangladesh: meet in public, inspect items and avoid advance-payment scams.",
+  path: "/safety",
+});
 
 const tips = [
   {

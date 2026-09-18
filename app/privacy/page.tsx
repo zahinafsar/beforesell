@@ -1,9 +1,11 @@
 import { Metadata } from "next";
+import { generatePageMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
-  title: "Privacy Policy - BeforeSell",
+export const metadata: Metadata = generatePageMetadata({
+  title: "Privacy Policy",
   description: "BeforeSell's privacy policy. Learn how we collect, use, and protect your data.",
-};
+  path: "/privacy",
+});
 
 export default function PrivacyPage() {
   return (

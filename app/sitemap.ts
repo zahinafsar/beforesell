@@ -16,26 +16,33 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       take: 45000,
     }),
     prisma.category.findMany({
-      select: { slug: true, updatedAt: true },
+      where: {
+        OR: [
+          { listings: { some: { status: "ACTIVE" } } },
+          { children: { some: { listings: { some: { status: "ACTIVE" } } } } },
+        ],
+      },
+      select: { slug: true },
     }),
   ]);
+
+  const publicPages: MetadataRoute.Sitemap = [
+    "/about", "/contact", "/how-it-works", "/safety", "/terms", "/privacy",
+    "/sell-used-products-in-bangladesh", "/categories",
+  ].map((path) => ({
+    url: `${baseUrl}${path}`,
+    changeFrequency: "monthly" as const,
+    priority: 0.6,
+  }));
 
   const staticPages: MetadataRoute.Sitemap = [
     {
       url: baseUrl,
-      lastModified: new Date(),
       changeFrequency: "daily",
       priority: 1,
     },
     {
-      url: `${baseUrl}/search`,
-      lastModified: new Date(),
-      changeFrequency: "daily",
-      priority: 0.9,
-    },
-    {
       url: `${baseUrl}/blog`,
-      lastModified: new Date(),
       changeFrequency: "weekly",
       priority: 0.7,
     },
@@ -44,7 +51,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const blogPages: MetadataRoute.Sitemap = BLOG_POSTS.flatMap((post) => {
     const enUrl = `${baseUrl}/en/${post.en.slug}`;
     const bnUrl = `${baseUrl}/bn/${post.bn.slug}`;
-    const alternates = { languages: { en: enUrl, bn: bnUrl } };
+    const alternates = { languages: { en: enUrl, bn: bnUrl, "x-default": enUrl } };
     return [
       {
         url: enUrl,
@@ -72,10 +79,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   const categoryPages: MetadataRoute.Sitemap = categories.map((category) => ({
     url: `${baseUrl}/categories/${category.slug}`,
-    lastModified: category.updatedAt,
     changeFrequency: "daily" as const,
     priority: 0.8,
   }));
 
-  return [...staticPages, ...blogPages, ...categoryPages, ...listingPages];
+  return [...staticPages, ...publicPages, ...blogPages, ...categoryPages, ...listingPages];
 }

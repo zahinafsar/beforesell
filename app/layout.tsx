@@ -8,7 +8,7 @@ import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
 import { headers } from "next/headers";
 import { Toaster } from "sonner";
-import { getBaseUrl, generateOrganizationJsonLd, generateWebsiteJsonLd } from "@/lib/seo";
+import { getBaseUrl, generateOrganizationJsonLd, generateWebsiteJsonLd, DEFAULT_DESCRIPTION, DEFAULT_SOCIAL_IMAGE, serializeJsonLd } from "@/lib/seo";
 import { AttributionTracker } from "@/components/attribution-tracker";
 import { FirstVisitPromotionDialog } from "@/components/first-visit-promotion-dialog";
 
@@ -32,7 +32,7 @@ const siteUrl = getBaseUrl();
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    default: "BeforeSell - Buy & Sell in Bangladesh",
+    default: "BeforeSell - Buy & Sell Second-Hand Products in Bangladesh",
     template: "%s | BeforeSell",
   },
   icons: {
@@ -40,7 +40,7 @@ export const metadata: Metadata = {
     apple: "/logo.svg",
   },
   description:
-    "Bangladesh's trusted marketplace for buying and selling. Post free ads and find great deals on electronics, vehicles, property, and more.",
+    DEFAULT_DESCRIPTION,
   keywords: [
     "buy sell bangladesh",
     "classifieds bangladesh",
@@ -64,15 +64,17 @@ export const metadata: Metadata = {
     locale: "en_BD",
     url: siteUrl,
     siteName: "BeforeSell",
-    title: "BeforeSell - Buy & Sell in Bangladesh",
+    images: [{ url: DEFAULT_SOCIAL_IMAGE, width: 1200, height: 630, alt: "BeforeSell - Buy and sell in Bangladesh" }],
+    title: "BeforeSell - Buy & Sell Second-Hand Products in Bangladesh",
     description:
-      "Bangladesh's trusted marketplace for buying and selling. Post free ads and find great deals on electronics, vehicles, property, and more.",
+      DEFAULT_DESCRIPTION,
   },
   twitter: {
     card: "summary_large_image",
-    title: "BeforeSell - Buy & Sell in Bangladesh",
+    images: [DEFAULT_SOCIAL_IMAGE],
+    title: "BeforeSell - Buy & Sell Second-Hand Products in Bangladesh",
     description:
-      "Bangladesh's trusted marketplace for buying and selling. Post free ads and find great deals.",
+      DEFAULT_DESCRIPTION,
   },
   robots: {
     index: true,
@@ -103,11 +105,11 @@ export default async function RootLayout({
       <head>
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd) }}
+          dangerouslySetInnerHTML={{ __html: serializeJsonLd(organizationJsonLd) }}
         />
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJsonLd) }}
+          dangerouslySetInnerHTML={{ __html: serializeJsonLd(websiteJsonLd) }}
         />
         <script
           dangerouslySetInnerHTML={{

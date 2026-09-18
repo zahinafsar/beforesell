@@ -1,9 +1,39 @@
 import { Metadata } from "next";
 import type { BlogPost, BlogLang } from "@/lib/blog";
+import type { ListingStatus } from "@prisma/client";
 
 const SITE_NAME = "BeforeSell";
-const SITE_URL = process.env.NEXT_PUBLIC_APP_URL || "https://www.beforesell.com";
-const DEFAULT_DESCRIPTION = "Bangladesh's trusted marketplace for buying and selling. Post free ads and find great deals on electronics, vehicles, property, and more.";
+const SITE_URL = getSiteOrigin();
+export const DEFAULT_DESCRIPTION = "Buy and sell new and second-hand products in Bangladesh on BeforeSell. Post a free ad for phones, electronics, furniture, vehicles and more.";
+export const DEFAULT_SOCIAL_IMAGE = "/social-image";
+
+function getSiteOrigin(): string {
+  const value = process.env.NEXT_PUBLIC_APP_URL;
+  if (!value || /\s/.test(value)) {
+    throw new Error("NEXT_PUBLIC_APP_URL is required and must be an absolute HTTP(S) origin without whitespace.");
+  }
+
+  let url: URL;
+  try {
+    url = new URL(value);
+  } catch {
+    throw new Error("NEXT_PUBLIC_APP_URL must be a valid absolute HTTP(S) origin.");
+  }
+
+  if (
+    !/^https?:\/\//.test(value) ||
+    !["http:", "https:"].includes(url.protocol) ||
+    url.username || url.password || url.pathname !== "/" || url.search || url.hash
+  ) {
+    throw new Error("NEXT_PUBLIC_APP_URL must contain only an HTTP(S) origin, without credentials, a path, query or fragment.");
+  }
+
+  return url.origin;
+}
+
+export function serializeJsonLd(value: unknown): string {
+  return JSON.stringify(value).replace(/</g, "\\u003c");
+}
 
 export function getBaseUrl(): string {
   return SITE_URL;
@@ -21,16 +51,16 @@ export function generatePageMetadata({
   title,
   description = DEFAULT_DESCRIPTION,
   path = "",
-  image,
+  image = DEFAULT_SOCIAL_IMAGE,
   noIndex = false,
 }: PageMetadataOptions): Metadata {
   const url = `${SITE_URL}${path}`;
   const fullTitle = title === SITE_NAME ? title : `${title} | ${SITE_NAME}`;
 
   return {
-    title: fullTitle,
+    title: { absolute: fullTitle },
     description,
-    ...(noIndex && { robots: { index: false, follow: false } }),
+    ...(noIndex && { robots: { index: false, follow: true } }),
     alternates: {
       canonical: url,
     },
@@ -60,6 +90,7 @@ interface ListingMetadataOptions {
   location: string;
   listingSlug: string;
   sellerName: string;
+  status: ListingStatus;
 }
 
 export function generateListingMetadata({
@@ -70,14 +101,17 @@ export function generateListingMetadata({
   location,
   listingSlug,
   sellerName,
+  status,
 }: ListingMetadataOptions): Metadata {
   const url = `${SITE_URL}/listings/${listingSlug}`;
-  const fullTitle = `${title} - ৳${price.toLocaleString()} | ${SITE_NAME}`;
-  const metaDescription = `${description.slice(0, 150)}... Located in ${location}. Seller: ${sellerName}`;
+  const fullTitle = `${title} - ৳${price.toLocaleString("en-BD")} | ${SITE_NAME}`;
+  const summary = description.replace(/\s+/g, " ").trim();
+  const metaDescription = `${summary.slice(0, 150)}${summary.length > 150 ? "…" : ""} Located in ${location}. Seller: ${sellerName}`;
 
   return {
-    title: fullTitle,
+    title: { absolute: fullTitle },
     description: metaDescription,
+    ...(status !== "ACTIVE" && { robots: { index: false, follow: true } }),
     alternates: {
       canonical: url,
     },
@@ -104,6 +138,7 @@ interface CategoryMetadataOptions {
   slug: string;
   listingCount: number;
   parentCategory?: string;
+  page?: number;
 }
 
 export function generateCategoryMetadata({
@@ -111,17 +146,19 @@ export function generateCategoryMetadata({
   slug,
   listingCount,
   parentCategory,
+  page = 1,
 }: CategoryMetadataOptions): Metadata {
-  const url = `${SITE_URL}/categories/${slug}`;
+  const url = `${SITE_URL}/categories/${slug}${page > 1 ? `?page=${page}` : ""}`;
   const title = parentCategory
     ? `${categoryName} in ${parentCategory}`
     : categoryName;
-  const fullTitle = `${title} - Buy & Sell | ${SITE_NAME}`;
+  const fullTitle = `${title} - Buy & Sell in Bangladesh${page > 1 ? ` - Page ${page}` : ""} | ${SITE_NAME}`;
   const description = `Browse ${listingCount} ads in ${categoryName}${parentCategory ? ` (${parentCategory})` : ""}. Find great deals in Bangladesh on ${SITE_NAME}.`;
 
   return {
-    title: fullTitle,
+    title: { absolute: fullTitle },
     description,
+    ...(listingCount === 0 && { robots: { index: false, follow: true } }),
     alternates: {
       canonical: url,
     },
@@ -159,7 +196,7 @@ export function generateUserMetadata({
   const description = `View ${userName}'s profile on ${SITE_NAME}. ${listingCount} active listings. Member since ${memberSince}.`;
 
   return {
-    title: fullTitle,
+    title: { absolute: fullTitle },
     description,
     alternates: {
       canonical: url,
@@ -188,8 +225,10 @@ interface ListingJsonLdOptions {
   location: string;
   listingId: string;
   sellerName: string;
-  createdAt: Date;
-  negotiable: boolean;
+  listingSlug: string;
+  status: ListingStatus;
+  condition?: string;
+  brand?: string;
 }
 
 export function generateListingJsonLd({
@@ -200,34 +239,38 @@ export function generateListingJsonLd({
   location,
   listingId,
   sellerName,
-  createdAt,
-  negotiable,
+  listingSlug,
+  status,
+  condition,
+  brand,
 }: ListingJsonLdOptions) {
+  const itemCondition = condition === "New"
+    ? "https://schema.org/NewCondition"
+    : condition && ["Used", "Like New", "Good", "Fair"].includes(condition)
+      ? "https://schema.org/UsedCondition"
+      : undefined;
+
   return {
     "@context": "https://schema.org",
     "@type": "Product",
     name: title,
     description: description,
     image: image || undefined,
+    url: `${SITE_URL}/listings/${listingSlug}`,
     offers: {
       "@type": "Offer",
       price: price,
       priceCurrency: "BDT",
-      availability: "https://schema.org/InStock",
-      priceValidUntil: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split("T")[0],
+      url: `${SITE_URL}/listings/${listingSlug}`,
+      availability: status === "ACTIVE" ? "https://schema.org/InStock" : "https://schema.org/SoldOut",
       seller: {
         "@type": "Person",
         name: sellerName,
       },
-      ...(negotiable && { priceSpecification: { "@type": "PriceSpecification", valueAddedTaxIncluded: true } }),
     },
     sku: listingId,
-    brand: {
-      "@type": "Brand",
-      name: "Various",
-    },
-    aggregateRating: undefined,
-    review: undefined,
+    ...(itemCondition && { itemCondition }),
+    ...(brand && brand !== "Other" && { brand: { "@type": "Brand", name: brand } }),
     additionalProperty: [
       {
         "@type": "PropertyValue",
@@ -235,7 +278,6 @@ export function generateListingJsonLd({
         value: location,
       },
     ],
-    datePosted: createdAt.toISOString(),
   };
 }
 
@@ -251,10 +293,10 @@ export function generateBlogMetadata({ post, lang }: BlogMetadataOptions): Metad
   const bnUrl = `${SITE_URL}/bn/${post.bn.slug}`;
   const fullTitle = `${content.title} | ${SITE_NAME}`;
   const ogLocale = lang === "bn" ? "bn_BD" : "en_BD";
-  const image = post.cover;
+  const image = post.cover || DEFAULT_SOCIAL_IMAGE;
 
   return {
-    title: fullTitle,
+    title: { absolute: fullTitle },
     description: content.description,
     alternates: {
       canonical: url,
@@ -305,7 +347,7 @@ export function generateBlogJsonLd({ post, lang }: BlogMetadataOptions) {
       name: SITE_NAME,
       logo: {
         "@type": "ImageObject",
-        url: `${SITE_URL}/logo.png`,
+        url: `${SITE_URL}/logo.webp`,
       },
     },
     mainEntityOfPage: {
@@ -320,16 +362,21 @@ export function generateOrganizationJsonLd() {
   return {
     "@context": "https://schema.org",
     "@type": "Organization",
+    "@id": `${SITE_URL}/#organization`,
     name: SITE_NAME,
     url: SITE_URL,
-    logo: `${SITE_URL}/logo.png`,
+    logo: `${SITE_URL}/logo.webp`,
     description: DEFAULT_DESCRIPTION,
     contactPoint: {
       "@type": "ContactPoint",
       contactType: "customer service",
+      email: "help.beforesell@gmail.com",
+      telephone: "+8801534792218",
+      areaServed: "BD",
       availableLanguage: ["English", "Bengali"],
     },
-    sameAs: [],
+    sameAs: ["https://www.facebook.com/beforesell.official/"],
+    areaServed: { "@type": "Country", name: "Bangladesh" },
   };
 }
 
@@ -337,6 +384,9 @@ export function generateWebsiteJsonLd() {
   return {
     "@context": "https://schema.org",
     "@type": "WebSite",
+    "@id": `${SITE_URL}/#website`,
+    inLanguage: ["en-BD", "bn-BD"],
+    publisher: { "@id": `${SITE_URL}/#organization` },
     name: SITE_NAME,
     url: SITE_URL,
     description: DEFAULT_DESCRIPTION,

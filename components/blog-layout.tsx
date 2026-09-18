@@ -7,7 +7,7 @@ import {
   getPostUrl,
   getAlternateLang,
 } from "@/lib/blog";
-import { generateBlogJsonLd } from "@/lib/seo";
+import { generateBlogJsonLd, serializeJsonLd } from "@/lib/seo";
 
 interface BlogLayoutProps {
   post: BlogPost;
@@ -52,7 +52,7 @@ export function BlogLayout({ post, lang, children }: BlogLayoutProps) {
     <article lang={lang === "bn" ? "bn" : "en"} className="container px-4 py-10 md:py-16 max-w-3xl mx-auto">
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        dangerouslySetInnerHTML={{ __html: serializeJsonLd(jsonLd) }}
       />
 
       <nav aria-label="Breadcrumb" className="flex items-center gap-1 text-sm text-muted-foreground mb-8">

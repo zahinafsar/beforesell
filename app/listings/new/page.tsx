@@ -6,6 +6,8 @@ import { prisma } from "@/lib/prisma";
 import { ListingForm } from "@/components/listing-form";
 import { Button } from "@/components/ui/button";
 
+export const metadata = { robots: { index: false, follow: false } };
+
 interface NewListingPageProps {
   searchParams: Promise<{ id?: string }>;
 }

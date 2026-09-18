@@ -1,9 +1,11 @@
 import { Metadata } from "next";
+import { generatePageMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
-  title: "Terms of Service - BeforeSell",
+export const metadata: Metadata = generatePageMetadata({
+  title: "Terms of Service",
   description: "BeforeSell's terms of service. Read the rules and guidelines for using our platform.",
-};
+  path: "/terms",
+});
 
 export default function TermsPage() {
   return (

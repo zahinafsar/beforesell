@@ -1,12 +1,14 @@
 import { Metadata } from "next";
+import { generatePageMetadata } from "@/lib/seo";
 import Link from "next/link";
 import { UserPlus, Camera, MessageCircle, HandshakeIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-export const metadata: Metadata = {
-  title: "How It Works - BeforeSell",
-  description: "Learn how to buy and sell on BeforeSell in a few simple steps.",
-};
+export const metadata: Metadata = generatePageMetadata({
+  title: "How to Buy and Sell",
+  description: "Learn how to sell used products in Bangladesh on BeforeSell: create an account, post a free ad, message buyers and arrange a deal.",
+  path: "/how-it-works",
+});
 
 const steps = [
   {
@@ -62,7 +64,7 @@ export default function HowItWorksPage() {
       <div className="text-center space-y-4 mb-12">
         <h1 className="text-3xl md:text-4xl font-bold">How It Works</h1>
         <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-          Buying and selling on BeforeSell is simple, safe, and completely free.
+          Post a basic ad for free, contact buyers or sellers, and arrange a deal directly. Optional listing boosts are paid.
         </p>
       </div>
 

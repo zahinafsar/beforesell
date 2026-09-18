@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth";
-import { generateListingMetadata, generateListingJsonLd, generateBreadcrumbJsonLd, getBaseUrl } from "@/lib/seo";
+import { generateListingMetadata, generateListingJsonLd, generateBreadcrumbJsonLd, getBaseUrl, serializeJsonLd } from "@/lib/seo";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -30,7 +30,7 @@ export async function generateMetadata({ params }: ListingPageProps): Promise<Me
   });
 
   if (!listing || listing.status === "DELETED") {
-    return { title: "Listing Not Found" };
+    return { title: "Listing Not Found", robots: { index: false, follow: true } };
   }
 
   return generateListingMetadata({
@@ -41,6 +41,7 @@ export async function generateMetadata({ params }: ListingPageProps): Promise<Me
     location: listing.location.address,
     listingSlug: listing.slug,
     sellerName: listing.user.name,
+    status: listing.status,
   });
 }
 
@@ -94,13 +95,17 @@ export default async function ListingPage({ params }: ListingPageProps) {
     location,
     listingId: listing.id,
     sellerName: listing.user.name,
-    createdAt: listing.createdAt,
-    negotiable: listing.negotiable,
+    status: listing.status,
+    listingSlug: listing.slug,
+    condition: listing.attributeValues.find((value) => value.attribute.slug === "condition")?.value,
+    brand: listing.attributeValues.find((value) => value.attribute.slug === "brand")?.value,
   });
+
+  const productCategory = listing.category.parent?.slug || listing.category.slug;
+  const hasProductSchema = ["electronics", "vehicles", "fashion", "home-living", "hobbies-sports", "essentials"].includes(productCategory);
 
   const breadcrumbItems = [
     { name: "Home", url: baseUrl },
-    { name: "Categories", url: `${baseUrl}/categories` },
     ...(listing.category?.parent
       ? [{ name: listing.category.parent.name, url: `${baseUrl}/categories/${listing.category.parent.slug}` }]
       : []),
@@ -116,13 +121,15 @@ export default async function ListingPage({ params }: ListingPageProps) {
   return (
     <>
       <ListingViewTracker listingId={listing.id} visitId={randomUUID()} />
+      {hasProductSchema && (listing.status === "ACTIVE" || listing.status === "SOLD") && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: serializeJsonLd(listingJsonLd) }}
+        />
+      )}
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(listingJsonLd) }}
-      />
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+        dangerouslySetInnerHTML={{ __html: serializeJsonLd(breadcrumbJsonLd) }}
       />
       <div className="container px-4 py-8">
       <div className="grid gap-8 lg:grid-cols-3">

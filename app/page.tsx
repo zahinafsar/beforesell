@@ -1,7 +1,8 @@
 export const dynamic = "force-dynamic";
 
 import Link from "next/link";
-import { ArrowRight, Search, Star } from "lucide-react";
+import { generatePageMetadata } from "@/lib/seo";
+import { ArrowRight, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { prisma } from "@/lib/prisma";
@@ -9,8 +10,13 @@ import { ListingCard } from "@/components/listing-card";
 import { CategoryIllustration } from "@/components/category-illustration";
 import { HeroIllustration } from "@/components/hero-illustration";
 
+export const metadata = generatePageMetadata({
+  title: "Buy & Sell Second-Hand Products in Bangladesh",
+  path: "/",
+});
+
 export default async function HomePage() {
-  const [categoriesRaw, featuredListings, recentListings, stats] = await Promise.all([
+  const [categoriesRaw, featuredListings, recentListings] = await Promise.all([
     prisma.category.findMany({
       where: { parentId: null },
       include: {
@@ -36,13 +42,7 @@ export default async function HomePage() {
       orderBy: { createdAt: "desc" },
       take: 10,
     }),
-    Promise.all([
-      prisma.listing.count({ where: { status: "ACTIVE" } }),
-      prisma.user.count(),
-    ]),
   ]);
-
-  const [listingCount, userCount] = stats;
 
   const categoryCounts = await Promise.all(
     categoriesRaw.map((c) =>
@@ -70,12 +70,12 @@ export default async function HomePage() {
               </div> */}
 
               <h1 className="text-5xl md:text-6xl lg:text-7xl font-black tracking-tight text-primary leading-[1.05]">
-                Buy, Sell &<br />
-                <span className="italic font-serif font-bold">Trade Anything</span>
+                Buy &amp; Sell<br />
+                <span className="italic font-serif font-bold">in Bangladesh</span>
               </h1>
 
               <p className="text-base md:text-lg text-neutral-600 max-w-md leading-relaxed">
-                Bangladesh&apos;s fastest-growing classifieds marketplace. From electronics to estates — your next deal is one click away.
+                Buy and sell new and second-hand products on BeforeSell. Post a free ad for phones, electronics, furniture, vehicles and more, then connect directly with buyers.
               </p>
 
               {/* Search Form */}
@@ -101,15 +101,9 @@ export default async function HomePage() {
                   <Link href="/listings/new">Post Free Ad</Link>
                 </Button>
 
-                <div className="text-sm">
-                  <div className="flex items-center gap-1 text-amber-500">
-                    {Array.from({ length: 5 }).map((_, i) => (
-                      <Star key={i} className="h-3.5 w-3.5 fill-current" />
-                    ))}
-                    <span className="ml-1 font-bold text-neutral-900">4.8</span>
-                  </div>
-                  <p className="text-xs text-neutral-600">from {userCount.toLocaleString()}+ users</p>
-                </div>
+                <Link href="/sell-used-products-in-bangladesh" className="text-sm font-medium text-primary hover:underline">
+                  How to sell a used product
+                </Link>
               </div>
             </div>
 
@@ -128,7 +122,7 @@ export default async function HomePage() {
             {categories.map((category) => (
               <Link
                 key={category.id}
-                href={`/search?categoryId=${category.id}`}
+                href={`/categories/${category.slug}`}
                 className="group flex aspect-square flex-col overflow-hidden border border-[#014069]/15 bg-white transition-colors hover:border-[#014069] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#014069]"
               >
                 <CategoryIllustration slug={category.slug} iconName={category.icon} />
@@ -195,7 +189,7 @@ export default async function HomePage() {
         <div className="container px-4 text-center space-y-4">
           <h2 className="text-2xl md:text-3xl font-bold">Ready to Sell?</h2>
           <p className="text-primary-foreground/80">
-            Post your ad for free and reach thousands of buyers
+            Post a free ad and connect with interested buyers in Bangladesh
           </p>
           <Button variant="outline" size="lg" asChild>
             <Link href="/listings/new">Post Free Ad</Link>

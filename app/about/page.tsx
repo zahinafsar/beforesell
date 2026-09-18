@@ -1,10 +1,12 @@
 import { Metadata } from "next";
+import { generatePageMetadata } from "@/lib/seo";
 import { Users, Target, Heart, ShieldCheck } from "lucide-react";
 
-export const metadata: Metadata = {
-  title: "About Us - BeforeSell",
-  description: "Learn about BeforeSell, Bangladesh's trusted marketplace for buying and selling.",
-};
+export const metadata: Metadata = generatePageMetadata({
+  title: "About Us",
+  description: "BeforeSell is a Bangladesh classifieds marketplace for new and second-hand products. Learn how buyers and sellers connect and how to contact our team.",
+  path: "/about",
+});
 
 const values = [
   {
@@ -29,7 +31,7 @@ const values = [
     icon: ShieldCheck,
     title: "Safety & Trust",
     description:
-      "We prioritize user safety with verified listings, secure messaging, and community guidelines.",
+      "We provide messaging, safety tips, and a support contact so buyers and sellers can make informed decisions.",
   },
 ];
 
@@ -39,7 +41,7 @@ export default function AboutPage() {
       <div className="text-center space-y-4 mb-12">
         <h1 className="text-3xl md:text-4xl font-bold">About BeforeSell</h1>
         <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-          Bangladesh&apos;s fastest-growing online marketplace connecting millions of buyers and sellers every day.
+          A classifieds marketplace for buying and selling new and second-hand products in Bangladesh.
         </p>
       </div>
 
@@ -47,7 +49,7 @@ export default function AboutPage() {
         <p>
           BeforeSell is a classifieds marketplace built for the people of Bangladesh. Whether you&apos;re
           looking to buy a smartphone, sell your car, find a rental apartment, or discover job opportunities
-          — BeforeSell makes it easy, fast, and completely free.
+          — BeforeSell lets you post a basic ad for free and contact sellers directly.
         </p>
         <p>
           We started with a simple idea: everyone should have access to a modern, trustworthy platform to

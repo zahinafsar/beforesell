@@ -1,10 +1,12 @@
 import { Metadata } from "next";
+import { generatePageMetadata } from "@/lib/seo";
 import { Mail, MapPin, Phone } from "lucide-react";
 
-export const metadata: Metadata = {
-  title: "Contact Us - BeforeSell",
-  description: "Get in touch with the BeforeSell team. We're here to help.",
-};
+export const metadata: Metadata = generatePageMetadata({
+  title: "Contact Us",
+  description: "Contact BeforeSell for help with buying, selling or your account. Find our support email, phone number and official Facebook page.",
+  path: "/contact",
+});
 
 const contactInfo = [
   {
