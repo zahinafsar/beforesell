@@ -1,6 +1,13 @@
 # BeforeSell Project Memory
 
 ## Recent Changes
+- Added one optional Cloudinary-hosted video per listing
+  - `Listing.videoUrl` and `Listing.videoPublicId` hold the video asset; Prisma Client was regenerated and migration `20260920032523_add_listing_video` exists
+  - Listing create/edit forms accept MP4, WebM, MOV, or M4V videos up to 100 MB, provide an in-form playable preview, and upload them after the listing has a photo
+  - The first ordered listing image is the video cover; the API prevents deleting the final image while a video is attached
+  - Listing details show a play control over the first image and swap it for an inline HTML5 video player only after the user clicks play
+  - Video replacement/removal and listing deletion clean up Cloudinary video assets
+  - After generating the Prisma Client for these fields, restart an already-running Next dev server or it will report `Unknown field videoUrl` until it reloads the client
 - Listing detail images open in a zoomable lightbox on click (`yet-another-react-lightbox` with Zoom + Counter plugins) in `components/listing-image-gallery.tsx`; lightbox navigation syncs the gallery index
 - Added end-to-end listing boost review workflow
   - Owner-only animated `Boost` button on active listing details links to `/listings/[slug]/boost`

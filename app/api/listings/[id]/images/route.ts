@@ -151,7 +151,11 @@ export async function DELETE(
     const { id } = await params;
     const listing = await prisma.listing.findUnique({
       where: { id },
-      select: { userId: true },
+      select: {
+        userId: true,
+        videoUrl: true,
+        _count: { select: { images: true } },
+      },
     });
 
     if (!listing) {
@@ -174,6 +178,13 @@ export async function DELETE(
 
     if (!image || image.listingId !== id) {
       return NextResponse.json({ error: "Image not found" }, { status: 404 });
+    }
+
+    if (listing.videoUrl && listing._count.images === 1) {
+      return NextResponse.json(
+        { error: "A listing with video must keep a cover photo" },
+        { status: 400 }
+      );
     }
 
     // Delete from Cloudinary

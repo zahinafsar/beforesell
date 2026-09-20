@@ -3,7 +3,7 @@
 import { useState, useCallback, useRef, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { X, Upload, GripVertical, Loader2 } from "lucide-react";
+import { X, Upload, GripVertical, Loader2, Video } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -19,6 +19,27 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { api } from "@/lib/api";
 import { DynamicAttributeField, type CategoryAttribute } from "@/components/dynamic-attribute-field";
+
+const MAX_VIDEO_SIZE = 100 * 1024 * 1024;
+const VIDEO_TYPES = new Set(["video/mp4", "video/webm", "video/quicktime", "video/x-m4v"]);
+
+function useObjectUrl(file: File | null | undefined) {
+  const [url, setUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!file) {
+      setUrl(null);
+      return;
+    }
+
+    const objectUrl = URL.createObjectURL(file);
+    setUrl(objectUrl);
+
+    return () => URL.revokeObjectURL(objectUrl);
+  }, [file]);
+
+  return url;
+}
 
 export function ListingForm({
   categories,
@@ -49,6 +70,8 @@ export function ListingForm({
     status?: string;
     categoryId?: string | null;
     locationId: string;
+    videoUrl?: string | null;
+    videoPublicId?: string | null;
     images: { id: string; url: string; publicId: string; order: number }[];
     attributeValues?: { attribute: { slug: string }; value: string }[];
   };
@@ -56,6 +79,7 @@ export function ListingForm({
 }) {
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const videoInputRef = useRef<HTMLInputElement>(null);
   const isEditing = !!listing;
 
   const [title, setTitle] = useState(listing?.title || "");
@@ -71,7 +95,14 @@ export function ListingForm({
       ([] as { id: string; url: string; publicId: string; order: number }[]),
   );
   const [pendingFiles, setPendingFiles] = useState<File[]>([]);
+  const [video, setVideo] = useState(
+    listing?.videoUrl && listing.videoPublicId
+      ? { url: listing.videoUrl, publicId: listing.videoPublicId }
+      : null,
+  );
+  const [pendingVideo, setPendingVideo] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [uploadingVideo, setUploadingVideo] = useState(false);
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
@@ -87,6 +118,10 @@ export function ListingForm({
     return {};
   });
   const [loadingAttributes, setLoadingAttributes] = useState(false);
+  const pendingVideoUrl = useObjectUrl(pendingVideo);
+  const pendingCoverUrl = useObjectUrl(pendingFiles[0]);
+  const videoPreviewUrl = isEditing ? video?.url : pendingVideoUrl;
+  const videoPosterUrl = isEditing ? images[0]?.url : pendingCoverUrl;
 
   const categoryMap = useMemo(() => {
     const m = new Map<string, (typeof categories)[number]>();
@@ -216,8 +251,104 @@ export function ListingForm({
     [listing, images.length, pendingFiles.length],
   );
 
+  const validateVideo = (file: File) => {
+    if (!VIDEO_TYPES.has(file.type)) {
+      return "Video must be an MP4, WebM, MOV, or M4V file";
+    }
+
+    if (file.size > MAX_VIDEO_SIZE) {
+      return "Video must be 100 MB or smaller";
+    }
+
+    return null;
+  };
+
+  const handleVideoUpload = async (file: File) => {
+    const validationError = validateVideo(file);
+    if (validationError) {
+      setError(validationError);
+      return;
+    }
+
+    if (!listing) {
+      setPendingVideo(file);
+      setError("");
+      return;
+    }
+
+    if (images.length === 0) {
+      setError("Add a cover photo before uploading a video");
+      return;
+    }
+
+    setUploadingVideo(true);
+    setError("");
+
+    const formData = new FormData();
+    formData.append("video", file);
+
+    try {
+      const res = await fetch(`/api/listings/${listing.id}/video`, {
+        method: "POST",
+        body: formData,
+      });
+      const data = await res.json() as {
+        video?: { url: string; publicId: string };
+        error?: string;
+      };
+
+      if (!res.ok || !data.video) {
+        throw new Error(data.error || "Video upload failed");
+      }
+
+      setVideo(data.video);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Video upload failed");
+    } finally {
+      setUploadingVideo(false);
+      if (videoInputRef.current) videoInputRef.current.value = "";
+    }
+  };
+
+  const handleDeleteVideo = async () => {
+    if (!listing) {
+      setPendingVideo(null);
+      if (videoInputRef.current) videoInputRef.current.value = "";
+      return;
+    }
+
+    setUploadingVideo(true);
+    setError("");
+
+    const formData = new FormData();
+    formData.append("action", "delete");
+
+    try {
+      const res = await fetch(`/api/listings/${listing.id}/video`, {
+        method: "POST",
+        body: formData,
+      });
+      const data = await res.json() as { error?: string };
+
+      if (!res.ok) {
+        throw new Error(data.error || "Failed to remove video");
+      }
+
+      setVideo(null);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to remove video");
+    } finally {
+      setUploadingVideo(false);
+    }
+  };
+
   const handleDeleteImage = async (imageId: string) => {
     if (!listing) return;
+
+    if (video && images.length === 1) {
+      setError("Remove the video before deleting its cover photo");
+      return;
+    }
 
     try {
       const res = await api("listings/[id]/images", {
@@ -275,6 +406,11 @@ export function ListingForm({
 
     if (!categoryId) {
       setError("Category is required");
+      return;
+    }
+
+    if ((isEditing ? video : pendingVideo) && (isEditing ? images.length === 0 : pendingFiles.length === 0)) {
+      setError("Add at least one photo to use as the video cover");
       return;
     }
 
@@ -338,6 +474,21 @@ export function ListingForm({
         if (!uploadRes.ok) {
           const uploadData = await uploadRes.json();
           throw new Error(uploadData.error || "Failed to upload images");
+        }
+      }
+
+      if (!isEditing && pendingVideo && data.listing?.id) {
+        const formData = new FormData();
+        formData.append("video", pendingVideo);
+
+        const uploadRes = await fetch(`/api/listings/${data.listing.id}/video`, {
+          method: "POST",
+          body: formData,
+        });
+
+        if (!uploadRes.ok) {
+          const uploadData = await uploadRes.json();
+          throw new Error(uploadData.error || "Failed to upload video");
         }
       }
 
@@ -604,9 +755,13 @@ export function ListingForm({
                     <div className="absolute inset-0 bg-black/40 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center">
                       <button
                         type="button"
-                        onClick={() =>
-                          setPendingFiles((prev) => prev.filter((_, i) => i !== index))
-                        }
+                        onClick={() => {
+                          if (pendingVideo && pendingFiles.length === 1) {
+                            setError("Remove the video before deleting its cover photo");
+                            return;
+                          }
+                          setPendingFiles((prev) => prev.filter((_, i) => i !== index));
+                        }}
                         className="p-1 bg-red-500 rounded-full"
                       >
                         <X className="h-4 w-4 text-white" />
@@ -647,8 +802,92 @@ export function ListingForm({
         </CardContent>
       </Card>
 
+      <Card>
+        <CardHeader>
+          <CardTitle>Video (optional)</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <input
+            ref={videoInputRef}
+            type="file"
+            accept="video/mp4,video/webm,video/quicktime,video/x-m4v"
+            className="hidden"
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (file) void handleVideoUpload(file);
+            }}
+          />
+
+          {videoPreviewUrl ? (
+            <div className="space-y-3">
+              <div className="relative overflow-hidden rounded-xl bg-slate-950">
+                <video
+                  key={videoPreviewUrl}
+                  src={videoPreviewUrl}
+                  poster={videoPosterUrl || undefined}
+                  controls
+                  playsInline
+                  preload="metadata"
+                  className="aspect-video w-full bg-black object-contain"
+                >
+                  Your browser does not support video playback.
+                </video>
+                <Button
+                  type="button"
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => void handleDeleteVideo()}
+                  disabled={uploadingVideo}
+                  className="absolute right-3 top-3 bg-black/70 text-white hover:bg-black/85 hover:text-white"
+                >
+                  {uploadingVideo ? <Loader2 className="h-4 w-4 animate-spin" /> : "Remove"}
+                </Button>
+              </div>
+              <div className="flex items-center justify-between gap-4">
+                <div className="min-w-0">
+                  <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                    Video ready
+                  </p>
+                  <p className="truncate text-sm font-semibold">
+                    {isEditing ? "Listing video" : pendingVideo?.name}
+                  </p>
+                </div>
+                <p className="shrink-0 text-sm text-muted-foreground">Preview before publishing</p>
+              </div>
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={() => videoInputRef.current?.click()}
+              disabled={uploadingVideo}
+              className="flex w-full items-center gap-4 rounded-xl border-2 border-dashed border-gray-300 p-5 text-left transition-colors hover:border-primary hover:bg-gray-50 disabled:opacity-50"
+            >
+              <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
+                {uploadingVideo ? (
+                  <Loader2 className="h-6 w-6 animate-spin" />
+                ) : (
+                  <Video className="h-6 w-6" />
+                )}
+              </span>
+              <span>
+                <span className="block font-medium">
+                  {uploadingVideo ? "Uploading video..." : "Add a product video"}
+                </span>
+                <span className="mt-1 block text-sm text-muted-foreground">
+                  MP4, WebM, MOV, or M4V up to 100 MB
+                </span>
+              </span>
+            </button>
+          )}
+
+          <p className="text-sm text-muted-foreground">
+            Your first photo becomes the video cover. Buyers can press play from the listing gallery.
+          </p>
+        </CardContent>
+      </Card>
+
       <div className="flex gap-4">
-        <Button type="submit" disabled={isSubmitting} className="flex-1">
+        <Button type="submit" disabled={isSubmitting || uploadingVideo} className="flex-1">
           {isSubmitting ? (
             <>
               <Loader2 className="h-4 w-4 mr-2 animate-spin" />

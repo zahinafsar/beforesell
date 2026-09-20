@@ -97,15 +97,17 @@ enum AttributeType {
 }
 
 model Listing {
-  id          String        @id @default(cuid())
-  title       String
-  slug        String        @unique
-  description String
-  price       Float
-  negotiable  Boolean       @default(true)
-  phone       String?
-  status      ListingStatus @default(ACTIVE)
-  featured    Boolean       @default(false)
+  id            String        @id @default(cuid())
+  title         String
+  slug          String        @unique
+  description   String
+  price         Float
+  negotiable    Boolean       @default(true)
+  phone         String?
+  videoUrl      String?
+  videoPublicId String?
+  status        ListingStatus @default(ACTIVE)
+  featured      Boolean       @default(false)
 
   userId String
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)

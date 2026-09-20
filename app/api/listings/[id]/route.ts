@@ -3,7 +3,7 @@ import { NextApiRequest } from "next-ts-api";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth";
 import { updateListingSchema } from "@/lib/validations";
-import { deleteImages } from "@/lib/cloudinary";
+import { deleteImages, deleteVideo } from "@/lib/cloudinary";
 
 export async function GET(
   request: NextApiRequest<unknown>,
@@ -182,6 +182,10 @@ export async function DELETE(
     // Delete images from Cloudinary
     if (listing.images.length > 0) {
       await deleteImages(listing.images.map((img) => img.publicId));
+    }
+
+    if (listing.videoPublicId) {
+      await deleteVideo(listing.videoPublicId);
     }
 
     // Soft delete

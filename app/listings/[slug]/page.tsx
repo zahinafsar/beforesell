@@ -134,7 +134,11 @@ export default async function ListingPage({ params }: ListingPageProps) {
       <div className="container px-4 py-8">
       <div className="grid gap-8 lg:grid-cols-3">
         <div className="lg:col-span-2 space-y-6">
-          <ListingImageGallery images={listing.images} title={listing.title} />
+          <ListingImageGallery
+            images={listing.images}
+            title={listing.title}
+            videoUrl={listing.videoUrl}
+          />
 
           <Card>
             <CardContent className="pt-6">
