@@ -3,7 +3,7 @@ import { Resend } from "resend";
 const resend = new Resend(process.env.RESEND_API_KEY);
 const reviewEmail = process.env.BOOST_REVIEW_EMAIL || "afsarzahin@gmail.com";
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL;
-const FROM_EMAIL = "BeforeSell <noreply@beforesell.com>";
+const FROM_EMAIL = "BeforeSell <hello@beforesell.com>";
 
 function emailLayout(content: string) {
   return `
