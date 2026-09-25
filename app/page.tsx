@@ -75,7 +75,7 @@ export default async function HomePage() {
               </h1>
 
               <p className="text-base md:text-lg text-neutral-600 max-w-md leading-relaxed">
-                Buy and sell new and second-hand products on BeforeSell. Post a free ad for phones, electronics, furniture, vehicles and more, then connect directly with buyers.
+                Buy and sell new and second-hand products on BeforeSell. Post a free ad, or post a request for the product you want and let sellers come to you.
               </p>
 
               {/* Search Form */}
@@ -103,6 +103,10 @@ export default async function HomePage() {
 
                 <Link href="/sell-used-products-in-bangladesh" className="text-sm font-medium text-primary hover:underline">
                   How to sell a used product
+                </Link>
+
+                <Link href="/en/request-a-product-you-cant-find" className="text-sm font-medium text-primary hover:underline">
+                  How to request a product
                 </Link>
               </div>
             </div>
@@ -186,14 +190,29 @@ export default async function HomePage() {
 
       {/* CTA Section */}
       <section className="py-12 bg-primary text-primary-foreground">
-        <div className="container px-4 text-center space-y-4">
-          <h2 className="text-2xl md:text-3xl font-bold">Ready to Sell?</h2>
-          <p className="text-primary-foreground/80">
-            Post a free ad and connect with interested buyers in Bangladesh
-          </p>
-          <Button variant="outline" size="lg" asChild>
-            <Link href="/post">Post Free Ad</Link>
-          </Button>
+        <div className="container px-4 grid gap-6 md:grid-cols-2">
+          {[
+            {
+              title: "Ready to Sell?",
+              description: "Post a free ad and connect with interested buyers in Bangladesh.",
+              href: "/listings/new",
+              label: "Sell a Product",
+            },
+            {
+              title: "Can't Find What You Need?",
+              description: "Post a free request with your budget and let sellers who have it message you.",
+              href: "/requests/new",
+              label: "Request a Product",
+            },
+          ].map((cta) => (
+            <div key={cta.href} className="flex flex-col items-center gap-4 border border-white/20 p-8 text-center">
+              <h2 className="text-2xl md:text-3xl font-bold">{cta.title}</h2>
+              <p className="text-primary-foreground/80">{cta.description}</p>
+              <Button variant="outline" size="lg" asChild className="mt-auto border-white bg-white text-primary hover:bg-white/90 hover:text-primary">
+                <Link href={cta.href}>{cta.label}</Link>
+              </Button>
+            </div>
+          ))}
         </div>
       </section>
     </div>

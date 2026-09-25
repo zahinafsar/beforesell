@@ -178,16 +178,26 @@ export default async function CategoriesPage() {
       <section className="bg-primary text-primary-foreground">
         <div className="container flex flex-col gap-6 px-4 py-12 md:flex-row md:items-center md:justify-between md:gap-12">
           <div className="space-y-3">
-            <h2 className="text-2xl font-bold md:text-3xl">Have Something to Sell?</h2>
-            <p className="max-w-xl text-primary-foreground/80">Give it a place in the right category. Post a free ad and connect with interested buyers.</p>
+            <h2 className="text-2xl font-bold md:text-3xl">Buy or Sell Anything</h2>
+            <p className="max-w-xl text-primary-foreground/80">Post a free ad to sell your product, or post a free request for the product you want to buy.</p>
           </div>
           <div className="flex shrink-0 flex-col items-start gap-3">
-            <Button asChild variant="outline" size="lg" className="h-12 border-white bg-white px-8 font-semibold text-primary hover:bg-white/90 hover:text-primary">
-              <Link href="/post">Post Free Ad <ArrowRight className="h-4 w-4" aria-hidden="true" /></Link>
-            </Button>
-            <Link href="/sell-used-products-in-bangladesh" className="inline-flex min-h-10 items-center text-sm text-primary-foreground/90 underline underline-offset-4 hover:text-primary-foreground">
-              Read our selling guide
-            </Link>
+            <div className="flex flex-wrap gap-3">
+              <Button asChild variant="outline" size="lg" className="h-12 border-white bg-white px-8 font-semibold text-primary hover:bg-white/90 hover:text-primary">
+                <Link href="/listings/new">Sell a Product <ArrowRight className="h-4 w-4" aria-hidden="true" /></Link>
+              </Button>
+              <Button asChild variant="outline" size="lg" className="h-12 border-white bg-white px-8 font-semibold text-primary hover:bg-white/90 hover:text-primary">
+                <Link href="/requests/new">Request a Product <ArrowRight className="h-4 w-4" aria-hidden="true" /></Link>
+              </Button>
+            </div>
+            <div className="flex flex-wrap gap-x-6">
+              <Link href="/sell-used-products-in-bangladesh" className="inline-flex min-h-10 items-center text-sm text-primary-foreground/90 underline underline-offset-4 hover:text-primary-foreground">
+                Read our selling guide
+              </Link>
+              <Link href="/en/request-a-product-you-cant-find" className="inline-flex min-h-10 items-center text-sm text-primary-foreground/90 underline underline-offset-4 hover:text-primary-foreground">
+                Read our request guide
+              </Link>
+            </div>
           </div>
         </div>
       </section>

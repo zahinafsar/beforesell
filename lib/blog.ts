@@ -94,6 +94,27 @@ export const BLOG_POSTS: BlogPost[] = [
         "ব্যবহৃত পণ্য এখন দৈনন্দিন কেনাকাটার অংশ। ফোন, পোশাক, আসবাব ও সংগ্রহের জিনিস বিশ্বজুড়ে নতুন মালিক খুঁজে পাচ্ছে।",
     },
   },
+  {
+    id: "request-a-product",
+    publishedAt: "2026-09-25",
+    updatedAt: "2026-09-25",
+    en: {
+      slug: "request-a-product-you-cant-find",
+      title: "Can't find what you want? Request it on BeforeSell",
+      description:
+        "Post a buyer request on BeforeSell with your budget and location, share or boost it, and let sellers in Bangladesh who have the product message you.",
+      excerpt:
+        "Searching every day for the same phone or bike gets tiring. With a buyer request, you describe what you want once and sellers who have it come to you.",
+    },
+    bn: {
+      slug: "khuje-na-pele-ponno-request-korun",
+      title: "পছন্দের পণ্য খুঁজে পাচ্ছেন না? BeforeSell-এ রিকোয়েস্ট করুন",
+      description:
+        "BeforeSell-এ বাজেট ও লোকেশনসহ একটি বায়ার রিকোয়েস্ট পোস্ট করুন, শেয়ার বা বুস্ট করুন, আর যাদের কাছে পণ্যটি আছে সেই বিক্রেতারাই আপনাকে মেসেজ করবেন।",
+      excerpt:
+        "প্রতিদিন একই ফোন বা বাইক খুঁজতে খুঁজতে ক্লান্ত? একবার রিকোয়েস্ট পোস্ট করুন, যাদের কাছে পণ্যটি আছে তারাই আপনার কাছে আসবেন।",
+    },
+  },
 ];
 
 export function getPost(id: string): BlogPost | undefined {

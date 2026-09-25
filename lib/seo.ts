@@ -4,7 +4,7 @@ import type { ListingStatus } from "@prisma/client";
 
 const SITE_NAME = "BeforeSell";
 const SITE_URL = getSiteOrigin();
-export const DEFAULT_DESCRIPTION = "Buy and sell new and second-hand products in Bangladesh on BeforeSell. Post a free ad for phones, electronics, furniture, vehicles and more.";
+export const DEFAULT_DESCRIPTION = "Buy and sell new and second-hand products in Bangladesh on BeforeSell. Post a free ad to sell, or post a request for the product you want to buy.";
 export const DEFAULT_SOCIAL_IMAGE = "/social-image";
 
 function getSiteOrigin(): string {

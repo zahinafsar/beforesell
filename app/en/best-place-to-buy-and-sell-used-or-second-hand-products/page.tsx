@@ -95,7 +95,8 @@ export default function Page() {
       </p>
       <p>
         If you are ready, <a href="/listings/new">post your item on BeforeSell</a>. If you are buying, browse a few listings and take
-        your time. The best second hand deal is the one where both people know what they are agreeing to.
+        your time. Can&apos;t find the exact item? <a href="/en/request-a-product-you-cant-find">Post a buyer request</a> and let
+        sellers come to you. The best second hand deal is the one where both people know what they are agreeing to.
       </p>
     </BlogLayout>
   );

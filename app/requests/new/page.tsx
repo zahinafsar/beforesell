@@ -69,11 +69,11 @@ export default async function NewRequestPage({ searchParams }: NewRequestPagePro
           <h1 className="text-3xl font-bold">
             {productRequest ? "Edit Request" : "Request a Product"}
           </h1>
-          {!productRequest && (
+          {/* {!productRequest && (
             <p className="mt-1 text-sm text-muted-foreground">
               Tell sellers what you are looking for and share the link anywhere.
             </p>
-          )}
+          )} */}
         </div>
       </div>
       <ProductRequestForm

@@ -34,7 +34,7 @@ export default function TermsPage() {
 
         <section>
           <h2 className="text-xl font-semibold mb-3">3. Listing Rules</h2>
-          <p className="text-muted-foreground mb-2">When posting listings, you agree to:</p>
+          <p className="text-muted-foreground mb-2">When posting listings or buyer requests, you agree to:</p>
           <ul className="list-disc list-inside text-muted-foreground space-y-1">
             <li>Provide accurate descriptions and genuine photos of your items</li>
             <li>Set honest and fair prices</li>

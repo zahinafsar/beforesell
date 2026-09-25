@@ -13,7 +13,7 @@ const values = [
     icon: Target,
     title: "Our Mission",
     description:
-      "To make buying and selling accessible to everyone in Bangladesh through a simple, safe, and free platform.",
+      "To make buying and selling accessible to everyone in Bangladesh through a simple, safe, and free platform, whether you are selling an item or requesting one.",
   },
   {
     icon: Users,
@@ -49,7 +49,8 @@ export default function AboutPage() {
         <p>
           BeforeSell is a classifieds marketplace built for the people of Bangladesh. Whether you&apos;re
           looking to buy a smartphone, sell your car, find a rental apartment, or discover job opportunities
-          — BeforeSell lets you post a basic ad for free and contact sellers directly.
+          — BeforeSell lets you post a basic ad for free and contact sellers directly. Can&apos;t find what you
+          need? Post a buyer request with your budget and let sellers who have it reach out to you.
         </p>
         <p>
           We started with a simple idea: everyone should have access to a modern, trustworthy platform to

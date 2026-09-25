@@ -490,6 +490,19 @@ export function ListingsBrowser({ categories, locations, initialParams }: Listin
               {activeFilterCount > 0 && (
                 <Button variant="link" onClick={clearFilters}>Clear all filters</Button>
               )}
+              <div className="mt-6 space-y-3">
+                <p className="text-sm text-muted-foreground">
+                  Request what you need, or be the first to sell it here.
+                </p>
+                <div className="flex flex-wrap justify-center gap-3">
+                  <Button asChild>
+                    <Link href="/requests/new">Request a Product</Link>
+                  </Button>
+                  <Button asChild>
+                    <Link href="/listings/new">Sell a Product</Link>
+                  </Button>
+                </div>
+              </div>
             </div>
           ) : (
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">

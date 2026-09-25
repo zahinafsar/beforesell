@@ -11,7 +11,8 @@ const categories = [
 ];
 
 const quickLinks = [
-  { name: "Post Free Ad", href: "/post" },
+  { name: "Sell a Product", href: "/listings/new" },
+  { name: "Request a Product", href: "/requests/new" },
   { name: "How It Works", href: "/how-it-works" },
   { name: "Sell Used Products", href: "/sell-used-products-in-bangladesh" },
   { name: "All Categories", href: "/categories" },
@@ -49,7 +50,7 @@ export function Footer() {
               <span className="text-xl font-bold text-primary">BeforeSell</span>
             </Link>
             <p className="mt-4 text-sm text-muted-foreground">
-              Bangladesh&apos;s trusted marketplace for buying and selling. Post free ads and find great deals.
+              Bangladesh&apos;s trusted marketplace for buying and selling. Post free ads, request what you need and find great deals.
             </p>
             <div className="mt-4 space-y-2">
               <a

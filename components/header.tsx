@@ -55,8 +55,14 @@ export function Header() {
                     <Link href="/dashboard" className="text-lg" onClick={() => setSidebarOpen(false)}>
                       Dashboard
                     </Link>
+                    <Link href="/listings/new" className="text-lg" onClick={() => setSidebarOpen(false)}>
+                      Sell a Product
+                    </Link>
                     <Link href="/requests/new" className="text-lg" onClick={() => setSidebarOpen(false)}>
                       Request a Product
+                    </Link>
+                    <Link href="/dashboard/listings" className="text-lg" onClick={() => setSidebarOpen(false)}>
+                      My Listings
                     </Link>
                     <Link href="/dashboard/requests" className="text-lg" onClick={() => setSidebarOpen(false)}>
                       My Requests
