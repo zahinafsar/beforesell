@@ -11,7 +11,7 @@ const categories = [
 ];
 
 const quickLinks = [
-  { name: "Post Free Ad", href: "/listings/new" },
+  { name: "Post Free Ad", href: "/post" },
   { name: "How It Works", href: "/how-it-works" },
   { name: "Sell Used Products", href: "/sell-used-products-in-bangladesh" },
   { name: "All Categories", href: "/categories" },

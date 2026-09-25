@@ -81,7 +81,7 @@ export function FirstVisitPromotionDialog() {
             </DialogClose>
             <DialogClose asChild>
               <Button asChild className="h-12 bg-[#014069] px-6 text-base hover:bg-[#012f4d]">
-                <Link href="/listings/new">
+                <Link href="/post">
                   বিজ্ঞাপন দিন
                   <ArrowRight className="h-4 w-4" aria-hidden="true" />
                 </Link>

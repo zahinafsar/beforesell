@@ -11,6 +11,7 @@ export default function robots(): MetadataRoute.Robots {
     "/favorites",
     "/promotions/",
     "/listings/new",
+    "/requests/new",
     "/listings/*/boost",
     "/survey",
     "/login",

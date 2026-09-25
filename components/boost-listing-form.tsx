@@ -14,6 +14,7 @@ import {
   Clock3,
   Loader2,
   MessageCircle,
+  PackageSearch,
   ShieldCheck,
   Sparkles,
   Target,
@@ -49,14 +50,16 @@ type PromotionStatus =
 type Gender = "BOTH" | "MALE" | "FEMALE";
 
 interface BoostListingFormProps {
-  listing: {
+  target: {
+    kind: "listing" | "request";
     id: string;
-    slug: string;
+    href: string;
     title: string;
-    price: number;
+    priceLabel: string;
     category: string;
     images: string[];
   };
+  locations: string[];
   latestPromotion: {
     id: string;
     status: PromotionStatus;
@@ -70,18 +73,6 @@ interface BoostListingFormProps {
     } | null;
   } | null;
 }
-
-const locations = [
-  "Bangladesh",
-  "Dhaka",
-  "Chattogram",
-  "Rajshahi",
-  "Khulna",
-  "Sylhet",
-  "Barishal",
-  "Rangpur",
-  "Mymensingh",
-];
 
 const statusContent: Record<
   PromotionStatus,
@@ -103,7 +94,7 @@ const statusContent: Record<
   APPROVED: {
     label: "Approved",
     message:
-      "Your campaign is approved. Your listing will be promoted according to the submitted schedule.",
+      "Your campaign is approved. It will be promoted according to the submitted schedule.",
     color:
       "border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300",
   },
@@ -127,10 +118,21 @@ function formatNumber(value: number) {
 }
 
 export function BoostListingForm({
-  listing,
+  target,
+  locations,
   latestPromotion,
 }: BoostListingFormProps) {
+  const locationOptions = ["Bangladesh", ...locations];
   const router = useRouter();
+  const isRequest = target.kind === "request";
+  let dashboardHref = "/dashboard/listings";
+  let dashboardLabel = "My listings";
+  let previewCopy = `A great deal is waiting. Check out ${target.title} on BeforeSell today.`;
+  if (isRequest) {
+    dashboardHref = "/dashboard/requests";
+    dashboardLabel = "My requests";
+    previewCopy = `Someone is looking for ${target.title}. Have one to sell? Message them on BeforeSell.`;
+  }
   const submittedPromotion = latestPromotion;
   const [audienceType, setAudienceType] = useState<"AUTOMATIC" | "CUSTOM">(
     "AUTOMATIC",
@@ -140,7 +142,7 @@ export function BoostListingForm({
   const [maxAge, setMaxAge] = useState(40);
   const [startDate, setStartDate] = useState(() => localDateValue(new Date()));
   const [durationDays, setDurationDays] = useState(3);
-  const [dailyBudget, setDailyBudget] = useState(150);
+  const [dailyBudget, setDailyBudget] = useState(200);
   const [gender, setGender] = useState<Gender>("BOTH");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -158,20 +160,30 @@ export function BoostListingForm({
 
     setIsSubmitting(true);
     try {
-      const response = await api("listings/[id]/promotions", {
-        method: "POST",
-        params: { id: listing.id },
-        body: {
-          audienceType,
-          location,
-          minAge,
-          maxAge,
-          startDate,
-          durationDays,
-          dailyBudget,
-          gender,
-        },
-      });
+      const body = {
+        audienceType,
+        location,
+        minAge,
+        maxAge,
+        startDate,
+        durationDays,
+        dailyBudget,
+        gender,
+      };
+      let response;
+      if (isRequest) {
+        response = await api("requests/[id]/promotions", {
+          method: "POST",
+          params: { id: target.id },
+          body,
+        });
+      } else {
+        response = await api("listings/[id]/promotions", {
+          method: "POST",
+          params: { id: target.id },
+          body,
+        });
+      }
       const result = await response.json();
       if (!response.ok) {
         throw new Error(
@@ -234,9 +246,9 @@ export function BoostListingForm({
             <div className="grid border-y sm:grid-cols-3">
               <div className="border-b py-4 sm:border-b-0 sm:border-r sm:px-4 sm:first:pl-0">
                 <p className="text-xs uppercase tracking-wider text-muted-foreground">
-                  Listing
+                  {target.kind}
                 </p>
-                <p className="mt-1 truncate font-semibold">{listing.title}</p>
+                <p className="mt-1 truncate font-semibold">{target.title}</p>
               </div>
               <div className="border-b py-4 sm:border-b-0 sm:border-r sm:px-4">
                 <p className="text-xs uppercase tracking-wider text-muted-foreground">
@@ -276,10 +288,10 @@ export function BoostListingForm({
               </Button>
             ) : null}
             <Button asChild size="lg">
-              <Link href={`/listings/${listing.slug}`}>Back to listing</Link>
+              <Link href={target.href}>Back to {target.kind}</Link>
             </Button>
             <Button asChild variant="outline" size="lg">
-              <Link href="/dashboard/listings">My listings</Link>
+              <Link href={dashboardHref}>{dashboardLabel}</Link>
             </Button>
           </CardFooter>
         </Card>
@@ -296,22 +308,27 @@ export function BoostListingForm({
               asChild
               variant="outline"
               size="icon"
-              aria-label="Back to listing"
+              aria-label={`Back to ${target.kind}`}
             >
-              <Link href={`/listings/${listing.slug}`}>
+              <Link href={target.href}>
                 <ArrowLeft />
               </Link>
             </Button>
             <div>
               <div className="flex items-center gap-2">
                 {/* <Sparkles className="h-5 w-5 text-primary" /> */}
-                <h1 className="text-3xl font-bold">Boost your listing</h1>
+                <h1 className="text-3xl font-bold">Boost your {target.kind}</h1>
               </div>
               {/* <p className="mt-1 text-sm text-muted-foreground">
                 Create a focused campaign in a few minutes
               </p> */}
             </div>
           </div>
+          {isRequest ? (
+            <Button asChild variant="ghost">
+              <Link href={target.href}>Skip for now</Link>
+            </Button>
+          ) : null}
           {/* <div className="hidden items-center gap-2 text-sm text-muted-foreground sm:flex">
             <ShieldCheck className="h-4 w-4 text-primary" />
             Reviewed by BeforeSell
@@ -344,7 +361,7 @@ export function BoostListingForm({
                   <div className="space-y-1">
                     <CardTitle>Audience</CardTitle>
                     <CardDescription>
-                      Choose who is most likely to respond to your listing.
+                      Choose who is most likely to respond to your {target.kind}.
                     </CardDescription>
                   </div>
                 </div>
@@ -423,7 +440,7 @@ export function BoostListingForm({
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        {locations.map((item) => (
+                        {locationOptions.map((item) => (
                           <SelectItem key={item} value={item}>
                             {item}
                           </SelectItem>
@@ -569,7 +586,7 @@ export function BoostListingForm({
                         Daily budget
                       </Label>
                       <p className="mt-1 text-sm text-muted-foreground">
-                        Minimum ৳100 per day
+                        Minimum ৳200 per day
                       </p>
                     </div>
                     <div className="relative w-36">
@@ -580,14 +597,14 @@ export function BoostListingForm({
                         id="daily-budget"
                         className="pl-8 text-right text-lg font-bold text-primary"
                         type="number"
-                        min={100}
+                        min={200}
                         max={5000}
                         value={dailyBudget}
                         onChange={(event) =>
                           setDailyBudget(
                             Math.min(
                               5000,
-                              Math.max(100, Number(event.target.value)),
+                              Math.max(200, Number(event.target.value)),
                             ),
                           )
                         }
@@ -598,7 +615,7 @@ export function BoostListingForm({
                     aria-label="Daily budget"
                     className="boost-range w-full"
                     type="range"
-                    min={100}
+                    min={200}
                     max={5000}
                     step={50}
                     value={dailyBudget}
@@ -607,7 +624,7 @@ export function BoostListingForm({
                     }
                   />
                   <div className="mt-1 flex justify-between text-xs text-muted-foreground">
-                    <span>৳100</span>
+                    <span>৳200</span>
                     <span>৳5,000</span>
                   </div>
                   <div className="mt-5 border-l-4 border-primary bg-primary/5 px-4 py-3">
@@ -647,36 +664,40 @@ export function BoostListingForm({
                     </div>
                   </div>
                   <p className="min-h-16 px-3 pb-3 text-sm leading-5">
-                    A great deal is waiting. Check out {listing.title} on
-                    BeforeSell today.
+                    {previewCopy}
                   </p>
                   <div className="relative aspect-[4/3] bg-muted">
-                    {listing.images[0] ? (
+                    {target.images[0] ? (
                       <Image
-                        src={listing.images[0]}
-                        alt={listing.title}
+                        src={target.images[0]}
+                        alt={target.title}
                         fill
                         unoptimized
                         className="object-cover"
                         sizes="360px"
                       />
+                    ) : isRequest ? (
+                      <div className="flex h-full flex-col items-center justify-center gap-3 bg-primary/5 px-6 text-center text-primary">
+                        <PackageSearch className="h-12 w-12" />
+                        <p className="line-clamp-2 text-lg font-bold">{target.title}</p>
+                      </div>
                     ) : (
                       <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
                         Listing image
                       </div>
                     )}
-                    <Badge className="absolute left-3 top-3">Featured</Badge>
+                    <Badge className="absolute left-3 top-3">{isRequest ? "Wanted" : "Featured"}</Badge>
                   </div>
                   <div className="flex items-center justify-between gap-3 bg-muted/50 p-3">
                     <div className="min-w-0">
                       <p className="text-[10px] uppercase tracking-wider text-muted-foreground">
-                        {listing.category}
+                        {target.category}
                       </p>
                       <p className="truncate text-sm font-bold">
-                        {listing.title}
+                        {target.title}
                       </p>
                       <p className="text-sm font-bold text-primary">
-                        ৳{formatNumber(listing.price)}
+                        {target.priceLabel}
                       </p>
                     </div>
                     <Button type="button" size="sm">

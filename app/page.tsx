@@ -98,7 +98,7 @@ export default async function HomePage() {
 
               <div className="flex flex-wrap items-center gap-6">
                 <Button asChild size="lg" className="h-14 px-8 text-base font-semibold">
-                  <Link href="/listings/new">Post Free Ad</Link>
+                  <Link href="/post">Post Free Ad</Link>
                 </Button>
 
                 <Link href="/sell-used-products-in-bangladesh" className="text-sm font-medium text-primary hover:underline">
@@ -177,7 +177,7 @@ export default async function HomePage() {
             <div className="text-center py-12">
               <p className="text-muted-foreground">No listings yet. Be the first to post!</p>
               <Button asChild className="mt-4">
-                <Link href="/listings/new">Post Your Ad</Link>
+                <Link href="/post">Post Your Ad</Link>
               </Button>
             </div>
           )}
@@ -192,7 +192,7 @@ export default async function HomePage() {
             Post a free ad and connect with interested buyers in Bangladesh
           </p>
           <Button variant="outline" size="lg" asChild>
-            <Link href="/listings/new">Post Free Ad</Link>
+            <Link href="/post">Post Free Ad</Link>
           </Button>
         </div>
       </section>

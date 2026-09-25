@@ -183,7 +183,7 @@ export default async function CategoriesPage() {
           </div>
           <div className="flex shrink-0 flex-col items-start gap-3">
             <Button asChild variant="outline" size="lg" className="h-12 border-white bg-white px-8 font-semibold text-primary hover:bg-white/90 hover:text-primary">
-              <Link href="/listings/new">Post Free Ad <ArrowRight className="h-4 w-4" aria-hidden="true" /></Link>
+              <Link href="/post">Post Free Ad <ArrowRight className="h-4 w-4" aria-hidden="true" /></Link>
             </Button>
             <Link href="/sell-used-products-in-bangladesh" className="inline-flex min-h-10 items-center text-sm text-primary-foreground/90 underline underline-offset-4 hover:text-primary-foreground">
               Read our selling guide

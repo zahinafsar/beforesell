@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/providers/auth-provider";
 import { adminQuery } from "@/lib/queries";
+import { getPromotionTarget } from "@/lib/promotion-target";
 import { api } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -144,13 +145,13 @@ export default function AdminPromotionsPage() {
             <div className="flex flex-col items-center justify-center border border-dashed py-12 text-center">
               <Megaphone className="h-10 w-10 text-muted-foreground" />
               <h2 className="mt-4 font-semibold">No promotion requests</h2>
-              <p className="mt-1 text-sm text-muted-foreground">New listing boosts will appear here.</p>
+              <p className="mt-1 text-sm text-muted-foreground">New listing and request boosts will appear here.</p>
             </div>
           ) : (
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Listing</TableHead>
+                  <TableHead>Item</TableHead>
                   <TableHead>User Name</TableHead>
                   <TableHead>Phone Number</TableHead>
                   <TableHead>Email</TableHead>
@@ -160,17 +161,20 @@ export default function AdminPromotionsPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {promotions.map((promotion) => (
+                {promotions.map((promotion) => {
+                  const target = getPromotionTarget(promotion);
+                  return (
                   <TableRow key={promotion.id} id={`promotion-${promotion.id}`}>
                     <TableCell>
                       <div className="flex min-w-52 items-center gap-3">
                         <div className="relative h-12 w-12 shrink-0 overflow-hidden bg-muted">
-                          {promotion.listing.images[0]?.url ? (
-                            <Image src={promotion.listing.images[0].url} alt={promotion.listing.title} fill unoptimized className="object-cover" sizes="48px" />
+                          {target.image ? (
+                            <Image src={target.image} alt={target.title} fill unoptimized className="object-cover" sizes="48px" />
                           ) : null}
                         </div>
                         <div className="min-w-0">
-                          <p className="max-w-48 truncate font-medium">{promotion.listing.title}</p>
+                          <p className="max-w-48 truncate font-medium">{target.title}</p>
+                          <p className="text-xs capitalize text-muted-foreground">{target.kind}</p>
                         </div>
                       </div>
                     </TableCell>
@@ -206,8 +210,8 @@ export default function AdminPromotionsPage() {
                     </TableCell>
                     <TableCell>
                       <div className="flex justify-end gap-1">
-                        <Button asChild variant="ghost" size="icon" title="View listing">
-                          <Link href={`/listings/${promotion.listing.slug}`} target="_blank"><ExternalLink /></Link>
+                        <Button asChild variant="ghost" size="icon" title={`View ${target.kind}`}>
+                          <Link href={target.href} target="_blank"><ExternalLink /></Link>
                         </Button>
                         <Dialog>
                           <DialogTrigger asChild>
@@ -215,7 +219,7 @@ export default function AdminPromotionsPage() {
                           </DialogTrigger>
                           <DialogContent className="sm:max-w-2xl">
                             <DialogHeader>
-                              <DialogTitle>{promotion.listing.title}</DialogTitle>
+                              <DialogTitle>{target.title}</DialogTitle>
                               <DialogDescription>
                                 Submitted by {promotion.user.name} ({promotion.user.email}{promotion.user.phone ? ` · ${promotion.user.phone}` : ""}) on {new Date(promotion.submittedAt).toLocaleString("en-BD")}
                               </DialogDescription>
@@ -238,7 +242,7 @@ export default function AdminPromotionsPage() {
                             </div>
 
                             <Textarea
-                              aria-label={`Review note for ${promotion.listing.title}`}
+                              aria-label={`Review note for ${target.title}`}
                               placeholder="Optional review note..."
                               rows={4}
                               value={notes[promotion.id] ?? promotion.reviewNote ?? ""}
@@ -268,7 +272,8 @@ export default function AdminPromotionsPage() {
                       </div>
                     </TableCell>
                   </TableRow>
-                ))}
+                  );
+                })}
               </TableBody>
             </Table>
           )}

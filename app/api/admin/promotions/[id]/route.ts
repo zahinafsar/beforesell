@@ -4,6 +4,7 @@ import { z } from "zod";
 import { requireAdmin } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { sendPromotionStatusEmail } from "@/lib/email";
+import { getPromotionTarget } from "@/lib/promotion-target";
 
 const updatePromotionSchema = z.object({
   status: z.enum(["PENDING_REVIEW", "PROCESSING", "APPROVED", "REJECTED"]),
@@ -38,6 +39,7 @@ export async function PUT(
       payment: { select: { id: true, status: true, transactionId: true } },
       user: { select: { email: true, name: true } },
       listing: { select: { title: true, slug: true } },
+      request: { select: { title: true, slug: true } },
     },
   });
   if (!existing) {
@@ -78,12 +80,14 @@ export async function PUT(
   });
 
   if (existing.status !== promotion.status) {
+    const target = getPromotionTarget(existing);
     try {
       await sendPromotionStatusEmail({
         email: existing.user.email,
         ownerName: existing.user.name,
-        listingTitle: existing.listing.title,
-        listingSlug: existing.listing.slug,
+        targetTitle: target.title,
+        targetKind: target.kind,
+        targetHref: target.href,
         status: promotion.status,
         reviewNote: promotion.reviewNote,
       });

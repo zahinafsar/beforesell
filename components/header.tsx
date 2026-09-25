@@ -55,6 +55,12 @@ export function Header() {
                     <Link href="/dashboard" className="text-lg" onClick={() => setSidebarOpen(false)}>
                       Dashboard
                     </Link>
+                    <Link href="/requests/new" className="text-lg" onClick={() => setSidebarOpen(false)}>
+                      Request a Product
+                    </Link>
+                    <Link href="/dashboard/requests" className="text-lg" onClick={() => setSidebarOpen(false)}>
+                      My Requests
+                    </Link>
                     <Link href="/messages" className="text-lg flex items-center gap-2" onClick={() => setSidebarOpen(false)}>
                       Messages
                       {unreadCount > 0 && (
@@ -82,7 +88,7 @@ export function Header() {
               {user ? (
                 <>
                   <Button asChild variant="default" size="sm" className="hidden sm:flex">
-                    <Link href="/listings/new">
+                    <Link href="/post">
                       <Plus className="h-4 w-4 mr-1" />
                       Post Ad
                     </Link>
@@ -123,6 +129,9 @@ export function Header() {
                         <Link href="/dashboard/listings">My Listings</Link>
                       </DropdownMenuItem>
                       <DropdownMenuItem asChild>
+                        <Link href="/dashboard/requests">My Requests</Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild>
                         <Link href="/dashboard/settings">Settings</Link>
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
@@ -133,7 +142,7 @@ export function Header() {
                   </DropdownMenu>
 
                   <Button asChild variant="default" size="icon" className="sm:hidden">
-                    <Link href="/listings/new">
+                    <Link href="/post">
                       <Plus className="h-5 w-5" />
                     </Link>
                   </Button>

@@ -51,7 +51,7 @@ export default async function MyListingsPage({ searchParams }: MyListingsPagePro
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <h1 className="text-3xl font-bold">My Listings</h1>
         <Button className="w-full sm:w-auto" asChild>
-          <Link href="/listings/new">
+          <Link href="/post">
             <Plus className="h-4 w-4 mr-2" />
             Post New Ad
           </Link>
@@ -65,7 +65,7 @@ export default async function MyListingsPage({ searchParams }: MyListingsPagePro
               You haven&apos;t posted any ads yet
             </p>
             <Button asChild>
-              <Link href="/listings/new">
+              <Link href="/post">
                 <Plus className="h-4 w-4 mr-2" />
                 Post Your First Ad
               </Link>

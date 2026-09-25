@@ -4,6 +4,7 @@ import { notFound, redirect } from "next/navigation";
 import { BadgeCheck, Clock3, ExternalLink } from "lucide-react";
 import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { getPromotionTarget } from "@/lib/promotion-target";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -36,6 +37,7 @@ export default async function PaymentSuccessPage({ params }: PaymentSuccessPageP
       userId: true,
       totalBudget: true,
       listing: { select: { title: true, slug: true } },
+      request: { select: { title: true, slug: true } },
       payment: {
         select: {
           status: true,
@@ -55,6 +57,7 @@ export default async function PaymentSuccessPage({ params }: PaymentSuccessPageP
   }
 
   const approved = promotion.payment.status === "APPROVED";
+  const target = getPromotionTarget(promotion);
 
   return (
     <main className="container flex min-h-[70vh] max-w-2xl items-center px-4 py-12">
@@ -71,7 +74,7 @@ export default async function PaymentSuccessPage({ params }: PaymentSuccessPageP
             <CardTitle className="text-3xl">{approved ? "Your promotion is approved" : "Payment submitted successfully"}</CardTitle>
             <p className="text-base leading-7 text-muted-foreground">
               {approved
-                ? "Your payment is confirmed and your listing promotion is ready to run."
+                ? `Your payment is confirmed and your ${target.kind} promotion is ready to run.`
                 : "We received your bKash transaction ID. An administrator will verify the payment before approving your promotion."}
             </p>
           </div>
@@ -79,8 +82,8 @@ export default async function PaymentSuccessPage({ params }: PaymentSuccessPageP
         <CardContent>
           <div className="grid border-y sm:grid-cols-3">
             <div className="border-b py-4 sm:border-b-0 sm:border-r sm:pr-4">
-              <p className="text-xs uppercase tracking-wider text-muted-foreground">Listing</p>
-              <p className="mt-1 truncate font-semibold">{promotion.listing.title}</p>
+              <p className="text-xs uppercase tracking-wider text-muted-foreground">{target.kind}</p>
+              <p className="mt-1 truncate font-semibold">{target.title}</p>
             </div>
             <div className="border-b py-4 sm:border-b-0 sm:border-r sm:px-4">
               <p className="text-xs uppercase tracking-wider text-muted-foreground">Amount</p>
@@ -100,8 +103,8 @@ export default async function PaymentSuccessPage({ params }: PaymentSuccessPageP
         </CardContent>
         <CardFooter className="flex-col gap-3 sm:flex-row sm:justify-center">
           <Button asChild size="lg">
-            <Link href={`/listings/${promotion.listing.slug}`}>
-              View listing
+            <Link href={target.href}>
+              View {target.kind}
               <ExternalLink />
             </Link>
           </Button>

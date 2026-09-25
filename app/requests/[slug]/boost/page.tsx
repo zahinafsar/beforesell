@@ -2,23 +2,25 @@ import { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { formatBudgetRange } from "@/lib/utils";
 import { BoostListingForm } from "@/components/boost-listing-form";
 
-interface BoostPageProps {
+interface BoostRequestPageProps {
   params: Promise<{ slug: string }>;
 }
 
 export const metadata: Metadata = {
-  title: "Boost your listing",
-  description: "Configure a BeforeSell promotion for your listing.",
+  title: "Boost your request",
+  description: "Configure a BeforeSell promotion for your product request.",
+  robots: { index: false, follow: false },
 };
 
-export default async function BoostListingPage({ params }: BoostPageProps) {
+export default async function BoostRequestPage({ params }: BoostRequestPageProps) {
   const user = await getCurrentUser();
   const { slug } = await params;
 
   if (!user) {
-    redirect(`/login?redirect=/listings/${slug}/boost`);
+    redirect(`/login?redirect=/requests/${slug}/boost`);
   }
 
   const locations = await prisma.location.findMany({
@@ -26,16 +28,16 @@ export default async function BoostListingPage({ params }: BoostPageProps) {
     orderBy: { address: "asc" },
   });
 
-  const listing = await prisma.listing.findUnique({
+  const productRequest = await prisma.productRequest.findUnique({
     where: { slug },
     select: {
       id: true,
       slug: true,
       title: true,
-      price: true,
+      minBudget: true,
+      maxBudget: true,
       userId: true,
       status: true,
-      images: { select: { url: true }, orderBy: { order: "asc" }, take: 4 },
       category: { select: { name: true } },
       promotions: {
         orderBy: { submittedAt: "desc" },
@@ -54,26 +56,26 @@ export default async function BoostListingPage({ params }: BoostPageProps) {
     },
   });
 
-  if (!listing || listing.userId !== user.id) {
+  if (!productRequest || productRequest.userId !== user.id || productRequest.status === "DELETED") {
     notFound();
   }
 
-  if (listing.status !== "ACTIVE") {
-    redirect(`/listings/${listing.slug}`);
+  if (productRequest.status !== "OPEN") {
+    redirect(`/requests/${productRequest.slug}`);
   }
 
-  const latestPromotion = listing.promotions[0];
+  const latestPromotion = productRequest.promotions[0];
 
   return (
     <BoostListingForm
       target={{
-        kind: "listing",
-        id: listing.id,
-        href: `/listings/${listing.slug}`,
-        title: listing.title,
-        priceLabel: `৳${listing.price.toLocaleString("en-BD")}`,
-        category: listing.category?.name ?? "Marketplace",
-        images: listing.images.map((image) => image.url),
+        kind: "request",
+        id: productRequest.id,
+        href: `/requests/${productRequest.slug}`,
+        title: productRequest.title,
+        priceLabel: formatBudgetRange(productRequest.minBudget, productRequest.maxBudget),
+        category: productRequest.category?.name ?? "Wanted",
+        images: [],
       }}
       locations={locations.map((location) => location.address)}
       latestPromotion={

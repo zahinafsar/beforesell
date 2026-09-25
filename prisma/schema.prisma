@@ -30,7 +30,8 @@ model User {
   conversations      ConversationParticipant[]
   promotions         ListingPromotion[]        @relation("PromotionOwner")
   reviewedPromotions ListingPromotion[]        @relation("PromotionReviewer")
-  listingViews       ListingViewEvent[]         @relation("ListingViewers")
+  listingViews       ListingViewEvent[]        @relation("ListingViewers")
+  productRequests    ProductRequest[]
 
   @@map("users")
 }
@@ -45,6 +46,7 @@ model Category {
   parent     Category?           @relation("SubCategories", fields: [parentId], references: [id])
   children   Category[]          @relation("SubCategories")
   listings   Listing[]
+  requests   ProductRequest[]
   attributes CategoryAttribute[]
   createdAt  DateTime            @default(now())
   updatedAt  DateTime            @updatedAt
@@ -53,11 +55,12 @@ model Category {
 }
 
 model Location {
-  id        String    @id @default(cuid())
-  address   String    @unique
+  id        String           @id @default(cuid())
+  address   String           @unique
   listings  Listing[]
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+  requests  ProductRequest[]
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
 
   @@map("locations")
 }
@@ -72,6 +75,13 @@ enum ListingStatus {
   ACTIVE
   SOLD
   EXPIRED
+  DELETED
+}
+
+enum RequestStatus {
+  OPEN
+  FULFILLED
+  CLOSED
   DELETED
 }
 
@@ -135,6 +145,36 @@ model Listing {
   @@map("listings")
 }
 
+model ProductRequest {
+  id          String        @id @default(cuid())
+  title       String
+  slug        String        @unique
+  description String
+  minBudget   Float?
+  maxBudget   Float?
+  phone       String?
+  status      RequestStatus @default(OPEN)
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  categoryId String?
+  category   Category? @relation(fields: [categoryId], references: [id])
+
+  locationId String
+  location   Location @relation(fields: [locationId], references: [id])
+
+  promotions    ListingPromotion[]
+  conversations Conversation[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([status])
+  @@map("product_requests")
+}
+
 model ListingViewEvent {
   id              String   @id @default(cuid())
   visitId         String   @unique
@@ -161,9 +201,9 @@ model ListingViewEvent {
   viewerUserId String?
   viewerUser   User?   @relation("ListingViewers", fields: [viewerUserId], references: [id], onDelete: SetNull)
 
+  @@unique([listingId, viewerKey])
   @@index([listingId, createdAt])
   @@index([listingId, viewerKey])
-  @@unique([listingId, viewerKey])
   @@index([source])
   @@index([utmSource])
   @@map("listing_view_events")
@@ -188,8 +228,11 @@ model ListingPromotion {
   submittedAt       DateTime        @default(now())
   updatedAt         DateTime        @updatedAt
 
-  listingId String
-  listing   Listing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  listingId String?
+  listing   Listing? @relation(fields: [listingId], references: [id], onDelete: Cascade)
+
+  requestId String?
+  request   ProductRequest? @relation(fields: [requestId], references: [id], onDelete: Cascade)
 
   userId String
   user   User   @relation("PromotionOwner", fields: [userId], references: [id], onDelete: Cascade)
@@ -200,6 +243,7 @@ model ListingPromotion {
   payment PromotionPayment?
 
   @@index([listingId])
+  @@index([requestId])
   @@index([userId])
   @@index([status])
   @@index([submittedAt])
@@ -240,8 +284,10 @@ model ListingImage {
 
 model Conversation {
   id           String                    @id @default(cuid())
-  listingId    String
-  listing      Listing                   @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  listingId    String?
+  listing      Listing?                  @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  requestId    String?
+  request      ProductRequest?           @relation(fields: [requestId], references: [id], onDelete: Cascade)
   participants ConversationParticipant[]
   messages     Message[]
   createdAt    DateTime                  @default(now())

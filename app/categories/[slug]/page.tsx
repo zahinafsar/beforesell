@@ -150,7 +150,7 @@ export default async function CategoryPage({ params, searchParams }: Props) {
           Have an item to sell? Post a basic ad for free.
         </p>
         <div className="flex flex-wrap gap-3">
-          <Button asChild><Link href="/listings/new">Post Free Ad</Link></Button>
+          <Button asChild><Link href="/post">Post Free Ad</Link></Button>
           <Button asChild variant="outline"><Link href={`/search?categoryId=${category.id}`}>Search &amp; Filter</Link></Button>
         </div>
       </header>

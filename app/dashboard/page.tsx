@@ -5,7 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Package, Eye, Settings, Plus, CheckCircle, AlertCircle } from "lucide-react";
+import { Package, PackageSearch, Eye, Settings, Plus, CheckCircle, AlertCircle } from "lucide-react";
 
 export default async function DashboardPage() {
   const user = await getCurrentUser();
@@ -36,7 +36,7 @@ export default async function DashboardPage() {
       <div className="flex items-center justify-between mb-8">
         <h1 className="text-3xl font-bold">Dashboard</h1>
         <Button asChild>
-          <Link href="/listings/new">
+          <Link href="/post">
             <Plus className="h-4 w-4 mr-2" />
             Post New Ad
           </Link>
@@ -137,6 +137,12 @@ export default async function DashboardPage() {
               <Link href="/dashboard/listings">
                 <Package className="h-4 w-4 mr-2" />
                 My Listings
+              </Link>
+            </Button>
+            <Button variant="outline" asChild className="w-full justify-start">
+              <Link href="/dashboard/requests">
+                <PackageSearch className="h-4 w-4 mr-2" />
+                My Requests
               </Link>
             </Button>
             <Button variant="outline" asChild className="w-full justify-start">

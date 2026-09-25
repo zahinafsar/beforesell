@@ -35,6 +35,9 @@ export async function GET(
             images: { take: 1, orderBy: { order: "asc" } },
           },
         },
+        request: {
+          select: { id: true, slug: true, title: true, minBudget: true, maxBudget: true },
+        },
         participants: {
           include: {
             user: {
@@ -81,6 +84,7 @@ export async function GET(
       conversation: {
         id: conversation.id,
         listing: conversation.listing,
+        request: conversation.request,
         otherUser,
       },
       messages,

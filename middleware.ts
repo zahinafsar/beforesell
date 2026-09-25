@@ -4,7 +4,7 @@ import { jwtVerify } from "jose";
 
 const JWT_SECRET = new TextEncoder().encode(process.env.JWT_SECRET || "secret");
 
-const protectedPaths = ["/dashboard", "/listings/new", "/messages", "/favorites", "/admin"];
+const protectedPaths = ["/dashboard", "/listings/new", "/requests/new", "/messages", "/favorites", "/admin"];
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -39,6 +39,7 @@ export const config = {
   matcher: [
     "/dashboard/:path*",
     "/listings/new",
+    "/requests/new",
     "/messages/:path*",
     "/favorites/:path*",
     "/admin/:path*",

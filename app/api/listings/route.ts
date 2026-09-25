@@ -4,14 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth";
 import { createListingSchema } from "@/lib/validations";
 import { Prisma } from "@prisma/client";
-
-function generateSlug(title: string): string {
-  return title
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/(^-|-$)/g, "")
-    + "-" + Date.now().toString(36);
-}
+import { generateSlug } from "@/lib/utils";
 
 interface ListingBody {
   title: string;

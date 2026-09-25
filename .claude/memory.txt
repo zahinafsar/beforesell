@@ -1,6 +1,17 @@
 # BeforeSell Project Memory
 
 ## Recent Changes
+- `/post` chooser page (`app/post/page.tsx`): two cards, sell (`/listings/new`) and buy (`/requests/new`). All "Post Ad" style buttons (header, footer, home, dashboard, categories, how-it-works, first-visit dialog) now link to `/post`. Blog inline prose links still go to `/listings/new`
+- Added buyer product requests ("Wanted"), unlisted: no browse/search/sitemap, pages are noindex, reachable only by shared link
+  - `ProductRequest` model + `RequestStatus` enum (OPEN/FULFILLED/CLOSED/DELETED); title, slug, description, min/maxBudget, phone, optional category, location
+  - `ListingPromotion.listingId` and `Conversation.listingId` are now OPTIONAL; both gained `requestId`. Exactly one is set (enforced in API)
+  - Migration still to be run by the user: `npx prisma migrate dev --name add_product_requests`
+  - API: `/api/requests` (GET mine, POST), `/api/requests/[id]` (GET, PUT incl. status, DELETE soft), `/api/requests/[id]/promotions` (POST, mirrors listing boost)
+  - `POST /api/conversations` accepts `listingId` OR `requestId`; messages page auto-creates chat via `/messages?request=ID` (same as `?listing=ID`)
+  - `lib/promotion-target.ts` `getPromotionTarget()` resolves listing or request (title, href, boostHref, image); used by admin promotions, payment pages, promotion emails
+  - `BoostListingForm` now takes `target` ({ kind, id, href, title, priceLabel, category, images }) instead of `listing`; request mode shows "Skip for now" and a Wanted preview
+  - Pages: `/requests/new` (create, `?id=` edit, then redirects to `/requests/[slug]/boost`), `/requests/[slug]` (detail, "I have this" chat), `/requests/[slug]/boost`, `/dashboard/requests`
+  - Components: `product-request-form.tsx`. `generateSlug` and `formatBudgetRange` live in `lib/utils.ts`
 - Added one optional Cloudinary-hosted video per listing
   - `Listing.videoUrl` and `Listing.videoPublicId` hold the video asset; Prisma Client was regenerated and migration `20260920032523_add_listing_video` exists
   - Listing create/edit forms accept MP4, WebM, MOV, or M4V videos up to 100 MB, provide an in-form playable preview, and upload them after the listing has a photo

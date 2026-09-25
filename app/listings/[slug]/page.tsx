@@ -239,7 +239,7 @@ export default async function ListingPage({ params }: ListingPageProps) {
               </Link>
 
               {isOwner ? (
-                <div className="grid gap-2 sm:grid-cols-3">
+                <div className="grid gap-2 sm:grid-flow-col sm:auto-cols-fr">
                   <Button asChild variant="outline" className="w-full">
                     <Link href={`/dashboard/listings/${listing.id}/edit`}>
                       <Edit className="h-4 w-4 mr-2" />

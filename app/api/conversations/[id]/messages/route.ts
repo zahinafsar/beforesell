@@ -40,6 +40,7 @@ export async function POST(
       },
       include: {
         listing: { select: { title: true } },
+        request: { select: { title: true } },
         participants: {
           include: {
             user: { select: { id: true, email: true, name: true, lastSeen: true } },
@@ -83,7 +84,7 @@ export async function POST(
           await sendNewMessageEmail(
             recipient.email,
             user.name,
-            conversation.listing.title,
+            conversation.request?.title ?? conversation.listing?.title ?? "your conversation",
             conversationUrl
           );
         } catch (emailError) {

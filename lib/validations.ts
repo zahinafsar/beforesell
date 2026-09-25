@@ -39,10 +39,47 @@ export const sendMessageSchema = z.object({
   conversationId: z.string().min(1, "Conversation ID required"),
 });
 
-export const createConversationSchema = z.object({
-  listingId: z.string().min(1, "Listing ID required"),
-  content: z.string().min(1, "Initial message required").max(5000, "Message too long"),
+export const createConversationSchema = z
+  .object({
+    listingId: z.string().min(1).optional(),
+    requestId: z.string().min(1).optional(),
+    content: z.string().min(1, "Initial message required").max(5000, "Message too long"),
+  })
+  .refine((data) => !!data.listingId !== !!data.requestId, {
+    message: "Listing or request ID required",
+    path: ["listingId"],
+  });
+
+const productRequestFields = z.object({
+  title: z.string().min(5, "Title must be at least 5 characters").max(100, "Title too long"),
+  description: z.string().min(10, "Description must be at least 10 characters").max(5000, "Description too long"),
+  minBudget: z.number().min(0, "Budget must be positive").optional().nullable(),
+  maxBudget: z.number().min(0, "Budget must be positive").optional().nullable(),
+  phone: z.string().optional().nullable(),
+  categoryId: z.string().optional().nullable(),
+  locationId: z.string().min(1, "Location is required"),
 });
+
+const budgetRangeValid = (data: { minBudget?: number | null; maxBudget?: number | null }) => {
+  if (data.minBudget == null || data.maxBudget == null) {
+    return true;
+  }
+  return data.maxBudget >= data.minBudget;
+};
+
+const budgetRangeError = {
+  message: "Maximum budget must be greater than or equal to minimum budget",
+  path: ["maxBudget"],
+};
+
+export const createProductRequestSchema = productRequestFields.refine(budgetRangeValid, budgetRangeError);
+
+export const updateProductRequestSchema = productRequestFields
+  .partial()
+  .extend({
+    status: z.enum(["OPEN", "FULFILLED", "CLOSED"]).optional(),
+  })
+  .refine(budgetRangeValid, budgetRangeError);
 
 export const createPromotionSchema = z
   .object({
@@ -52,7 +89,7 @@ export const createPromotionSchema = z
     maxAge: z.number().int().min(18).max(65),
     startDate: z.string().date(),
     durationDays: z.number().int().min(1).max(30),
-    dailyBudget: z.number().min(100).max(5000),
+    dailyBudget: z.number().min(200, "Minimum daily budget is ৳200").max(5000),
     gender: z.enum(["BOTH", "MALE", "FEMALE"]),
   })
   .refine((data) => data.maxAge >= data.minAge, {
@@ -90,6 +127,8 @@ export type CreateListingInput = z.infer<typeof createListingSchema>;
 export type UpdateListingInput = z.infer<typeof updateListingSchema>;
 export type SendMessageInput = z.infer<typeof sendMessageSchema>;
 export type CreateConversationInput = z.infer<typeof createConversationSchema>;
+export type CreateProductRequestInput = z.infer<typeof createProductRequestSchema>;
+export type UpdateProductRequestInput = z.infer<typeof updateProductRequestSchema>;
 export type CreatePromotionInput = z.infer<typeof createPromotionSchema>;
 export type SubmitPromotionPaymentInput = z.infer<typeof submitPromotionPaymentSchema>;
 export type TrackListingViewInput = z.infer<typeof trackListingViewSchema>;

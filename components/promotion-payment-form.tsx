@@ -21,6 +21,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { type PromotionTarget } from "@/lib/promotion-target";
 
 type PaymentStatus = "PENDING" | "SUBMITTED" | "APPROVED";
 
@@ -30,7 +31,7 @@ interface PromotionPaymentFormProps {
     status: "PENDING_REVIEW" | "PROCESSING" | "APPROVED" | "REJECTED";
     totalBudget: number;
     durationDays: number;
-    listing: { title: string; slug: string };
+    target: PromotionTarget;
     payment: {
       status: PaymentStatus;
       provider: string;
@@ -90,7 +91,7 @@ export function PromotionPaymentForm({ promotion }: PromotionPaymentFormProps) {
     <main className="container max-w-5xl px-4 py-8 sm:py-12">
       <div className="mb-7 flex items-center gap-4">
         <Button asChild variant="outline" size="icon" aria-label="Back to campaign">
-          <Link href={`/listings/${promotion.listing.slug}/boost`}><ArrowLeft /></Link>
+          <Link href={promotion.target.boostHref}><ArrowLeft /></Link>
         </Button>
         <div>
           <h1 className="text-3xl font-bold">Payment with Bkash</h1>
@@ -170,7 +171,7 @@ export function PromotionPaymentForm({ promotion }: PromotionPaymentFormProps) {
           <Card>
             <CardHeader><CardTitle>Payment summary</CardTitle></CardHeader>
             <CardContent className="space-y-4">
-              <div><p className="text-xs uppercase tracking-wider text-muted-foreground">Listing</p><p className="mt-1 font-semibold">{promotion.listing.title}</p></div>
+              <div><p className="text-xs uppercase tracking-wider text-muted-foreground">{promotion.target.kind}</p><p className="mt-1 font-semibold">{promotion.target.title}</p></div>
               <div className="border-y py-4"><p className="text-xs uppercase tracking-wider text-muted-foreground">Campaign</p><p className="mt-1 font-semibold">{promotion.durationDays} days</p></div>
               <div className="flex items-end justify-between"><span className="font-semibold">Amount</span><span className="text-3xl font-bold text-primary">৳{formatNumber(promotion.totalBudget)}</span></div>
             </CardContent>

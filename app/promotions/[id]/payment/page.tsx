@@ -3,6 +3,7 @@ import { notFound, redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { PromotionPaymentForm } from "@/components/promotion-payment-form";
+import { getPromotionTarget } from "@/lib/promotion-target";
 
 interface PromotionPaymentPageProps {
   params: Promise<{ id: string }>;
@@ -10,7 +11,7 @@ interface PromotionPaymentPageProps {
 
 export const metadata: Metadata = {
   title: "Pay for your promotion",
-  description: "Submit your bKash payment for a BeforeSell listing promotion.",
+  description: "Submit your bKash payment for a BeforeSell promotion.",
 };
 
 export default async function PromotionPaymentPage({ params }: PromotionPaymentPageProps) {
@@ -30,6 +31,7 @@ export default async function PromotionPaymentPage({ params }: PromotionPaymentP
       totalBudget: true,
       durationDays: true,
       listing: { select: { title: true, slug: true } },
+      request: { select: { title: true, slug: true } },
       payment: {
         select: {
           status: true,
@@ -55,7 +57,7 @@ export default async function PromotionPaymentPage({ params }: PromotionPaymentP
         status: promotion.status,
         totalBudget: promotion.totalBudget,
         durationDays: promotion.durationDays,
-        listing: promotion.listing,
+        target: getPromotionTarget(promotion),
         payment: {
           ...promotion.payment,
           submittedAt: promotion.payment.submittedAt?.toISOString() ?? null,

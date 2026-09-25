@@ -40,6 +40,16 @@ export async function GET(request: NextApiRequest<unknown, PromotionsQuery>) {
             category: { select: { name: true } },
           },
         },
+        request: {
+          select: {
+            id: true,
+            slug: true,
+            title: true,
+            minBudget: true,
+            maxBudget: true,
+            category: { select: { name: true } },
+          },
+        },
         user: { select: { id: true, name: true, email: true, phone: true } },
         reviewedBy: { select: { name: true } },
         payment: true,

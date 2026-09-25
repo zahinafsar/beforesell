@@ -108,7 +108,7 @@ export default function HowItWorksPage() {
         <h2 className="text-xl font-semibold mb-2">Ready to Get Started?</h2>
         <p className="text-primary-foreground/80 mb-4">Post your first ad today — it&apos;s 100% free!</p>
         <Button variant="secondary" size="lg" asChild>
-          <Link href="/listings/new">Post Free Ad</Link>
+          <Link href="/post">Post Free Ad</Link>
         </Button>
       </div>
     </div>

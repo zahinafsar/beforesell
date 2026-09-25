@@ -145,13 +145,15 @@ export async function sendNewMessageEmail(
 
 export async function sendPromotionReviewEmail({
   promotionId,
-  listingTitle,
+  targetTitle,
+  targetKind,
   ownerName,
   totalBudget,
   durationDays,
 }: {
   promotionId: string;
-  listingTitle: string;
+  targetTitle: string;
+  targetKind: "listing" | "request";
   ownerName: string;
   totalBudget: number;
   durationDays: number;
@@ -161,12 +163,12 @@ export async function sendPromotionReviewEmail({
   await resend.emails.send({
     from: FROM_EMAIL,
     to: reviewEmail,
-    subject: `Boost review requested: ${listingTitle}`,
+    subject: `Boost review requested: ${targetTitle}`,
     html: emailLayout(`
       <p style="margin: 0 0 8px; color: #2563eb; font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase;">New Boost Request</p>
-      <h1 style="margin: 0 0 12px; font-size: 22px; color: #111;">${escapeHtml(listingTitle)}</h1>
+      <h1 style="margin: 0 0 12px; font-size: 22px; color: #111;">${escapeHtml(targetTitle)}</h1>
       <p style="color: #6b7280; font-size: 14px; line-height: 1.6; margin: 0 0 20px;">
-        ${escapeHtml(ownerName)} submitted this listing for a ${durationDays}-day boost.
+        ${escapeHtml(ownerName)} submitted this ${targetKind} for a ${durationDays}-day boost.
       </p>
       <div style="background: #f3f6fb; border-left: 4px solid #214f7c; padding: 14px 16px; margin-bottom: 24px;">
         <p style="margin: 0; font-size: 13px; color: #6b7280;">Campaign budget</p>
@@ -180,15 +182,17 @@ export async function sendPromotionReviewEmail({
 export async function sendPromotionStatusEmail({
   email,
   ownerName,
-  listingTitle,
-  listingSlug,
+  targetTitle,
+  targetKind,
+  targetHref,
   status,
   reviewNote,
 }: {
   email: string;
   ownerName: string;
-  listingTitle: string;
-  listingSlug: string;
+  targetTitle: string;
+  targetKind: "listing" | "request";
+  targetHref: string;
   status: "PENDING_REVIEW" | "PROCESSING" | "APPROVED" | "REJECTED";
   reviewNote?: string | null;
 }): Promise<void> {
@@ -203,34 +207,34 @@ export async function sendPromotionStatusEmail({
     PROCESSING: {
       label: "Processing",
       subject: "Your boost request is being processed",
-      message: "We are now preparing your listing promotion. We will notify you again when it is approved or if we need anything else.",
+      message: `We are now preparing your ${targetKind} promotion. We will notify you again when it is approved or if we need anything else.`,
       color: "#1d4ed8",
       background: "#eff6ff",
     },
     APPROVED: {
       label: "Approved",
-      subject: "Your listing boost has been approved",
-      message: "Your listing promotion has been approved and is ready to run according to its scheduled campaign details.",
+      subject: `Your ${targetKind} boost has been approved`,
+      message: `Your ${targetKind} promotion has been approved and is ready to run according to its scheduled campaign details.`,
       color: "#047857",
       background: "#ecfdf5",
     },
     REJECTED: {
       label: "Rejected",
-      subject: "Update on your listing boost request",
-      message: "Your listing promotion request was not approved. Review the details below and contact us if you need help.",
+      subject: `Update on your ${targetKind} boost request`,
+      message: `Your ${targetKind} promotion request was not approved. Review the details below and contact us if you need help.`,
       color: "#b91c1c",
       background: "#fef2f2",
     },
   }[status];
-  const listingUrl = `${APP_URL}/listings/${listingSlug}`;
+  const targetUrl = `${APP_URL}${targetHref}`;
   const note = reviewNote?.trim();
   const result = await resend.emails.send({
     from: FROM_EMAIL,
     to: email,
-    subject: `${statusDetails.subject}: ${listingTitle}`,
+    subject: `${statusDetails.subject}: ${targetTitle}`,
     html: emailLayout(`
       <p style="margin: 0 0 8px; color: ${statusDetails.color}; font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase;">Promotion Update</p>
-      <h1 style="margin: 0 0 12px; font-size: 22px; color: #111;">${escapeHtml(listingTitle)}</h1>
+      <h1 style="margin: 0 0 12px; font-size: 22px; color: #111;">${escapeHtml(targetTitle)}</h1>
       <p style="color: #6b7280; font-size: 14px; line-height: 1.6; margin: 0 0 20px;">
         Hi ${escapeHtml(ownerName)}, ${statusDetails.message}
       </p>
@@ -244,7 +248,7 @@ export async function sendPromotionStatusEmail({
           <p style="margin: 0; color: #4b5563; font-size: 14px; line-height: 1.6;">${escapeHtml(note)}</p>
         </div>
       ` : ""}
-      ${button(listingUrl, "View listing")}
+      ${button(targetUrl, `View ${targetKind}`)}
     `),
   });
 

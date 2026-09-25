@@ -25,6 +25,7 @@ export async function GET(request: NextApiRequest<unknown>) {
             images: { take: 1, orderBy: { order: "asc" } },
           },
         },
+        request: { select: { id: true, slug: true, title: true } },
         participants: {
           include: {
             user: {
@@ -59,6 +60,7 @@ export async function GET(request: NextApiRequest<unknown>) {
         return {
           id: conv.id,
           listing: conv.listing,
+          request: conv.request,
           otherUser: otherParticipant?.user,
           lastMessage: conv.messages[0] || null,
           unreadCount,
@@ -78,8 +80,53 @@ export async function GET(request: NextApiRequest<unknown>) {
 }
 
 interface CreateConversationBody {
-  listingId: string;
+  listingId?: string;
+  requestId?: string;
   content: string;
+}
+
+const ownerSelect = { email: true, name: true, lastSeen: true } as const;
+
+async function findConversationSubject(listingId?: string, requestId?: string) {
+  if (requestId) {
+    const productRequest = await prisma.productRequest.findUnique({
+      where: { id: requestId },
+      select: { id: true, title: true, userId: true, status: true, user: { select: ownerSelect } },
+    });
+    if (!productRequest || productRequest.status === "DELETED") {
+      return { error: "Request not found", status: 404 };
+    }
+    if (productRequest.status !== "OPEN") {
+      return { error: "This request is no longer open", status: 400 };
+    }
+    return {
+      subject: {
+        title: productRequest.title,
+        ownerId: productRequest.userId,
+        owner: productRequest.user,
+        link: { requestId: productRequest.id },
+      },
+    };
+  }
+
+  const listing = await prisma.listing.findUnique({
+    where: { id: listingId },
+    select: { id: true, title: true, userId: true, status: true, user: { select: ownerSelect } },
+  });
+  if (!listing) {
+    return { error: "Listing not found", status: 404 };
+  }
+  if (listing.status !== "ACTIVE") {
+    return { error: "Cannot message about inactive listing", status: 400 };
+  }
+  return {
+    subject: {
+      title: listing.title,
+      ownerId: listing.userId,
+      owner: listing.user,
+      link: { listingId: listing.id },
+    },
+  };
 }
 
 export async function POST(request: NextApiRequest<CreateConversationBody>) {
@@ -99,50 +146,46 @@ export async function POST(request: NextApiRequest<CreateConversationBody>) {
       );
     }
 
-    const { listingId, content } = validation.data;
+    const { listingId, requestId, content } = validation.data;
+    const result = await findConversationSubject(listingId, requestId);
 
-    const listing = await prisma.listing.findUnique({
-      where: { id: listingId },
-      select: {
-        id: true,
-        title: true,
-        userId: true,
-        status: true,
-        user: { select: { email: true, name: true, lastSeen: true } },
-      },
-    });
-
-    if (!listing) {
-      return NextResponse.json({ error: "Listing not found" }, { status: 404 });
+    if (!result.subject) {
+      return NextResponse.json({ error: result.error }, { status: result.status });
     }
 
-    if (listing.status !== "ACTIVE") {
-      return NextResponse.json(
-        { error: "Cannot message about inactive listing" },
-        { status: 400 }
-      );
-    }
+    const { subject } = result;
 
-    if (listing.userId === user.id) {
+    if (subject.ownerId === user.id) {
       return NextResponse.json(
         { error: "Cannot message yourself" },
         { status: 400 }
       );
     }
 
-    // Check for existing conversation
+    const notifyOwner = async (conversationId: string) => {
+      const oneMinuteAgo = new Date(Date.now() - 60 * 1000);
+      if (subject.owner.lastSeen >= oneMinuteAgo) {
+        return;
+      }
+      const conversationUrl = `${process.env.NEXT_PUBLIC_APP_URL}/messages?conversation=${conversationId}`;
+      try {
+        await sendNewMessageEmail(subject.owner.email, user.name, subject.title, conversationUrl);
+      } catch (emailError) {
+        console.error("Failed to send email notification:", emailError);
+      }
+    };
+
     const existingConversation = await prisma.conversation.findFirst({
       where: {
-        listingId,
+        ...subject.link,
         AND: [
           { participants: { some: { userId: user.id } } },
-          { participants: { some: { userId: listing.userId } } },
+          { participants: { some: { userId: subject.ownerId } } },
         ],
       },
     });
 
     if (existingConversation) {
-      // Add message to existing conversation
       await prisma.$transaction([
         prisma.message.create({
           data: {
@@ -166,31 +209,16 @@ export async function POST(request: NextApiRequest<CreateConversationBody>) {
         }),
       ]);
 
-      // Send email notification if recipient is offline
-      const oneMinuteAgo = new Date(Date.now() - 60 * 1000);
-      if (listing.user.lastSeen < oneMinuteAgo) {
-        const conversationUrl = `${process.env.NEXT_PUBLIC_APP_URL}/messages?conversation=${existingConversation.id}`;
-        try {
-          await sendNewMessageEmail(
-            listing.user.email,
-            user.name,
-            listing.title,
-            conversationUrl
-          );
-        } catch (emailError) {
-          console.error("Failed to send email notification:", emailError);
-        }
-      }
+      await notifyOwner(existingConversation.id);
 
       return NextResponse.json({ conversationId: existingConversation.id });
     }
 
-    // Create new conversation
     const conversation = await prisma.conversation.create({
       data: {
-        listingId,
+        ...subject.link,
         participants: {
-          create: [{ userId: user.id }, { userId: listing.userId }],
+          create: [{ userId: user.id }, { userId: subject.ownerId }],
         },
         messages: {
           create: {
@@ -201,21 +229,7 @@ export async function POST(request: NextApiRequest<CreateConversationBody>) {
       },
     });
 
-    // Send email notification if recipient is offline
-    const oneMinuteAgo = new Date(Date.now() - 60 * 1000);
-    if (listing.user.lastSeen < oneMinuteAgo) {
-      const conversationUrl = `${process.env.NEXT_PUBLIC_APP_URL}/messages?conversation=${conversation.id}`;
-      try {
-        await sendNewMessageEmail(
-          listing.user.email,
-          user.name,
-          listing.title,
-          conversationUrl
-        );
-      } catch (emailError) {
-        console.error("Failed to send email notification:", emailError);
-      }
-    }
+    await notifyOwner(conversation.id);
 
     return NextResponse.json({ conversationId: conversation.id }, { status: 201 });
   } catch (error) {

@@ -12,6 +12,7 @@ import {
   Send,
   MessageCircle,
   MoreVertical,
+  PackageSearch,
   X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -73,6 +74,7 @@ function MessagesContent() {
 
   const conversationId = searchParams.get("conversation");
   const listingId = searchParams.get("listing");
+  const requestId = searchParams.get("request");
 
   const { user, isLoading: authLoading } = useAuth();
   const authKey = user?.id;
@@ -96,12 +98,16 @@ function MessagesContent() {
     enabled: !!conversationId,
   });
 
-  // Create conversation mutation (for ?listing= param)
+  // Create conversation mutation (for ?listing= and ?request= params)
   const createConversation = useMutation({
-    mutationFn: async (listingId: string) => {
+    mutationFn: async (subject: { listingId?: string; requestId?: string }) => {
+      let content = "Hi, I'm interested in this item.";
+      if (subject.requestId) {
+        content = "Hi, I have what you're looking for.";
+      }
       const res = await api("conversations", {
         method: "POST",
-        body: { listingId, content: "Hi, I'm interested in this item." },
+        body: { ...subject, content },
       });
       if (!res.ok) {
         const error = (await res.json()) as { error?: string };
@@ -139,25 +145,35 @@ function MessagesContent() {
   // Handle ?listing= param to create/find conversation
   useEffect(() => {
     if (
-      listingId &&
+      (listingId || requestId) &&
       user &&
       !authLoading &&
       !listLoading &&
       !hasTriggeredRef.current
     ) {
       const existingConv = listData?.conversations?.find(
-        (c) => c.listing.id === listingId
+        (c) => {
+          if (requestId) {
+            return c.request?.id === requestId;
+          }
+          return c.listing?.id === listingId;
+        }
       );
       if (existingConv) {
         hasTriggeredRef.current = true;
         router.replace(`/messages?conversation=${existingConv.id}`);
       } else if (!createConversation.isPending) {
         hasTriggeredRef.current = true;
-        createConversation.mutate(listingId);
+        if (requestId) {
+          createConversation.mutate({ requestId });
+        } else if (listingId) {
+          createConversation.mutate({ listingId });
+        }
       }
     }
   }, [
     listingId,
+    requestId,
     user,
     authLoading,
     listLoading,
@@ -312,7 +328,7 @@ function MessagesContent() {
                         </span>
                       </div>
                       <p className="mb-0.5 truncate text-xs text-muted-foreground">
-                        {conv.listing.title}
+                        {conv.request ? `Request: ${conv.request.title}` : conv.listing?.title}
                       </p>
                       <div className="flex items-center justify-between">
                         <p className="truncate text-sm text-muted-foreground">
@@ -412,28 +428,45 @@ function MessagesContent() {
                   </p>
                 </div>
 
-                <Link
-                  href={`/listings/${selectedConv.listing.slug}`}
-                  className="flex items-center gap-2 rounded-lg bg-muted/50 p-1.5 transition-colors hover:bg-muted sm:p-2"
-                >
-                  {selectedConv.listing.images[0] && (
-                    <Image
-                      src={selectedConv.listing.images[0].url}
-                      alt=""
-                      width={36}
-                      height={36}
-                      className="h-9 w-9 rounded object-cover sm:h-10 sm:w-10"
-                    />
-                  )}
-                  <div className="hidden max-w-[120px] text-right sm:block">
-                    <p className="truncate text-xs font-medium">
-                      {selectedConv.listing.title}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      ৳{selectedConv.listing.price.toLocaleString()}
-                    </p>
-                  </div>
-                </Link>
+                {selectedConv.request ? (
+                  <Link
+                    href={`/requests/${selectedConv.request.slug}`}
+                    className="flex items-center gap-2 rounded-lg bg-muted/50 p-1.5 transition-colors hover:bg-muted sm:p-2"
+                  >
+                    <div className="flex h-9 w-9 items-center justify-center rounded bg-primary/10 text-primary sm:h-10 sm:w-10">
+                      <PackageSearch className="h-5 w-5" />
+                    </div>
+                    <div className="hidden max-w-[120px] text-right sm:block">
+                      <p className="truncate text-xs font-medium">
+                        {selectedConv.request.title}
+                      </p>
+                      <p className="text-xs text-muted-foreground">Buyer request</p>
+                    </div>
+                  </Link>
+                ) : selectedConv.listing ? (
+                  <Link
+                    href={`/listings/${selectedConv.listing.slug}`}
+                    className="flex items-center gap-2 rounded-lg bg-muted/50 p-1.5 transition-colors hover:bg-muted sm:p-2"
+                  >
+                    {selectedConv.listing.images[0] && (
+                      <Image
+                        src={selectedConv.listing.images[0].url}
+                        alt=""
+                        width={36}
+                        height={36}
+                        className="h-9 w-9 rounded object-cover sm:h-10 sm:w-10"
+                      />
+                    )}
+                    <div className="hidden max-w-[120px] text-right sm:block">
+                      <p className="truncate text-xs font-medium">
+                        {selectedConv.listing.title}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        ৳{selectedConv.listing.price.toLocaleString()}
+                      </p>
+                    </div>
+                  </Link>
+                ) : null}
 
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
@@ -446,11 +479,19 @@ function MessagesContent() {
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
-                    <DropdownMenuItem asChild>
-                      <Link href={`/listings/${selectedConv.listing.slug}`}>
-                        View listing
-                      </Link>
-                    </DropdownMenuItem>
+                    {selectedConv.request ? (
+                      <DropdownMenuItem asChild>
+                        <Link href={`/requests/${selectedConv.request.slug}`}>
+                          View request
+                        </Link>
+                      </DropdownMenuItem>
+                    ) : selectedConv.listing ? (
+                      <DropdownMenuItem asChild>
+                        <Link href={`/listings/${selectedConv.listing.slug}`}>
+                          View listing
+                        </Link>
+                      </DropdownMenuItem>
+                    ) : null}
                   </DropdownMenuContent>
                 </DropdownMenu>
               </div>

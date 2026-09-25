@@ -8,6 +8,7 @@ import {
   type SubmitPromotionPaymentInput,
 } from "@/lib/validations";
 import { sendPromotionReviewEmail } from "@/lib/email";
+import { getPromotionTarget } from "@/lib/promotion-target";
 
 export async function PUT(
   request: NextApiRequest<SubmitPromotionPaymentInput>,
@@ -35,7 +36,8 @@ export async function PUT(
       status: true,
       totalBudget: true,
       durationDays: true,
-      listing: { select: { title: true } },
+      listing: { select: { title: true, slug: true } },
+      request: { select: { title: true, slug: true } },
       payment: { select: { id: true, status: true } },
     },
   });
@@ -60,11 +62,13 @@ export async function PUT(
       },
     });
 
+    const target = getPromotionTarget(promotion);
     let emailSent = true;
     try {
       await sendPromotionReviewEmail({
         promotionId: promotion.id,
-        listingTitle: promotion.listing.title,
+        targetTitle: target.title,
+        targetKind: target.kind,
         ownerName: user.name,
         totalBudget: promotion.totalBudget,
         durationDays: promotion.durationDays,
