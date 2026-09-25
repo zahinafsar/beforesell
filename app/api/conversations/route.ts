@@ -3,7 +3,7 @@ import { NextApiRequest } from "next-ts-api";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth";
 import { createConversationSchema } from "@/lib/validations";
-import { sendNewMessageEmail } from "@/lib/email";
+import { sendMessageEmailNotification } from "@/lib/message-email-notification";
 
 export async function GET(request: NextApiRequest<unknown>) {
   try {
@@ -163,13 +163,16 @@ export async function POST(request: NextApiRequest<CreateConversationBody>) {
     }
 
     const notifyOwner = async (conversationId: string) => {
-      const oneMinuteAgo = new Date(Date.now() - 60 * 1000);
-      if (subject.owner.lastSeen >= oneMinuteAgo) {
-        return;
-      }
-      const conversationUrl = `${process.env.NEXT_PUBLIC_APP_URL}/messages?conversation=${conversationId}`;
       try {
-        await sendNewMessageEmail(subject.owner.email, user.name, subject.title, conversationUrl);
+        await sendMessageEmailNotification({
+          senderId: user.id,
+          senderName: user.name,
+          recipientId: subject.ownerId,
+          recipientEmail: subject.owner.email,
+          recipientLastSeen: subject.owner.lastSeen,
+          subjectTitle: subject.title,
+          conversationId,
+        });
       } catch (emailError) {
         console.error("Failed to send email notification:", emailError);
       }

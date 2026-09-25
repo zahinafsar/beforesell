@@ -1,6 +1,7 @@
 # BeforeSell Project Memory
 
 ## Recent Changes
+- Message email notifications now require the recipient to be offline for at least 60 seconds and are limited to one successful email per sender-recipient pair per hour using a process-local in-memory store shared by both conversation creation and reply routes (`lib/message-email-notification.ts`). Failed email sends release the cooldown reservation.
 - Buyer request messaging added site-wide: DEFAULT_DESCRIPTION (lib/seo.ts), home hero + "Can't Find What You Need?" section, how-it-works "Request It" steps, about, footer quick link, empty search results CTA (listings-browser), categories CTA, sell guide FAQ, terms listing rules. New blog post id `request-a-product` (`/en/request-a-product-you-cant-find`, `/bn/khuje-na-pele-ponno-request-korun`); best-place posts (en/bn) link to it
 - `/post` chooser page (`app/post/page.tsx`): two cards, sell (`/listings/new`) and buy (`/requests/new`). All "Post Ad" style buttons (header, footer, home, dashboard, categories, how-it-works, first-visit dialog) now link to `/post`. Blog inline prose links still go to `/listings/new`
 - Added buyer product requests ("Wanted"), unlisted: no browse/search/sitemap, pages are noindex, reachable only by shared link

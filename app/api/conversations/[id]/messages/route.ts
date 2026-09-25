@@ -3,7 +3,7 @@ import { NextApiRequest } from "next-ts-api";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth";
 import { sendMessageSchema } from "@/lib/validations";
-import { sendNewMessageEmail } from "@/lib/email";
+import { sendMessageEmailNotification } from "@/lib/message-email-notification";
 
 interface SendMessageBody {
   content: string;
@@ -74,22 +74,23 @@ export async function POST(
       }),
     ]);
 
-    // Send email notification if recipient is offline
     const recipient = conversation.participants.find((p) => p.userId !== user.id)?.user;
     if (recipient) {
-      const oneMinuteAgo = new Date(Date.now() - 60 * 1000);
-      if (recipient.lastSeen < oneMinuteAgo) {
-        const conversationUrl = `${process.env.NEXT_PUBLIC_APP_URL}/messages?conversation=${id}`;
-        try {
-          await sendNewMessageEmail(
-            recipient.email,
-            user.name,
-            conversation.request?.title ?? conversation.listing?.title ?? "your conversation",
-            conversationUrl
-          );
-        } catch (emailError) {
-          console.error("Failed to send email notification:", emailError);
-        }
+      try {
+        await sendMessageEmailNotification({
+          senderId: user.id,
+          senderName: user.name,
+          recipientId: recipient.id,
+          recipientEmail: recipient.email,
+          recipientLastSeen: recipient.lastSeen,
+          subjectTitle:
+            conversation.request?.title ??
+            conversation.listing?.title ??
+            "your conversation",
+          conversationId: id,
+        });
+      } catch (emailError) {
+        console.error("Failed to send email notification:", emailError);
       }
     }
 

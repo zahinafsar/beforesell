@@ -126,7 +126,7 @@ export async function sendNewMessageEmail(
   listingTitle: string,
   conversationUrl: string
 ): Promise<void> {
-  await resend.emails.send({
+  const result = await resend.emails.send({
     from: FROM_EMAIL,
     to: email,
     subject: `${senderName} messaged you about "${listingTitle}"`,
@@ -141,6 +141,10 @@ export async function sendNewMessageEmail(
       ${button(conversationUrl, "View Conversation")}
     `),
   });
+
+  if (result.error) {
+    throw new Error(result.error.message);
+  }
 }
 
 export async function sendPromotionReviewEmail({
