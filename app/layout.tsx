@@ -11,6 +11,7 @@ import { Toaster } from "sonner";
 import { getBaseUrl, generateOrganizationJsonLd, generateWebsiteJsonLd, DEFAULT_DESCRIPTION, DEFAULT_SOCIAL_IMAGE, serializeJsonLd } from "@/lib/seo";
 import { AttributionTracker } from "@/components/attribution-tracker";
 import { FirstVisitPromotionDialog } from "@/components/first-visit-promotion-dialog";
+import { FacebookPixel } from "@/components/facebook-pixel";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -124,6 +125,14 @@ export default async function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${notoSansBengali.variable} antialiased min-h-screen flex flex-col`}
       >
+        <Suspense fallback={null}>
+          <FacebookPixel />
+        </Suspense>
+        <noscript
+          dangerouslySetInnerHTML={{
+            __html: '<img height="1" width="1" alt="" style="display:none" src="https://www.facebook.com/tr?id=2235854476985916&ev=PageView&noscript=1" />',
+          }}
+        />
         <QueryProvider>
           <AuthProvider>
             <Suspense fallback={null}>
