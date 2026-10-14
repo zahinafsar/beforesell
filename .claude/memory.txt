@@ -1,6 +1,7 @@
 # BeforeSell Project Memory
 
 ## Recent Changes
+- Cloudflare Turnstile on web signup: `lib/turnstile.ts` `verifyTurnstileToken()`; `/api/auth/register` requires `turnstileToken` only when the request has an `Origin` header (mobile app has none, so it is exempt). Register page renders widget explicitly via next/script. Env: `TURNSTILE_SECRET_KEY`, `NEXT_PUBLIC_TURNSTILE_SITE_KEY` (both required, no fallback)
 - API origin lock in `middleware.ts` (matcher includes `/api/:path*`): requests with an `Origin` header not on beforesell.com / *.beforesell.com (plus localhost in development) get 403. No CORS headers needed since the web app is same-origin. Requests with no Origin (mobile app, curl) pass
 - Message email notifications now require the recipient to be offline for at least 60 seconds and are limited to one successful email per sender-recipient pair per hour using a process-local in-memory store shared by both conversation creation and reply routes (`lib/message-email-notification.ts`). Failed email sends release the cooldown reservation.
 - Buyer request messaging added site-wide: DEFAULT_DESCRIPTION (lib/seo.ts), home hero + "Can't Find What You Need?" section, how-it-works "Request It" steps, about, footer quick link, empty search results CTA (listings-browser), categories CTA, sell guide FAQ, terms listing rules. New blog post id `request-a-product` (`/en/request-a-product-you-cant-find`, `/bn/khuje-na-pele-ponno-request-korun`); best-place posts (en/bn) link to it

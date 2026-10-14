@@ -7,11 +7,13 @@ import {
   sendVerificationEmail,
 } from "@/lib/email";
 import { registerSchema } from "@/lib/validations";
+import { verifyTurnstileToken } from "@/lib/turnstile";
 
 interface RegisterBody {
   name: string;
   email: string;
   password: string;
+  turnstileToken?: string;
 }
 
 export async function POST(request: NextApiRequest<RegisterBody>) {
@@ -27,6 +29,25 @@ export async function POST(request: NextApiRequest<RegisterBody>) {
     }
 
     const { name, email, password } = result.data;
+
+    if (request.headers.get("origin")) {
+      let turnstileToken = "";
+      if (typeof body.turnstileToken === "string") {
+        turnstileToken = body.turnstileToken;
+      }
+      const forwardedFor = request.headers.get("x-forwarded-for");
+      let ip: string | null = null;
+      if (forwardedFor) {
+        ip = forwardedFor.split(",")[0].trim();
+      }
+      const isHuman = turnstileToken.length > 0 && (await verifyTurnstileToken(turnstileToken, ip));
+      if (!isHuman) {
+        return NextResponse.json(
+          { error: "Verification failed. Please try again." },
+          { status: 400 }
+        );
+      }
+    }
 
     const existingUser = await prisma.user.findUnique({
       where: { email: email.toLowerCase() },
