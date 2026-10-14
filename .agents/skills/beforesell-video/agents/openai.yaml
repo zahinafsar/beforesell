@@ -1,0 +1,4 @@
+interface:
+  display_name: "BeforeSell Video"
+  short_description: "Create branded BeforeSell reels with Liam narration"
+  default_prompt: "Use $beforesell-video to create another BeforeSell animated reel in our established style from this story:"

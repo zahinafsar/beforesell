@@ -1,6 +1,7 @@
 # BeforeSell Project Memory
 
 ## Recent Changes
+- API origin lock in `middleware.ts` (matcher includes `/api/:path*`): requests with an `Origin` header not on beforesell.com / *.beforesell.com (plus localhost in development) get 403. No CORS headers needed since the web app is same-origin. Requests with no Origin (mobile app, curl) pass
 - Message email notifications now require the recipient to be offline for at least 60 seconds and are limited to one successful email per sender-recipient pair per hour using a process-local in-memory store shared by both conversation creation and reply routes (`lib/message-email-notification.ts`). Failed email sends release the cooldown reservation.
 - Buyer request messaging added site-wide: DEFAULT_DESCRIPTION (lib/seo.ts), home hero + "Can't Find What You Need?" section, how-it-works "Request It" steps, about, footer quick link, empty search results CTA (listings-browser), categories CTA, sell guide FAQ, terms listing rules. New blog post id `request-a-product` (`/en/request-a-product-you-cant-find`, `/bn/khuje-na-pele-ponno-request-korun`); best-place posts (en/bn) link to it
 - `/post` chooser page (`app/post/page.tsx`): two cards, sell (`/listings/new`) and buy (`/requests/new`). All "Post Ad" style buttons (header, footer, home, dashboard, categories, how-it-works, first-visit dialog) now link to `/post`. Blog inline prose links still go to `/listings/new`
@@ -272,3 +273,10 @@ Next.js adds `.next/types/**/*.ts` to includes. Add `.next` to excludes to avoid
   no MapPin icon, no Negotiable badge. Skeleton (`listing-card-skeleton.tsx`) mirrors 2 lines. Grids already
   `grid-cols-2 md:grid-cols-3 lg:grid-cols-5` in app/page.tsx, listings-browser.tsx, app/user/[id]/page.tsx,
   listings-grid-skeleton.tsx.
+
+
+## BeforeSell video skills
+- Added project skills at `.claude/skills/beforesell-video/SKILL.md` for Claude and `.agents/skills/beforesell-video/SKILL.md` for Codex. Both use `my-video` as the existing Remotion template and include `references/template.md`.
+- Defaults: vertical 1080x1920 at 30 fps, plain white canvas, large hand-drawn avatars, short headlines, meaningful animated story beats, local Kokoro Liam `am_liam` at speed 1.16 with immediate speech and speech-derived timing.
+- Official logo stays top left in every scene. Footer is horizontal, space-between: `facebook.com/beforesell.official` left, `beforesell.com` right, linked to the exact https destinations. Props, badges, text, and movement paths stay clear of avatars. Happy ending has no floating laptop.
+- New stories get unique source/media/generation paths and composition IDs; preserve the Sara/Milan example. Default delivery is a Studio preview link; export only when requested. Tests and playback review remain with the user.
