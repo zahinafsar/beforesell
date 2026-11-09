@@ -281,3 +281,9 @@ Next.js adds `.next/types/**/*.ts` to includes. Add `.next` to excludes to avoid
 - Defaults: vertical 1080x1920 at 30 fps, plain white canvas, large hand-drawn avatars, short headlines, meaningful animated story beats, local Kokoro Liam `am_liam` at speed 1.16 with immediate speech and speech-derived timing.
 - Official logo stays top left in every scene. Footer is horizontal, space-between: `facebook.com/beforesell.official` left, `beforesell.com` right, linked to the exact https destinations. Props, badges, text, and movement paths stay clear of avatars. Happy ending has no floating laptop.
 - New stories get unique source/media/generation paths and composition IDs; preserve the Sara/Milan example. Default delivery is a Studio preview link; export only when requested. Tests and playback review remain with the user.
+
+## Hosting (EasyHost)
+- Deployed with `ezhst`: project `beforesell-33f94733`, app `beforesell-86054e94` (https://beforesell-86054e94.easyhost.fun), linked in `.easyhost.json`
+- Uses the EasyHost project Postgres (migrated via `prisma migrate deploy`). On 2026-11-09 all data was copied from the old Prisma Postgres (db.prisma.io) with a data-only pg_dump (excluding `_prisma_migrations`, categories reordered parents-first for the self FK); row counts verified equal. The connection URL uses sslmode=verify-full, so local psql needs `PGSSLROOTCERT=system` Env vars imported from `.env` with DATABASE_URL overridden to the EasyHost DB and NEXT_PUBLIC_APP_URL=https://beforesell.com
+- Custom domains `beforesell.com` and `www.beforesell.com` added (pending DNS + `ezhst domains verify`)
+- EasyHost uploads git-ignored folders too, so `my-video` is excluded in tsconfig.json to keep `next build` passing
